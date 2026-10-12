@@ -4,6 +4,7 @@
 import RNUtils from '@mattermost/rnutils';
 
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, type MyChannelsRequest} from '@actions/remote/channel';
+import {fetchCommunityGroups} from '@actions/remote/community_groups';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchRoles} from '@actions/remote/role';
@@ -70,6 +71,7 @@ export async function restDeferredAppEntryActions(
 
         updateAllUsersSince(serverUrl, since, false, requestLabel);
         updateCanJoinTeams(serverUrl);
+        fetchCommunityGroups(serverUrl, teamData.teams, config, requestLabel);
 
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamMap = new Map(teamData.teams?.map((t) => [t.id, t]) || []);

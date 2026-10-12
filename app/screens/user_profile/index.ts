@@ -6,8 +6,10 @@ import {of as of$, combineLatest} from 'rxjs';
 import {map, mergeMap, switchMap} from 'rxjs/operators';
 
 import {General, Permissions, Preferences} from '@constants';
+import {withServerUrl} from '@context/server';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
+import {observeCommunityLook, observeCommunityRoles} from '@queries/servers/community_groups';
 import {observeCustomProfileAttributesByUserId, observeCustomProfileFields} from '@queries/servers/custom_profile';
 import {observeCustomProfileAttributesEnabled} from '@queries/servers/features';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
@@ -30,7 +32,7 @@ export type UserProfileProps = {
     userIconOverride?: string;
     usernameOverride?: string;
 }
-type EnhancedProps = UserProfileProps & WithDatabaseArgs
+type EnhancedProps = UserProfileProps & WithDatabaseArgs & {serverUrl: string}
 
 type DMChannelInfo = {
     name: string;
@@ -46,7 +48,7 @@ export function isDirectMessageWithViewedUser(channel: DMChannelInfo|undefined, 
     return Boolean(dmUserId) && dmUserId === viewedUserId;
 }
 
-const enhanced = withObservables([], ({channelId, database, userId}: EnhancedProps) => {
+const enhanced = withObservables([], ({channelId, database, serverUrl, userId}: EnhancedProps) => {
     const currentUser = observeCurrentUser(database);
     const currentUserId = observeCurrentUserId(database);
     const channel = channelId ? observeChannel(database, channelId) : of$(undefined);
@@ -60,6 +62,8 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
         map(([c, currentId, viewedUser]) => isDirectMessageWithViewedUser(c, currentId, viewedUser?.id)),
     );
     const teamId = channel.pipe(switchMap((c) => (c?.teamId ? of$(c.teamId) : observeCurrentTeamId(database))));
+    const communityLook = observeCommunityLook(serverUrl, teamId, userId, user);
+    const communityRoles = observeCommunityRoles(serverUrl, teamId, userId);
     const isTeamAdmin = teamId.pipe(switchMap((id) => observeUserIsTeamAdmin(database, userId, id)));
     const systemAdmin = user.pipe(switchMap((u) => of$(u?.roles ? isSystemAdmin(u.roles) : false)));
     const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
@@ -95,6 +99,8 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
 
     return {
         canManageAndRemoveMembers,
+        communityLook,
+        communityRoles,
         currentUserId,
         enablePostIconOverride,
         enablePostUsernameOverride,
@@ -115,5 +121,5 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
     };
 });
 
-export default withDatabase(enhanced(UserProfile));
+export default withDatabase(withServerUrl(enhanced(UserProfile)));
 

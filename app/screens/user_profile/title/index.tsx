@@ -7,6 +7,7 @@ import Animated from 'react-native-reanimated';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
+import CommunityTeamTag from '@components/community_team_tag';
 import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -20,10 +21,12 @@ import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import UserProfileAvatar from './avatar';
+import RoleChips from './role_chips';
 import UserProfileTag from './tag';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {GalleryItemType} from '@typings/screens/gallery';
+import type {CommunityGroup} from '@utils/community_groups';
 
 type Props = {
     enablePostIconOverride: boolean;
@@ -33,6 +36,9 @@ type Props = {
     isChannelAdmin: boolean;
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
+    nameColor?: string;
+    roles?: CommunityGroup[];
+    teamBadge?: CommunityGroup;
     teammateDisplayName: string;
     user: UserModel;
     userIconOverride?: string;
@@ -41,6 +47,7 @@ type Props = {
 }
 
 export const HEADER_TEXT_HEIGHT = 30;
+const NO_ROLES: CommunityGroup[] = [];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -54,7 +61,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         gap: 4,
         flex: 1,
     },
+    nameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        maxWidth: '100%',
+    },
     displayName: {
+        flexShrink: 1,
         color: theme.centerChannelColor,
         ...typography('Heading', 600, 'SemiBold'),
     },
@@ -75,7 +89,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const UserProfileTitle = ({
     enablePostIconOverride, enablePostUsernameOverride, headerText,
-    imageSize, isChannelAdmin, isSystemAdmin, isTeamAdmin,
+    imageSize, isChannelAdmin, isSystemAdmin, isTeamAdmin, nameColor, roles = NO_ROLES, teamBadge,
     teammateDisplayName, user, userIconOverride, usernameOverride, hideGuestTags,
 }: Props) => {
     const galleryIdentifier = `${user.id}-avatarPreview`;
@@ -168,13 +182,21 @@ const UserProfileTitle = ({
                         isSystemAdmin={isSystemAdmin}
                         isTeamAdmin={isTeamAdmin}
                     />
-                    <Text
-                        numberOfLines={1}
-                        style={styles.displayName}
-                        testID='user_profile.display_name'
-                    >
-                        {nonBreakingString(`${prefix}${displayName}`)}
-                    </Text>
+                    <View style={styles.nameRow}>
+                        <Text
+                            numberOfLines={1}
+                            style={[styles.displayName, nameColor ? {color: nameColor} : undefined]}
+                            testID='user_profile.display_name'
+                        >
+                            {nonBreakingString(`${prefix}${displayName}`)}
+                        </Text>
+                        {teamBadge && (
+                            <CommunityTeamTag
+                                team={teamBadge}
+                                testID='user_profile.team_tag'
+                            />
+                        )}
+                    </View>
                     {!hideUsername &&
                     <Text
                         numberOfLines={1}
@@ -184,6 +206,7 @@ const UserProfileTitle = ({
                         {`@${user.username}`}
                     </Text>
                     }
+                    {roles.length > 0 && <RoleChips roles={roles}/>}
                 </View>
             </View>
         </>

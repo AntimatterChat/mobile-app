@@ -4,6 +4,7 @@
 import {fetchGroupsForChannel, fetchGroupsForMember, fetchGroupsForTeam} from '@actions/remote/groups';
 import DatabaseManager from '@database/manager';
 import {deleteGroupChannelById, deleteGroupMembershipById, deleteGroupTeamById} from '@queries/servers/group';
+import {getCommunityGroups} from '@store/community_groups_store';
 import {generateGroupAssociationId} from '@utils/groups';
 
 import {
@@ -66,6 +67,15 @@ describe('WebSocket Group Actions', () => {
                 groups: [{id: groupId}],
                 prepareRecordsOnly: false,
             });
+        });
+
+        it('should keep a community\'s custom group and its members for badges and role colours', async () => {
+            const group = {id: groupId, source: 'custom', team_id: teamId, is_team: true, tag: 'ALP', delete_at: 0, member_ids: [userId]};
+            const msg = {data: {group: JSON.stringify(group)}} as WebSocketMessage;
+
+            await handleGroupReceivedEvent(serverUrl, msg);
+
+            expect(getCommunityGroups(serverUrl).groups[groupId]).toEqual(group);
         });
     });
 
