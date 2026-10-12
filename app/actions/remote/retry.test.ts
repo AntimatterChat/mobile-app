@@ -9,7 +9,7 @@ import NetworkManager from '@managers/network_manager';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getLicense, prepareCommonSystemValues} from '@queries/servers/system';
+import {getConfig, prepareCommonSystemValues} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
@@ -19,7 +19,7 @@ import {fetchPostsForChannel} from './post';
 import {fetchMyPreferences} from './preference';
 import {retryInitialTeamAndChannel, retryInitialChannel} from './retry';
 import {fetchRolesIfNeeded} from './role';
-import {fetchConfigAndLicense} from './systems';
+import {fetchConfig} from './systems';
 import {fetchMyTeams} from './team';
 
 jest.mock('@database/manager');
@@ -48,7 +48,7 @@ const mockUser = {id: 'user_id', roles: 'role1 role2', locale: 'en'};
 const mockChannels = {channels: [{id: 'channel_id'}], memberships: [{channel_id: 'channel_id', roles: 'role1 role2'}]};
 
 describe('retryInitialTeamAndChannel', () => {
-    const mockConfigAndLicense = {config: {}, license: {}};
+    const mockConfigResponse = {config: {}};
     const mockPreferences = {preferences: [{category: Preferences.CATEGORIES.TEAMS_ORDER, name: '', value: ''}]};
     const mockTeams = {teams: [{id: 'team_id'}], memberships: [{team_id: 'team_id', roles: 'role1 role2'}]};
 
@@ -57,7 +57,7 @@ describe('retryInitialTeamAndChannel', () => {
         (DatabaseManager.serverDatabases as any) = {[serverUrl]: {operator: mockOperator}};
         (NetworkManager.getClient as jest.Mock).mockReturnValue({});
         (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-        (fetchConfigAndLicense as jest.Mock).mockResolvedValue(mockConfigAndLicense);
+        (fetchConfig as jest.Mock).mockResolvedValue(mockConfigResponse);
         (fetchMyPreferences as jest.Mock).mockResolvedValue(mockPreferences);
         (fetchMyTeams as jest.Mock).mockResolvedValue(mockTeams);
         (fetchMyChannelsForTeam as jest.Mock).mockResolvedValue(mockChannels);
@@ -94,7 +94,7 @@ describe('retryInitialTeamAndChannel', () => {
 
     it('should fetch config, preferences, and teams in parallel', async () => {
         const result = await retryInitialTeamAndChannel(serverUrl);
-        expect(fetchConfigAndLicense).toHaveBeenCalledWith(serverUrl, true);
+        expect(fetchConfig).toHaveBeenCalledWith(serverUrl, true);
         expect(fetchMyPreferences).toHaveBeenCalledWith(serverUrl, true);
         expect(fetchMyTeams).toHaveBeenCalledWith(serverUrl, true);
         expect(result).toEqual({error: false});
@@ -108,7 +108,7 @@ describe('retryInitialTeamAndChannel', () => {
     });
 
     it('should return error if fetching config, preferences, or teams fails', async () => {
-        (fetchConfigAndLicense as jest.Mock).mockResolvedValue({error: 'error'});
+        (fetchConfig as jest.Mock).mockResolvedValue({error: 'error'});
         const result = await retryInitialTeamAndChannel(serverUrl);
         expect(result).toEqual({error: true});
     });
@@ -153,7 +153,6 @@ describe('retryInitialTeamAndChannel', () => {
 describe('retryInitialChannel', () => {
     const teamId = 'team_id';
     const mockPreferences = [{category: Preferences.NAME_NAME_FORMAT, name: 'name', userId: 'user_id', value: 'value'}];
-    const mockLicense = {};
     const mockConfig = {};
     const mockInitialChannel = {id: 'channel_id'};
 
@@ -163,7 +162,6 @@ describe('retryInitialChannel', () => {
         (NetworkManager.getClient as jest.Mock).mockReturnValue({});
         (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
         (queryDisplayNamePreferences as jest.Mock).mockReturnValue({fetch: jest.fn().mockResolvedValue(mockPreferences)});
-        (getLicense as jest.Mock).mockResolvedValue(mockLicense);
         (getConfig as jest.Mock).mockResolvedValue(mockConfig);
         (fetchMyChannelsForTeam as jest.Mock).mockResolvedValue(mockChannels);
         (fetchRolesIfNeeded as jest.Mock).mockResolvedValue(mockRoles);

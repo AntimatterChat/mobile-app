@@ -9,7 +9,7 @@ import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeIsPostPriorityEnabled} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
-import {observeConfigBooleanValue, observeConfigIntValue, observeIfHighlightWithoutNotificationHasLicense} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigIntValue} from '@queries/servers/system';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -27,7 +27,6 @@ export interface PostConfig {
     enableSecureFilePreview: boolean;
     maxMarkdownNodes: number;
     minimumHashtagLength: number;
-    isHighlightWithoutNotificationLicensed: boolean;
     isPostPriorityEnabled: boolean;
 
     // User preferences
@@ -46,7 +45,6 @@ const PostConfigContext = createContext<PostConfig>({
     enableSecureFilePreview: false,
     maxMarkdownNodes: 16000,
     minimumHashtagLength: 3,
-    isHighlightWithoutNotificationLicensed: false,
     isPostPriorityEnabled: false,
     isMilitaryTime: false,
     teammateNameDisplay: '',
@@ -67,7 +65,6 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => ({
     enableSecureFilePreview: observeEnableSecureFilePreview(database),
     maxMarkdownNodes: observeConfigIntValue(database, 'MaxMarkdownNodes'),
     minimumHashtagLength: observeConfigIntValue(database, 'MinimumHashtagLength'),
-    isHighlightWithoutNotificationLicensed: observeIfHighlightWithoutNotificationHasLicense(database),
     isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
 
     // User preferences
@@ -89,7 +86,6 @@ const PostConfigProviderBase: React.FC<PostConfig & {children: React.ReactNode}>
     enableSecureFilePreview,
     maxMarkdownNodes,
     minimumHashtagLength,
-    isHighlightWithoutNotificationLicensed,
     isPostPriorityEnabled,
     isMilitaryTime,
     teammateNameDisplay,
@@ -107,7 +103,6 @@ const PostConfigProviderBase: React.FC<PostConfig & {children: React.ReactNode}>
         enableSecureFilePreview,
         maxMarkdownNodes,
         minimumHashtagLength,
-        isHighlightWithoutNotificationLicensed,
         isPostPriorityEnabled,
         isMilitaryTime,
         teammateNameDisplay,
@@ -122,7 +117,6 @@ const PostConfigProviderBase: React.FC<PostConfig & {children: React.ReactNode}>
         enableSecureFilePreview,
         maxMarkdownNodes,
         minimumHashtagLength,
-        isHighlightWithoutNotificationLicensed,
         isPostPriorityEnabled,
         isMilitaryTime,
         teammateNameDisplay,

@@ -11,7 +11,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {sanitizeLikeString} from '@helpers/database';
 
 import {queryDisplayNamePreferences} from './preference';
-import {observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense, observeConfigValue} from './system';
+import {observeCurrentUserId, getCurrentUserId, getConfig, observeConfigValue} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -75,21 +75,19 @@ export async function prepareUsers(operator: ServerDataOperator, users: UserProf
 export const observeTeammateNameDisplay = (database: Database) => {
     const lockTeammateNameDisplay = observeConfigValue(database, 'LockTeammateNameDisplay');
     const teammateNameDisplay = observeConfigValue(database, 'TeammateNameDisplay');
-    const license = observeLicense(database);
     const preferences = queryDisplayNamePreferences(database).
         observeWithColumns(['value']);
-    return combineLatest([lockTeammateNameDisplay, teammateNameDisplay, license, preferences]).pipe(
+    return combineLatest([lockTeammateNameDisplay, teammateNameDisplay, preferences]).pipe(
         switchMap(
-            ([ltnd, tnd, lcs, prefs]) => of$(getTeammateNameDisplaySetting(prefs, ltnd, tnd, lcs)),
+            ([ltnd, tnd, prefs]) => of$(getTeammateNameDisplaySetting(prefs, ltnd, tnd)),
         ),
     );
 };
 
 export async function getTeammateNameDisplay(database: Database) {
     const config = await getConfig(database);
-    const license = await getLicense(database);
     const preferences = await queryDisplayNamePreferences(database).fetch();
-    return getTeammateNameDisplaySetting(preferences, config?.LockTeammateNameDisplay, config?.TeammateNameDisplay, license);
+    return getTeammateNameDisplaySetting(preferences, config?.LockTeammateNameDisplay, config?.TeammateNameDisplay);
 }
 
 export const queryUsersLike = (database: Database, likeUsername: string) => {

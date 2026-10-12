@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
-import {storeConfigAndLicense, storeDataRetentionPolicies} from '@actions/local/systems';
+import {storeConfigForServer, storeDataRetentionPolicies} from '@actions/local/systems';
 import {applyPersistenceModeChange} from '@actions/remote/refresh';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
@@ -11,9 +11,8 @@ import {getCurrentUserId} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
-export type ConfigAndLicenseRequest = {
+export type ConfigRequest = {
     config?: ClientConfig;
-    license?: ClientLicense;
     error?: unknown;
 }
 
@@ -88,16 +87,13 @@ export const fetchAllGranularDataRetentionPolicies = async (
     }
 };
 
-export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<ConfigAndLicenseRequest> => {
+export const fetchConfig = async (serverUrl: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<ConfigRequest> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const [config, license]: [ClientConfig, ClientLicense] = await Promise.all([
-            client.getClientConfigOld(groupLabel),
-            client.getClientLicenseOld(groupLabel),
-        ]);
+        const config: ClientConfig = await client.getClientConfigOld(groupLabel);
 
         if (!fetchOnly) {
-            await storeConfigAndLicense(serverUrl, config, license);
+            await storeConfigForServer(serverUrl, config);
             const needsModeChange = await reconcilePersistenceFlag(serverUrl, config);
             if (needsModeChange) {
                 const {error: modeChangeError} = await applyPersistenceModeChange(serverUrl);
@@ -107,9 +103,9 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
             }
         }
 
-        return {config, license};
+        return {config};
     } catch (error) {
-        logDebug('error on fetchConfigAndLicense', getFullErrorMessage(error));
+        logDebug('error on fetchConfig', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

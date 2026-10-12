@@ -33,7 +33,6 @@ import {
     getConfig,
     getCurrentChannelId,
     getCurrentTeamId,
-    getLicense,
     getLastFullSync,
     setLastFullSync,
 } from '@queries/servers/system';
@@ -99,7 +98,6 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
         const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
-        const license = await getLicense(database);
         const config = await getConfig(database);
 
         handlePlaybookReconnect(serverUrl);
@@ -122,7 +120,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
             fetchChannelAttributeValues(serverUrl, currentChannelId);
         }
 
-        await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
+        await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 
         await setLastFullSync(operator, now);
 

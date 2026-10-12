@@ -11,7 +11,7 @@ import Animated from 'react-native-reanimated';
 import urlParse from 'url-parse';
 
 import {doPing} from '@actions/remote/general';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {fetchConfig} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import {Screens, Launch, DeepLink} from '@constants';
@@ -183,15 +183,14 @@ const Server = ({
         };
     });
 
-    const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
-        const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
+    const displayLogin = (serverUrl: string, config: ClientConfig) => {
+        const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config);
         const passProps = {
             config,
             extra,
             hasLoginForm,
             launchError,
             launchType,
-            license,
             serverDisplayName: displayName,
             serverPreauthSecret: preauthSecret.trim() || undefined,
             serverUrl,
@@ -365,7 +364,7 @@ const Server = ({
         // has already completed.
         const pushProxyVerification = result.canReceiveNotifications as string;
 
-        const data = await fetchConfigAndLicense(headRequest.url, true);
+        const data = await fetchConfig(headRequest.url, true);
         if (canceled) {
             return;
         }
@@ -421,7 +420,7 @@ const Server = ({
             return;
         }
 
-        displayLogin(headRequest.url, data.config!, data.license!);
+        displayLogin(headRequest.url, data.config!);
 
         // Fire the push-proxy verification alert AFTER the RNN transition to
         // LoginScreen has FULLY settled. We use setTimeout (not

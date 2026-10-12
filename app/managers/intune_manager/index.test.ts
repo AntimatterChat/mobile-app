@@ -6,10 +6,8 @@ jest.unmock('@managers/intune_manager');
 
 import {Platform, type EventSubscription} from 'react-native';
 
-import {License} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getConfig, getLicense} from '@queries/servers/system';
-import {isMinimumLicenseTier} from '@utils/helpers';
+import {getConfig} from '@queries/servers/system';
 
 import IntuneManager from './index';
 
@@ -31,8 +29,6 @@ jest.mock('@managers/security_manager', () => ({
 }));
 
 const mockedGetConfig = jest.mocked(getConfig);
-const mockedGetLicense = jest.mocked(getLicense);
-const mockedIsMinimumLicenseTier = jest.mocked(isMinimumLicenseTier);
 
 // Get mocked Intune from the global mock
 const Intune = jest.requireMock<{default: any}>('@mattermost/intune').default;
@@ -63,20 +59,8 @@ describe('IntuneManager', () => {
             expect(result).toBe(false);
         });
 
-        it('should return false when license is below EnterpriseAdvanced tier', async () => {
-            mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'true', IntuneScope: 'scope', IntuneAuthService: 'office365'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(false);
-
-            const result = await IntuneManager.isIntuneMAMEnabledForServer(serverUrl);
-            expect(result).toBe(false);
-            expect(mockedIsMinimumLicenseTier).toHaveBeenCalledWith({}, License.SKU_SHORT_NAME.EnterpriseAdvanced);
-        });
-
         it('should return false when IntuneMAMEnabled is false', async () => {
             mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'false', IntuneScope: 'scope', IntuneAuthService: 'office365'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(true);
 
             const result = await IntuneManager.isIntuneMAMEnabledForServer(serverUrl);
             expect(result).toBe(false);
@@ -84,8 +68,6 @@ describe('IntuneManager', () => {
 
         it('should return false when IntuneScope is missing', async () => {
             mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'true', IntuneAuthService: 'office365'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(true);
 
             const result = await IntuneManager.isIntuneMAMEnabledForServer(serverUrl);
             expect(result).toBe(false);
@@ -93,8 +75,6 @@ describe('IntuneManager', () => {
 
         it('should return false when IntuneAuthService is missing', async () => {
             mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'true', IntuneScope: 'scope'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(true);
 
             const result = await IntuneManager.isIntuneMAMEnabledForServer(serverUrl);
             expect(result).toBe(false);
@@ -102,8 +82,6 @@ describe('IntuneManager', () => {
 
         it('should return true when all conditions are met', async () => {
             mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'true', IntuneScope: 'scope', IntuneAuthService: 'office365'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(true);
 
             const result = await IntuneManager.isIntuneMAMEnabledForServer(serverUrl);
             expect(result).toBe(true);
@@ -218,20 +196,16 @@ describe('IntuneManager', () => {
             expect(jest.mocked(Intune.setCurrentIdentity)).toHaveBeenCalledWith(null);
         });
 
-        it('should set identity when server is licensed', async () => {
+        it('should set identity when Intune is configured on the server', async () => {
             mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'true', IntuneScope: 'scope', IntuneAuthService: 'office365'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(true);
             jest.mocked(Intune.setCurrentIdentity).mockResolvedValue();
 
             await IntuneManager.setCurrentIdentity(serverUrl);
             expect(jest.mocked(Intune.setCurrentIdentity)).toHaveBeenCalledWith(serverUrl);
         });
 
-        it('should clear identity when server is not licensed', async () => {
+        it('should clear identity when Intune is not configured on the server', async () => {
             mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'false'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(false);
             jest.mocked(Intune.setCurrentIdentity).mockResolvedValue();
 
             await IntuneManager.setCurrentIdentity(serverUrl);
@@ -268,8 +242,6 @@ describe('IntuneManager', () => {
 
         it('should return null when Intune not enabled for server', async () => {
             mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'false'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(false);
 
             const result = await IntuneManager.getPolicy(serverUrl);
             expect(result).toBeNull();
@@ -277,8 +249,6 @@ describe('IntuneManager', () => {
 
         it('should return null when server not managed', async () => {
             mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'true', IntuneScope: 'scope', IntuneAuthService: 'office365'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(true);
             jest.mocked(Intune.isManagedServer).mockResolvedValue(false);
 
             const result = await IntuneManager.getPolicy(serverUrl);
@@ -287,8 +257,6 @@ describe('IntuneManager', () => {
 
         it('should return policy when server is managed', async () => {
             mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'true', IntuneScope: 'scope', IntuneAuthService: 'saml'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(true);
             jest.mocked(Intune.isManagedServer).mockReturnValue(true);
             jest.mocked(Intune.getPolicy).mockResolvedValue(mockPolicy);
 

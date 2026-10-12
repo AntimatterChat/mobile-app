@@ -46,16 +46,10 @@ export const showLimitRestrictedAlert = (info: LimitRestrictedInfo, intl: IntlSh
         id: 'mobile.calls_participant_limit_title_GA',
         defaultMessage: 'This call is at capacity',
     });
-    let message = intl.formatMessage({
+    const message = intl.formatMessage({
         id: 'mobile.calls_limit_msg',
         defaultMessage: 'The maximum number of participants per call is {maxParticipants}. Contact your System Admin to increase the limit.',
     }, {maxParticipants: info.maxParticipants});
-    if (info.isCloudStarter) {
-        message = intl.formatMessage({
-            id: 'mobile.calls_limit_msg_GA',
-            defaultMessage: 'Upgrade to Cloud Professional or Cloud Enterprise to enable group calls with more than {maxParticipants} participants.',
-        }, {maxParticipants: info.maxParticipants});
-    }
     const ok = intl.formatMessage({
         id: 'mobile.calls_ok',
         defaultMessage: 'Okay',

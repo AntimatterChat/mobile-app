@@ -51,8 +51,8 @@ export const emailLogs = async (metadata: ReportAProblemMetadata, siteName: stri
     }
 };
 
-export const getDefaultReportAProblemLink = (isLicensed: boolean) => {
-    return isLicensed ? 'https://mattermost.com/pl/report_a_problem_licensed' : 'https://mattermost.com/pl/report_a_problem_unlicensed';
+export const getDefaultReportAProblemLink = () => {
+    return 'https://antimatter.chat/help.html';
 };
 
 export function metadataToString(metadata: ReportAProblemMetadata): string {

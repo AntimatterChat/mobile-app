@@ -27,7 +27,7 @@ import * as preferences from './preferences';
 import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
-import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
+import {handleConfigChangedEvent} from './system';
 import * as teams from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
 import {
@@ -169,9 +169,6 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             handleAddCustomEmoji(serverUrl, msg);
             break;
 
-        case WebsocketEvents.LICENSE_CHANGED:
-            handleLicenseChangedEvent(serverUrl, msg);
-            break;
         case WebsocketEvents.CONFIG_CHANGED:
             handleConfigChangedEvent(serverUrl, msg);
             break;

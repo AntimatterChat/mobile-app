@@ -30,7 +30,7 @@ import {removeProtocol, stripTrailingSlashes} from '@utils/url';
 import Options from './options';
 import WebSocket from './websocket';
 
-import type {ConfigAndLicenseRequest} from '@actions/remote/systems';
+import type {ConfigRequest} from '@actions/remote/systems';
 import type ServersModel from '@typings/database/models/app/servers';
 import type {Subscription} from 'rxjs';
 
@@ -268,11 +268,11 @@ const ServerItem = ({
             await switchToServer(server.url);
             return;
         }
-        await switchToServerAndLogin(server.url, intl, async (data?: ConfigAndLicenseRequest) => {
+        await switchToServerAndLogin(server.url, intl, async (data?: ConfigRequest) => {
             setSwitching(false);
             await dismissBottomSheet();
-            if (data?.config && data.license) {
-                loginToServer(theme, server.url, server.displayName, data.config, data.license);
+            if (data?.config) {
+                loginToServer(theme, server.url, server.displayName, data.config);
             }
         });
     }, [intl, isActive, server.displayName, server.lastActiveAt, server.url, theme]);

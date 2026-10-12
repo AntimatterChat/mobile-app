@@ -4,8 +4,6 @@
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
-import {License} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import NetworkManager from '@managers/network_manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -45,16 +43,10 @@ describe('BoRQuickAction', () => {
         await operator.handleConfigs({
             configs: [
                 {id: 'EnableBurnOnRead', value: 'true'},
-                {id: 'BuildEnterpriseReady', value: 'true'},
                 {id: 'BurnOnReadDurationSeconds', value: '300'},
                 {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
             ],
             configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
-
-        await operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
             prepareRecordsOnly: false,
         });
     });

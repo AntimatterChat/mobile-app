@@ -166,9 +166,7 @@ const getExtraContext = async (database: Database) => {
     if (config) {
         context.config = {
             BuildDate: config.BuildDate,
-            BuildEnterpriseReady: config.BuildEnterpriseReady,
             BuildHash: config.BuildHash,
-            BuildHashEnterprise: config.BuildHashEnterprise,
             BuildNumber: config.BuildNumber,
         };
     }

@@ -31,7 +31,6 @@ function getBaseProps(): ComponentProps<typeof ChannelListScreen> {
         hasMoreThanOneTeam: true,
         hasTeams: true,
         isCRTEnabled: true,
-        isLicensed: true,
         launchType: 'normal',
         showIncomingCalls: true,
         showToS: false,

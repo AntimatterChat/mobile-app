@@ -49,9 +49,7 @@ jest.mock('@database/manager', () => ({
 jest.mock('@queries/servers/system', () => ({
     getConfig: jest.fn().mockResolvedValue({
         BuildDate: '2024-06-24',
-        BuildEnterpriseReady: true,
         BuildHash: 'HASH',
-        BuildHashEnterprise: 'HASH_ENTERPRISE',
         BuildNumber: '1234',
     }),
 }));
@@ -241,9 +239,7 @@ describe('addSentryContext function', () => {
         expect(Sentry.setContext).toHaveBeenCalledWith('Server-Information', {
             config: {
                 BuildDate: '2024-06-24',
-                BuildEnterpriseReady: true,
                 BuildHash: 'HASH',
-                BuildHashEnterprise: 'HASH_ENTERPRISE',
                 BuildNumber: '1234',
             },
             currentChannel: {},

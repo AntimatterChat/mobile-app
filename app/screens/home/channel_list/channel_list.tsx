@@ -39,7 +39,6 @@ type ChannelProps = {
     isCRTEnabled: boolean;
     hasTeams: boolean;
     hasMoreThanOneTeam: boolean;
-    isLicensed: boolean;
     showToS: boolean;
     launchType: LaunchType;
     coldStart?: boolean;
@@ -200,9 +199,7 @@ const ChannelListScreen = (props: ChannelProps) => {
         >
             <Animated.View style={top}/>
             <ConnectionBanner/>
-            {props.isLicensed &&
             <AnnouncementBanner/>
-            }
             <View style={styles.content}>
                 {canAddOtherServers && <Servers/>}
                 <Animated.View

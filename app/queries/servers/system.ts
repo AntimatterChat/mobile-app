@@ -10,11 +10,11 @@ import {Platform} from 'react-native';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {Preferences, License} from '@constants';
+import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {getFullErrorMessage} from '@utils/errors';
-import {isMinimumLicenseTier, isMinimumServerVersion, type LicenseTierSku} from '@utils/helpers';
+import {isMinimumServerVersion} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -27,7 +27,6 @@ export type PrepareCommonSystemValuesArgs = {
     currentPushVerificationStatus?: string;
     currentTeamId?: string;
     currentUserId?: string;
-    license?: ClientLicense;
     teamHistory?: string;
 }
 
@@ -110,7 +109,6 @@ export const observePushVerificationStatus = (database: Database): Observable<st
 
 export const getCommonSystemValues = async (serverDatabase: Database) => {
     const systemRecords = (await serverDatabase.collections.get<SystemModel>(SYSTEM).query().fetch());
-    let license: ClientLicense = {} as ClientLicense;
     let currentChannelId = '';
     let currentTeamId = '';
     let currentUserId = '';
@@ -126,9 +124,6 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
             case SYSTEM_IDENTIFIERS.CURRENT_USER_ID:
                 currentUserId = systemRecord.value;
                 break;
-            case SYSTEM_IDENTIFIERS.LICENSE:
-                license = systemRecord.value;
-                break;
             case SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID:
                 lastUnreadChannelId = systemRecord.value;
                 break;
@@ -140,7 +135,6 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
         currentTeamId,
         currentUserId,
         lastUnreadChannelId,
-        license,
     };
 };
 
@@ -247,14 +241,9 @@ export const getGranularDataRetentionPolicies = async (database: Database) => {
 };
 
 export const getIsDataRetentionEnabled = async (database: Database) => {
-    const license = await getLicense(database);
-    if (!license || !Object.keys(license)?.length) {
-        return null;
-    }
-
     const dataRetentionEnableMessageDeletion = await getConfigValue(database, 'DataRetentionEnableMessageDeletion');
 
-    return dataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true';
+    return dataRetentionEnableMessageDeletion === 'true';
 };
 
 export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {
@@ -312,22 +301,6 @@ export const observeCanViewArchivedChannels = (database: Database) => {
         switchMap((value) => of$(archivedChannelsViewable(value))),
         distinctUntilChanged(),
     );
-};
-
-export const observeLicense = (database: Database): Observable<ClientLicense | undefined> => {
-    return querySystemValue(database, SYSTEM_IDENTIFIERS.LICENSE).observe().pipe(
-        switchMap((result) => (result.length ? result[0].observe() : of$({value: undefined}))),
-        switchMap((model) => of$(model.value)),
-    );
-};
-
-export const getLicense = async (serverDatabase: Database): Promise<ClientLicense | undefined> => {
-    try {
-        const license = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LICENSE);
-        return license?.value;
-    } catch {
-        return undefined;
-    }
 };
 
 export const getRecentCustomStatuses = async (database: Database): Promise<UserCustomStatus[]> => {
@@ -437,15 +410,8 @@ export const patchTeamHistory = (operator: ServerDataOperator, value: string[], 
 export async function prepareCommonSystemValues(
     operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs): Promise<SystemModel[]> {
     try {
-        const {lastUnreadChannelId, currentChannelId, currentPushVerificationStatus, currentTeamId, currentUserId, license} = values;
+        const {lastUnreadChannelId, currentChannelId, currentPushVerificationStatus, currentTeamId, currentUserId} = values;
         const systems: IdValue[] = [];
-
-        if (license !== undefined) {
-            systems.push({
-                id: SYSTEM_IDENTIFIERS.LICENSE,
-                value: JSON.stringify(license),
-            });
-        }
 
         if (lastUnreadChannelId !== undefined) {
             systems.push({
@@ -621,73 +587,6 @@ export const observeLastServerVersionCheck = (database: Database) => {
     );
 };
 
-export const observeIfHighlightWithoutNotificationHasLicense = (database: Database) => {
-    const license = observeLicense(database);
-
-    const isCloudStarterFree = checkIsCloudStarterFree(license);
-    const isStarterSKULicense = checkIsStarterSKULicense(license);
-    const isSelfHostedStarter = observeIsSelfHosterStarter(database);
-    const isEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady', false);
-
-    return combineLatest([isCloudStarterFree, isStarterSKULicense, isSelfHostedStarter, isEnterpriseReady]).pipe(
-        switchMap(([isCSF, isSSL, isSHS, isEnt]) => {
-            // It should have enterprise build AND not have a starter license of any kind
-            const highlightWithoutNotificationHasLicense = isEnt && !(isCSF || isSSL || isSHS);
-
-            return of$(highlightWithoutNotificationHasLicense);
-        }),
-    );
-};
-
-function checkIsCloudStarterFree(license: Observable<ClientLicense | undefined>) {
-    return license.pipe(
-        switchMap((l) => {
-            const isCloud = l?.Cloud === 'true';
-            const isStarterSKU = l?.SkuShortName === License.SKU_SHORT_NAME.Starter;
-
-            return of$(isCloud && isStarterSKU);
-        }),
-        distinctUntilChanged(),
-    );
-}
-
-function checkIsStarterSKULicense(license: Observable<ClientLicense | undefined>) {
-    return license.pipe(
-        switchMap((l) => {
-            const isLicensed = l?.IsLicensed === 'true';
-            const isSelfHostedStarterProduct = l?.SelfHostedProducts === License.SelfHostedProducts.STARTER;
-
-            return of$(isLicensed && isSelfHostedStarterProduct);
-        }),
-        distinctUntilChanged(),
-    );
-}
-
-const observeIsSelfHosterStarter = (database: Database) => {
-    const license = observeLicense(database);
-    const isEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady', false);
-
-    return combineLatest([license, isEnterpriseReady]).pipe(
-        switchMap(([lic, isEnt]) => {
-            const isLicensed = lic?.IsLicensed === 'true';
-            const isSelfHostedStarter = isEnt && !isLicensed;
-
-            return of$(isSelfHostedStarter);
-        }),
-    );
-};
-
-export const observeIsFreeEdition = (database: Database) => {
-    return observeLicense(database).pipe(
-        switchMap((license) => {
-            const isLicensed = license?.IsLicensed === 'true';
-            const isEntry = license?.SkuShortName === License.SKU_SHORT_NAME.Entry;
-            return of$(!isLicensed || isEntry);
-        }),
-        distinctUntilChanged(),
-    );
-};
-
 export const observeReportAProblemMetadata = (database: Database) => {
     const currentUserId = observeCurrentUserId(database);
     const currentTeamId = observeCurrentTeamId(database);
@@ -711,20 +610,3 @@ export const observeReportAProblemMetadata = (database: Database) => {
     );
 };
 
-export const observeIsMinimumLicenseTier = (database: Database, shortSku: LicenseTierSku) => {
-    const license = observeLicense(database);
-    const isEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady', false);
-
-    return combineLatest([license, isEnterpriseReady]).pipe(
-        switchMap(([lic, isEnt]) => {
-            if (!shortSku || !isEnt) {
-                return of$(false);
-            }
-
-            const meetsMinimumTier = isMinimumLicenseTier(lic, shortSku);
-
-            return of$(meetsMinimumTier);
-        }),
-        distinctUntilChanged(),
-    );
-};

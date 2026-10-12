@@ -19,7 +19,7 @@ jest.mock('@actions/app/global', () => ({
 
 import {
     storeConfig,
-    storeConfigAndLicense,
+    storeConfigForServer,
     storeDataRetentionPolicies,
     updateLastDataRetentionRun,
     dataRetentionCleanup,
@@ -56,7 +56,7 @@ afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
-describe('storeConfigAndLicense', () => {
+describe('storeConfigForServer', () => {
     it('handle not found database - storeConfig', async () => {
         const models = await storeConfig('foo', {} as ClientConfig);
         expect(models).toBeDefined();
@@ -99,13 +99,13 @@ describe('storeConfigAndLicense', () => {
     });
 
     it('handle not found database', async () => {
-        const models = await storeConfigAndLicense('foo', {} as ClientConfig, {} as ClientLicense);
+        const models = await storeConfigForServer('foo', {} as ClientConfig);
         expect(models).toBeDefined();
         expect(models.length).toBe(0);
     });
 
     it('base case', async () => {
-        const models = await storeConfigAndLicense(serverUrl, {AboutLink: 'link'} as ClientConfig, {Announcement: 'test'} as ClientLicense);
+        const models = await storeConfigForServer(serverUrl, {AboutLink: 'link'} as ClientConfig);
         expect(models).toBeDefined();
         expect(models.length).toBe(1); // config
     });
@@ -308,7 +308,6 @@ describe('dataRetention', () => {
         });
         await operator.handleSystem({systems:
             [
-                {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', DataRetention: 'true'}},
                 {id: SYSTEM_IDENTIFIERS.GRANULAR_DATA_RETENTION_POLICIES, value: {team: [{team_id: 'teamid1', post_duration: 100}], channel: [{channel_id: 'channelid1', post_duration: 100}]}},
             ],
         prepareRecordsOnly: false});
@@ -335,7 +334,6 @@ describe('dataRetention', () => {
         await operator.handleSystem({systems:
             [
                 {id: SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN, value: Date.now()},
-                {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', DataRetention: 'true'}},
                 {id: SYSTEM_IDENTIFIERS.GRANULAR_DATA_RETENTION_POLICIES, value: {team: [{team_id: 'teamid1', post_duration: 100}], channel: [{channel_id: 'channelid1', post_duration: 100}]}},
             ],
         prepareRecordsOnly: false});

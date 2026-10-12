@@ -25,8 +25,8 @@ export function getPreferenceAsBool(preferences: Preference[], category: string,
     return value !== 'false';
 }
 
-export function getTeammateNameDisplaySetting(preferences: Preference[], lockTeammateNameDisplay?: string, teammateNameDisplay?: string, license?: ClientLicense) {
-    const useAdminTeammateNameDisplaySetting = license?.LockTeammateNameDisplay === 'true' && lockTeammateNameDisplay === 'true';
+export function getTeammateNameDisplaySetting(preferences: Preference[], lockTeammateNameDisplay?: string, teammateNameDisplay?: string) {
+    const useAdminTeammateNameDisplaySetting = lockTeammateNameDisplay === 'true';
     const preference = getPreferenceValue<string>(preferences, Preferences.CATEGORIES.DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, '');
     if (preference && !useAdminTeammateNameDisplaySetting) {
         return preference;

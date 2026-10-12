@@ -68,7 +68,6 @@ describe('actions/remote/entry/deferred', () => {
                 CollapsedThreads: 'false',
                 FeatureFlagCollapsedThreads: 'true',
             } as ClientConfig;
-            const license = {} as ClientLicense;
             const teamData = {teams: [], memberships: []};
             const chData = undefined;
             const meData = undefined;
@@ -80,7 +79,6 @@ describe('actions/remote/entry/deferred', () => {
                 currentUserLocale,
                 preferences,
                 config,
-                license,
                 teamData,
                 chData,
                 meData,
@@ -104,7 +102,6 @@ describe('actions/remote/entry/deferred', () => {
             LockTeammateNameDisplay: 'false',
             TeammateNameDisplay: 'username',
         } as ClientConfig;
-        const license = {} as ClientLicense;
         const defaultTeamData = {
             teams: [{id: 'team1', display_name: 'Team 1'}],
             memberships: [{team_id: 'team1', user_id: 'user1'}],
@@ -141,7 +138,6 @@ describe('actions/remote/entry/deferred', () => {
                 currentUserLocale,
                 preferences,
                 defaultConfig,
-                license,
                 defaultTeamData,
                 defaultChData,
                 defaultMeData,
@@ -172,7 +168,6 @@ describe('actions/remote/entry/deferred', () => {
                 currentUserLocale,
                 [],
                 defaultConfig,
-                license,
                 defaultTeamData,
                 defaultChData,
                 defaultMeData,
@@ -195,7 +190,6 @@ describe('actions/remote/entry/deferred', () => {
                 currentUserLocale,
                 [],
                 defaultConfig,
-                license,
                 defaultTeamData,
                 defaultChData,
                 defaultMeData,
@@ -227,7 +221,6 @@ describe('actions/remote/entry/deferred', () => {
                 currentUserLocale,
                 preferences,
                 config,
-                license,
                 teamData,
                 chData,
                 meData,
@@ -281,7 +274,6 @@ describe('actions/remote/entry/deferred', () => {
                     currentUserLocale,
                     preferences,
                     config,
-                    license,
                     teamData,
                     chData,
                     defaultMeData,
@@ -315,7 +307,6 @@ describe('actions/remote/entry/deferred', () => {
                 currentUserLocale,
                 preferences,
                 defaultConfig,
-                license,
                 teamData,
                 chData,
                 defaultMeData,
@@ -380,7 +371,6 @@ describe('actions/remote/entry/deferred', () => {
                     currentUserLocale,
                     preferences,
                     config,
-                    license,
                     teamData,
                     chData,
                     defaultMeData,

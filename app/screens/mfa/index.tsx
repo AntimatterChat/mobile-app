@@ -31,7 +31,6 @@ export type MFAProps = {
     extra?: DeepLinkWithData | NotificationWithData;
     launchError: boolean;
     launchType: LaunchType;
-    license: Partial<ClientLicense>;
     loginId: string;
     password: string;
     serverDisplayName: string;
@@ -84,7 +83,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
-const MFA = ({config, extra, launchError, launchType, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
+const MFA = ({config, extra, launchError, launchType, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
     const intl = useIntl();
     const [token, setToken] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -115,14 +114,14 @@ const MFA = ({config, extra, launchError, launchType, license, loginId, password
             return;
         }
         setIsLoading(true);
-        const result: LoginActionResponse = await login(serverUrl, {loginId, password, mfaToken: token, config, license, serverDisplayName});
+        const result: LoginActionResponse = await login(serverUrl, {loginId, password, mfaToken: token, config, serverDisplayName});
         setIsLoading(false);
         if (result?.error && result.failed) {
             setError(getErrorMessage(result.error, intl));
             return;
         }
         goToHome(result.error);
-    }, [config, formatMessage, goToHome, intl, license, loginId, password, serverDisplayName, serverUrl, token]));
+    }, [config, formatMessage, goToHome, intl, loginId, password, serverDisplayName, serverUrl, token]));
 
     const animatedStyles = useScreenTransitionAnimation();
 

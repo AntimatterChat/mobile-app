@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
-import deepEqual from 'deep-equal';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removePushSigningKey, storePushSigningKey} from '@actions/app/global';
@@ -15,7 +14,6 @@ import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {queryPostsByType} from '@queries/servers/post';
 import {
     getConfig,
-    getLicense,
     getGlobalDataRetentionPolicy,
     getGranularDataRetentionPolicies,
     getLastGlobalDataRetentionRun,
@@ -107,33 +105,17 @@ export async function clearEphemeralModeState(serverUrl: string): Promise<void> 
     }
 }
 
-export async function storeConfigAndLicense(serverUrl: string, config: ClientConfig, license: ClientLicense) {
+export async function storeConfigForServer(serverUrl: string, config: ClientConfig) {
     try {
         // If we have credentials for this server then update the values in the database
         const credentials = await getServerCredentials(serverUrl);
         if (credentials) {
-            const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const currentLicense = await getLicense(database);
-            const systems: IdValue[] = [];
-
-            if (!deepEqual(license, currentLicense)) {
-                systems.push({
-                    id: SYSTEM_IDENTIFIERS.LICENSE,
-                    value: JSON.stringify(license),
-                });
-            }
-
-            if (systems.length) {
-                await operator.handleSystem({systems, prepareRecordsOnly: false});
-                DeviceEventEmitter.emit(Events.LICENSE_CHANGED, {serverUrl, license});
-            }
-
             const result = await storeConfig(serverUrl, config);
 
             return result;
         }
     } catch (error) {
-        logError('An error occurred while saving config & license', error);
+        logError('An error occurred while saving the config', error);
     }
     return [];
 }

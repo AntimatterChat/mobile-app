@@ -4,7 +4,7 @@
 import {Platform} from 'react-native';
 import {firstValueFrom} from 'rxjs';
 
-import {License, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
@@ -12,7 +12,7 @@ import {
     getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getPushVerificationStatus,
     getCommonSystemValues, getConfig, getConfigValue, getConfigBooleanValue, getDisconnectedSince, getLastGlobalDataRetentionRun,
     getLastBoRPostCleanupRun, getGlobalDataRetentionPolicy, getGranularDataRetentionPolicies,
-    getIsDataRetentionEnabled, getLicense, getRecentCustomStatuses, getExpandedLinks,
+    getIsDataRetentionEnabled, getRecentCustomStatuses, getExpandedLinks,
     getRecentReactions, getLastFullSync, setLastFullSync, resetLastFullSync,
     getTeamHistory, patchTeamHistory, prepareCommonSystemValues, setCurrentUserId,
     setCurrentChannelId, setCurrentTeamId, setCurrentTeamAndChannelId,
@@ -21,8 +21,8 @@ import {
     observePushVerificationStatus, observeConfig, observeConfigValue, observeMaxFileCount,
     observeIsCustomStatusExpirySupported, observeConfigBooleanValue, observeConfigIntValue,
     canViewArchivedChannels, observeCanViewArchivedChannels,
-    observeLicense, observeAllowedThemesKeys, observeOnlyUnreads,
-    observeIsFreeEdition, observeIsMinimumLicenseTier, observeReportAProblemMetadata,
+    observeAllowedThemesKeys, observeOnlyUnreads,
+    observeReportAProblemMetadata,
 } from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -66,7 +66,6 @@ describe('observeReportAProblemMetadata', () => {
         }).then(() => {
             operator.handleSystem({
                 systems: [
-                    {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', Compliance: 'true'}},
                     {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'user1'},
                     {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'team1'},
                 ],
@@ -98,64 +97,6 @@ describe('observeReportAProblemMetadata', () => {
                 deviceModel: 'Unknown',
             });
             done();
-        });
-    });
-});
-
-describe('observeIsFreeEdition', () => {
-    const serverUrl = 'baseHandler.test.com';
-    let database: Database;
-    let operator: ServerDataOperator;
-
-    beforeEach(async () => {
-        await DatabaseManager.init([serverUrl]);
-        ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
-    it('should return true when no license is present', (done) => {
-        observeIsFreeEdition(database).subscribe((value) => {
-            expect(value).toBe(true);
-            done();
-        });
-    });
-
-    it('should return true when IsLicensed is false', (done) => {
-        operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'false'}}],
-            prepareRecordsOnly: false,
-        }).then(() => {
-            observeIsFreeEdition(database).subscribe((value) => {
-                expect(value).toBe(true);
-                done();
-            });
-        });
-    });
-
-    it('should return true when licensed with Entry SKU', (done) => {
-        operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Entry}}],
-            prepareRecordsOnly: false,
-        }).then(() => {
-            observeIsFreeEdition(database).subscribe((value) => {
-                expect(value).toBe(true);
-                done();
-            });
-        });
-    });
-
-    it('should return false when licensed with a paid SKU', (done) => {
-        operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Professional}}],
-            prepareRecordsOnly: false,
-        }).then(() => {
-            observeIsFreeEdition(database).subscribe((value) => {
-                expect(value).toBe(false);
-                done();
-            });
         });
     });
 });
@@ -253,118 +194,6 @@ describe('getLastBoRPostCleanupRun', () => {
     });
 });
 
-describe('observeIsMinimumLicenseTier', () => {
-    const serverUrl = 'baseHandler.test.com';
-    let database: Database;
-    let operator: ServerDataOperator;
-
-    beforeEach(async () => {
-        await DatabaseManager.init([serverUrl]);
-        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        database = serverDatabaseAndOperator.database;
-        operator = serverDatabaseAndOperator.operator;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
-    it('should return false if no license is present', (done) => {
-        operator.handleConfigs({configs: [
-            {id: 'BuildEnterpriseReady', value: 'true'},
-        ],
-        prepareRecordsOnly: false,
-        configsToDelete: []}).then(() => {
-            observeIsMinimumLicenseTier(database, License.SKU_SHORT_NAME.Professional).subscribe((isMinimumTier) => {
-                expect(isMinimumTier).toBe(false);
-                done();
-            });
-        });
-    });
-
-    it('should return false if license tier is below the required tier', (done) => {
-        operator.handleConfigs({configs: [
-            {id: 'BuildEnterpriseReady', value: 'true'},
-        ],
-        prepareRecordsOnly: false,
-        configsToDelete: []}).then(() => {
-            operator.handleSystem({
-                systems: [
-                    {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Starter}},
-                ],
-                prepareRecordsOnly: false,
-            }).then(() => {
-                observeIsMinimumLicenseTier(database, License.SKU_SHORT_NAME.Professional).subscribe((isMinimumTier) => {
-                    expect(isMinimumTier).toBe(false);
-                    done();
-                });
-            });
-        });
-    });
-
-    it('should return true if license tier matches the required tier', (done) => {
-        operator.handleConfigs({configs: [
-            {id: 'BuildEnterpriseReady', value: 'true'},
-        ],
-        prepareRecordsOnly: false,
-        configsToDelete: []}).then(() => {
-            operator.handleSystem({
-                systems: [
-                    {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Professional}},
-                ],
-                prepareRecordsOnly: false,
-            }).then(() => {
-                observeIsMinimumLicenseTier(database, License.SKU_SHORT_NAME.Professional).subscribe((isMinimumTier) => {
-                    expect(isMinimumTier).toBe(true);
-                    done();
-                });
-            });
-        });
-    });
-
-    it('should return true if license tier is above the required tier', (done) => {
-        operator.handleConfigs({configs: [
-            {id: 'BuildEnterpriseReady', value: 'true'},
-        ],
-        prepareRecordsOnly: false,
-        configsToDelete: []}).then(() => {
-            operator.handleSystem({
-                systems: [
-                    {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Enterprise}},
-                ],
-                prepareRecordsOnly: false,
-            }).then(() => {
-                observeIsMinimumLicenseTier(database, License.SKU_SHORT_NAME.Professional).subscribe((isMinimumTier) => {
-                    expect(isMinimumTier).toBe(true);
-                    done();
-                });
-            });
-        });
-    });
-
-    it('should return false if BuildEnterpriseReady is false', (done) => {
-        operator.handleConfigs({
-            configs: [
-                {id: 'BuildEnterpriseReady', value: 'false'},
-            ],
-            prepareRecordsOnly: false,
-            configsToDelete: [],
-        }).then(() => {
-            operator.handleSystem({
-                systems: [
-                    {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: 'professional'}},
-                ],
-                prepareRecordsOnly: false,
-            }).then(() => {
-                observeIsMinimumLicenseTier(database, 'professional').subscribe((isMinimumTier) => {
-                    expect(isMinimumTier).toBe(false);
-                    done();
-                });
-            });
-        });
-    });
-});
-
 describe('system query functions', () => {
     const serverUrl = 'system.query.test.com';
     let database: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['database'];
@@ -424,13 +253,11 @@ describe('system query functions', () => {
     });
 
     it('getCommonSystemValues returns stored values', async () => {
-        const license = {IsLicensed: 'true'};
         await operator.handleSystem({
             systems: [
                 {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'ch1'},
                 {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'team1'},
                 {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'user1'},
-                {id: SYSTEM_IDENTIFIERS.LICENSE, value: license},
                 {id: SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID, value: 'unread1'},
             ],
             prepareRecordsOnly: false,
@@ -494,30 +321,18 @@ describe('system query functions', () => {
         expect(await getGranularDataRetentionPolicies(database)).toBeUndefined();
     });
 
-    it('getIsDataRetentionEnabled returns null when no license', async () => {
-        expect(await getIsDataRetentionEnabled(database)).toBeNull();
-    });
-
-    it('getIsDataRetentionEnabled returns false when DataRetention not in license', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', DataRetention: 'false'}}], prepareRecordsOnly: false});
-        await operator.handleConfigs({configs: [{id: 'DataRetentionEnableMessageDeletion', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+    it('getIsDataRetentionEnabled returns false when message deletion is not configured', async () => {
         expect(await getIsDataRetentionEnabled(database)).toBe(false);
     });
 
-    it('getIsDataRetentionEnabled returns true when all conditions met', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', DataRetention: 'true'}}], prepareRecordsOnly: false});
+    it('getIsDataRetentionEnabled returns false when message deletion is disabled', async () => {
+        await operator.handleConfigs({configs: [{id: 'DataRetentionEnableMessageDeletion', value: 'false'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await getIsDataRetentionEnabled(database)).toBe(false);
+    });
+
+    it('getIsDataRetentionEnabled returns true when message deletion is enabled', async () => {
         await operator.handleConfigs({configs: [{id: 'DataRetentionEnableMessageDeletion', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
         expect(await getIsDataRetentionEnabled(database)).toBe(true);
-    });
-
-    it('getLicense returns undefined when not set', async () => {
-        expect(await getLicense(database)).toBeUndefined();
-    });
-
-    it('getLicense returns stored license', async () => {
-        const license = {IsLicensed: 'true', SkuShortName: 'enterprise'};
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: license}], prepareRecordsOnly: false});
-        expect(await getLicense(database)).toEqual(license);
     });
 
     it('getRecentCustomStatuses returns empty array when not set', async () => {
@@ -724,16 +539,6 @@ describe('system observe functions', () => {
     it('observeConfigIntValue emits parsed integer', async () => {
         await operator.handleConfigs({configs: [{id: 'MaxPostSize', value: '200'}], configsToDelete: [], prepareRecordsOnly: false});
         expect(await firstValueFrom(observeConfigIntValue(database, 'MaxPostSize'))).toBe(200);
-    });
-
-    it('observeLicense emits undefined when not set', async () => {
-        expect(await firstValueFrom(observeLicense(database))).toBeUndefined();
-    });
-
-    it('observeLicense emits stored license', async () => {
-        const license = {IsLicensed: 'true'};
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: license}], prepareRecordsOnly: false});
-        expect(await firstValueFrom(observeLicense(database))).toEqual(license);
     });
 
     it('observeAllowedThemesKeys emits all default theme keys when AllowedThemes not set', async () => {

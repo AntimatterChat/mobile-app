@@ -17,7 +17,6 @@ import Files from './files';
 import General from './general';
 import Integrations from './integrations';
 import Launch from './launch';
-import License from './license';
 import List from './list';
 import Members from './members';
 import Navigation from './navigation';
@@ -57,7 +56,6 @@ export {
     General,
     Integrations,
     Launch,
-    License,
     List,
     Members,
     Navigation,

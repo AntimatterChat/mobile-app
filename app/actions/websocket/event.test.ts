@@ -282,12 +282,6 @@ describe('handleWebSocketEvent', () => {
         expect(reactions.handleAddCustomEmoji).toHaveBeenCalledWith(serverUrl, msg);
     });
 
-    it('should handle LICENSE_CHANGED event', async () => {
-        msg.event = WebsocketEvents.LICENSE_CHANGED;
-        await handleWebSocketEvent(serverUrl, msg);
-        expect(system.handleLicenseChangedEvent).toHaveBeenCalledWith(serverUrl, msg);
-    });
-
     it('should handle CONFIG_CHANGED event', async () => {
         msg.event = WebsocketEvents.CONFIG_CHANGED;
         await handleWebSocketEvent(serverUrl, msg);

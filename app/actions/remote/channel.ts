@@ -18,7 +18,7 @@ import NetworkManager from '@managers/network_manager';
 import {getActiveServer} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId, deleteChannelMembership, queryChannelsById} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {canViewArchivedChannels, getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {canViewArchivedChannels, getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, removeChannelFromTeamHistory, getTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
@@ -660,8 +660,7 @@ export async function fetchDirectChannelsInfo(serverUrl: string, directChannels:
 
     const preferences = await queryDisplayNamePreferences(database).fetch();
     const config = await getConfig(database);
-    const license = await getLicense(database);
-    const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences, config?.LockTeammateNameDisplay, config?.TeammateNameDisplay, license);
+    const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences, config?.LockTeammateNameDisplay, config?.TeammateNameDisplay);
     const currentUser = await getCurrentUser(database);
     const channels = directChannels.map((d) => d.toApi());
     return fetchMissingDirectChannelsInfo(serverUrl, channels, currentUser?.locale, teammateDisplayNameSetting, currentUser?.id);
@@ -883,9 +882,8 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
             created.display_name = displayName;
         } else {
             const preferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
-            const license = await getLicense(database);
             const config = await getConfig(database);
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay);
             const {directChannels, users} = await fetchMissingDirectChannelsInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
             created.display_name = (directChannels?.length && directChannels?.[0].display_name) || created.display_name;
             if (users?.length) {
@@ -1018,9 +1016,8 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
         }
 
         const displayNamePreferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
-        const license = await getLicense(database);
         const config = await getConfig(database);
-        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(displayNamePreferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
+        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(displayNamePreferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay);
         const {directChannels, users} = await fetchMissingDirectChannelsInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
 
         const member = {

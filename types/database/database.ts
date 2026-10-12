@@ -327,7 +327,6 @@ export type HandlePropertyValuesArgs = PrepareOnly & {
 export type LoginArgs = {
   config: Partial<ClientConfig>;
   ldapOnly?: boolean;
-  license: Partial<ClientLicense>;
   loginId: string;
   mfaToken?: string;
   password: string;
@@ -336,7 +335,6 @@ export type LoginArgs = {
 
 export type ServerUrlChangedArgs = {
   configRecord: System;
-  licenseRecord: System;
   selectServerRecord: System;
   serverUrl: string;
 };

@@ -3,7 +3,7 @@
 
 import {firstValueFrom} from 'rxjs';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 
@@ -33,12 +33,6 @@ describe('observeShowToS', () => {
     const setConfig = (configs: Array<{id: string; value: string}>) =>
         operator.handleConfigs({configs, configsToDelete: [], prepareRecordsOnly: false});
 
-    const setLicense = (isLicensed: string) =>
-        operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: isLicensed}}],
-            prepareRecordsOnly: false,
-        });
-
     const setCurrentUserTos = async (tosId: string, tosCreateAt: number) => {
         const userId = TestHelper.basicUser!.id;
         await database.write(async () => {
@@ -50,7 +44,7 @@ describe('observeShowToS', () => {
         });
     };
 
-    it('should emit false when not licensed', async () => {
+    it('should emit true without any licence when the user has not accepted the custom ToS', async () => {
         await setConfig([
             {id: 'EnableCustomTermsOfService', value: 'true'},
             {id: 'CustomTermsOfServiceId', value: 'tos1'},
@@ -58,11 +52,10 @@ describe('observeShowToS', () => {
         ]);
 
         const show = await firstValueFrom(observeShowToS(database));
-        expect(show).toBe(false);
+        expect(show).toBe(true);
     });
 
     it('should emit false when custom ToS is disabled', async () => {
-        await setLicense('true');
         await setConfig([
             {id: 'EnableCustomTermsOfService', value: 'false'},
             {id: 'CustomTermsOfServiceId', value: 'tos1'},
@@ -75,7 +68,6 @@ describe('observeShowToS', () => {
 
     it('should emit true when user has not accepted current ToS version', async () => {
         await setCurrentUserTos('tos-old', Date.now());
-        await setLicense('true');
         await setConfig([
             {id: 'EnableCustomTermsOfService', value: 'true'},
             {id: 'CustomTermsOfServiceId', value: 'tos-new'},
@@ -91,7 +83,6 @@ describe('observeShowToS', () => {
         const acceptedAt = Date.now() - (10 * DAY_MS); // 10 days ago, period is 30 days
 
         await setCurrentUserTos(tosId, acceptedAt);
-        await setLicense('true');
         await setConfig([
             {id: 'EnableCustomTermsOfService', value: 'true'},
             {id: 'CustomTermsOfServiceId', value: tosId},
@@ -107,7 +98,6 @@ describe('observeShowToS', () => {
         const acceptedAt = Date.now() - (40 * DAY_MS); // 40 days ago, period is 30 days
 
         await setCurrentUserTos(tosId, acceptedAt);
-        await setLicense('true');
         await setConfig([
             {id: 'EnableCustomTermsOfService', value: 'true'},
             {id: 'CustomTermsOfServiceId', value: tosId},

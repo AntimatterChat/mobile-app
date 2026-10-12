@@ -17,7 +17,7 @@ import {
 } from '@queries/servers/channel';
 import {prepareDeletePost, queryPostsInChannel, queryPostsInThread} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
+import {prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
@@ -418,10 +418,9 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
             return {};
         }
 
-        const license = await getLicense(database);
         const config = await getConfig(database);
         const preferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
-        const displaySettings = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
+        const displaySettings = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay);
         const models: Model[] = [];
         for await (const channel of channels) {
             let newDisplayName = '';

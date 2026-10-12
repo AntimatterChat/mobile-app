@@ -7,7 +7,7 @@ import {Alert} from 'react-native';
 import {SelectedTrackType} from 'react-native-video';
 
 import {CallCardState, CallPostStatus, type CallsConfigState, type CallSession, type CallsPostProps, DefaultCall, DefaultCallsConfig} from '@calls/types/calls';
-import {License, Post, Preferences} from '@constants';
+import {Post, Preferences} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import TestHelper from '@test/test_helper';
 
@@ -48,7 +48,7 @@ describe('getICEServersConfigs', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 0,
-            sku_short_name: License.SKU_SHORT_NAME.Professional,
+            sku_short_name: 'professional',
             MaxCallParticipants: 8,
             EnableRecordings: true,
         };
@@ -77,7 +77,7 @@ describe('getICEServersConfigs', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 0,
-            sku_short_name: License.SKU_SHORT_NAME.Professional,
+            sku_short_name: 'professional',
             MaxCallParticipants: 8,
             EnableRecordings: true,
         };
@@ -110,7 +110,7 @@ describe('getICEServersConfigs', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 0,
-            sku_short_name: License.SKU_SHORT_NAME.Professional,
+            sku_short_name: 'professional',
             MaxCallParticipants: 8,
             EnableRecordings: true,
         };

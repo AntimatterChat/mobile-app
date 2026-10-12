@@ -25,7 +25,6 @@ import type {LaunchProps} from '@typings/launch';
 
 interface LoginProps extends LaunchProps {
     config: Partial<ClientConfig>;
-    license: Partial<ClientLicense>;
     isModal?: boolean;
     serverDisplayName: string;
     theme: Theme;
@@ -107,7 +106,6 @@ const LoginForm = ({
     serverDisplayName,
     launchError,
     launchType,
-    license,
     serverUrl,
     theme,
     setMagicLinkSent,
@@ -125,7 +123,7 @@ const LoginForm = ({
     const [isDeactivated, setIsDeactivated] = useState(false);
     const emailEnabled = config.EnableSignInWithEmail === 'true';
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
-    const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
+    const ldapEnabled = config.EnableLdap === 'true';
 
     const [userLoginType, setUserLoginType] = useState<LoginType | undefined>(undefined);
     const magicLinkEnabled = config.EnableGuestMagicLink === 'true';
@@ -136,8 +134,8 @@ const LoginForm = ({
     }, [extra, launchError, launchType, serverUrl]);
 
     const goToMfa = useCallback(() => {
-        navigateToScreen(Screens.MFA, {loginId, extra, isModal, password, config, serverDisplayName, license, serverUrl, theme});
-    }, [config, extra, isModal, license, loginId, password, serverDisplayName, serverUrl, theme]);
+        navigateToScreen(Screens.MFA, {loginId, extra, isModal, password, config, serverDisplayName, serverUrl, theme});
+    }, [config, extra, isModal, loginId, password, serverDisplayName, serverUrl, theme]);
 
     const checkUserLoginType = useCallback(async () => {
         if (!serverUrl) {
@@ -191,11 +189,11 @@ const LoginForm = ({
     }, [getLoginErrorMessage, goToMfa]);
 
     const signIn = useCallback(async () => {
-        const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
+        const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config});
         if (checkLoginResponse(result)) {
             goToHome(result.error);
         }
-    }, [checkLoginResponse, config, goToHome, license, loginId, password, serverDisplayName, serverUrl]);
+    }, [checkLoginResponse, config, goToHome, loginId, password, serverDisplayName, serverUrl]);
 
     const preSignIn = usePreventDoubleTap(useCallback(async () => {
         setIsLoading(true);

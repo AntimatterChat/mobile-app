@@ -21,32 +21,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const messages = defineMessages({
-    teamEditionSt: {
-        id: 'about.teamEditionSt',
-        defaultMessage: 'All your team communication in one place, instantly searchable and accessible anywhere.',
-    },
-    enterpriseEditionSt: {
-        id: 'about.enterpriseEditionSt',
-        defaultMessage: 'Modern communication from behind your firewall.',
+    subtitle: {
+        id: 'about.subtitle',
+        defaultMessage: 'Your team\'s chat, calls and apps, on your own server.',
     },
 });
 
-type SubtitleProps = {
-    config: ClientConfig;
-}
-const Subtitle = ({config}: SubtitleProps) => {
+const Subtitle = () => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    let message = messages.teamEditionSt;
-
-    if (config.BuildEnterpriseReady === 'true') {
-        message = messages.enterpriseEditionSt;
-    }
-
     return (
         <FormattedText
-            {...message}
+            {...messages.subtitle}
             style={style.subtitle}
             testID='about.subtitle'
         />

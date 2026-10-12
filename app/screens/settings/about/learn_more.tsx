@@ -8,7 +8,6 @@ import {Text, View} from 'react-native';
 import Config from '@assets/config.json';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {getSkuDisplayName} from '@utils/subscription';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -31,68 +30,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type LearnMoreProps = {
-    config: ClientConfig;
-    license?: ClientLicense;
     onPress: () => void;
 };
 
 const messages = defineMessages({
-    teamEditionLearn: {
-        id: 'about.teamEditionLearn',
-        defaultMessage: 'Join the Mattermost community at ',
-    },
-    enterpriseEditionLearn: {
-        id: 'about.enterpriseEditionLearn',
-        defaultMessage: 'Learn more about Enterprise Edition at ',
-    },
-    planNameLearn: {
-        id: 'about.planNameLearn',
-        defaultMessage: 'Learn more about Mattermost {planName} at ',
+    learnMore: {
+        id: 'about.learnMore',
+        defaultMessage: 'Learn more about Antimatter at ',
     },
 });
 
-const LearnMore = ({config, license, onPress}: LearnMoreProps) => {
+const LearnMore = ({onPress}: LearnMoreProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const url = Config.WebsiteURL;
 
-    const isEnterpriseReady = config.BuildEnterpriseReady === 'true';
-    const isLicensed = license?.IsLicensed === 'true';
-
-    const learnIntro = (() => {
-        if (!isEnterpriseReady) {
-            return (
-                <FormattedText
-                    {...messages.teamEditionLearn}
-                    testID='about.learn_more.text'
-                />
-            );
-        }
-        if (isLicensed) {
-            const planName = getSkuDisplayName(
-                license?.SkuShortName ?? '',
-                license?.IsGovSku === 'true',
-            );
-            return (
-                <FormattedText
-                    {...messages.planNameLearn}
-                    testID='about.learn_more.text'
-                    values={{planName}}
-                />
-            );
-        }
-        return (
-            <FormattedText
-                {...messages.enterpriseEditionLearn}
-                testID='about.learn_more.text'
-            />
-        );
-    })();
-
     return (
         <View style={style.learnContainer}>
             <Text style={style.learn}>
-                {learnIntro}
+                <FormattedText
+                    {...messages.learnMore}
+                    testID='about.learn_more.text'
+                />
                 <Text
                     accessibilityRole='link'
                     style={style.learnLink}

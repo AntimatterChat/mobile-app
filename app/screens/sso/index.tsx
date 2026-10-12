@@ -9,13 +9,11 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {nativeEntraLogin, ssoLogin, ssoLoginWithCodeExchange} from '@actions/remote/session';
 import {Screens, Sso} from '@constants';
-import License from '@constants/license';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import Background from '@screens/background';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
-import {isMinimumLicenseTier} from '@utils/helpers';
 import {getIntuneErrorMessage} from '@utils/intune_errors';
 
 import SSOAuthentication from './sso_authentication';
@@ -27,7 +25,6 @@ import type {LaunchProps} from '@typings/launch';
 export interface SSOProps extends LaunchProps {
     isModal?: boolean;
     config: Partial<ClientConfig>;
-    license: Partial<ClientLicense>;
     ssoType: string;
     serverDisplayName: string;
     serverPreauthSecret?: string;
@@ -44,7 +41,7 @@ const styles = StyleSheet.create({
 
 const SSO = ({
     isModal, config, extra,
-    launchError, launchType, license, serverDisplayName,
+    launchError, launchType, serverDisplayName,
     serverPreauthSecret, serverUrl, ssoType, theme,
 }: SSOProps) => {
     const intl = useIntl();
@@ -64,8 +61,7 @@ const SSO = ({
 
     shouldUseNativeEntra = Platform.OS === 'ios' &&
             config.IntuneMAMEnabled === 'true' && config.IntuneAuthService?.toLocaleLowerCase() === ssoType.toLocaleLowerCase() &&
-            Boolean(config.IntuneScope) &&
-            isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+            Boolean(config.IntuneScope);
 
     switch (ssoType) {
         case Sso.GOOGLE: {

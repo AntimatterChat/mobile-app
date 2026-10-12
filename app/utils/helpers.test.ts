@@ -3,7 +3,6 @@
 import moment from 'moment-timezone';
 import {NativeModules, Platform} from 'react-native';
 
-import {License} from '@constants';
 import {STATUS_BAR_HEIGHT} from '@constants/view';
 
 import {
@@ -25,7 +24,6 @@ import {
     isMainActivity,
     areBothStringArraysEqual,
     hasArrayChanged,
-    isMinimumLicenseTier,
 } from './helpers';
 
 jest.mock('@mattermost/rnshare', () => ({
@@ -381,93 +379,4 @@ describe('Helpers', () => {
         });
     });
 
-    describe('isMinimumLicenseTier', () => {
-        test('should return false when license is not provided', () => {
-            expect(isMinimumLicenseTier(undefined, License.SKU_SHORT_NAME.Professional)).toBe(false);
-        });
-
-        test('should return false when license is not licensed', () => {
-            const license = {
-                IsLicensed: 'false',
-                SkuShortName: License.SKU_SHORT_NAME.Professional,
-            };
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.Professional)).toBe(false);
-        });
-
-        test('should return false when license SkuShortName is missing', () => {
-            const license = {
-                IsLicensed: 'true',
-            };
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.Professional)).toBe(false);
-        });
-
-        test('should return true when license tier equals target tier', () => {
-            const license = {
-                IsLicensed: 'true',
-                SkuShortName: License.SKU_SHORT_NAME.Professional,
-            };
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.Professional)).toBe(true);
-        });
-
-        test('should return true when license tier exceeds target tier - Enterprise >= Professional', () => {
-            const license = {
-                IsLicensed: 'true',
-                SkuShortName: License.SKU_SHORT_NAME.Enterprise,
-            };
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.Professional)).toBe(true);
-        });
-
-        test('should return true when license tier exceeds target tier - EnterpriseAdvanced >= Professional', () => {
-            const license = {
-                IsLicensed: 'true',
-                SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced,
-            };
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.Professional)).toBe(true);
-        });
-
-        test('should return true when license tier exceeds target tier - EnterpriseAdvanced >= Enterprise', () => {
-            const license = {
-                IsLicensed: 'true',
-                SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced,
-            };
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.Enterprise)).toBe(true);
-        });
-
-        test('should return false when license tier is below target tier - Professional < Enterprise', () => {
-            const license = {
-                IsLicensed: 'true',
-                SkuShortName: License.SKU_SHORT_NAME.Professional,
-            };
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.Enterprise)).toBe(false);
-        });
-
-        test('should return false when license tier is below target tier - Professional < EnterpriseAdvanced', () => {
-            const license = {
-                IsLicensed: 'true',
-                SkuShortName: License.SKU_SHORT_NAME.Professional,
-            };
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced)).toBe(false);
-        });
-
-        test('should return false when license tier is below target tier - Enterprise < EnterpriseAdvanced', () => {
-            const license = {
-                IsLicensed: 'true',
-                SkuShortName: License.SKU_SHORT_NAME.Enterprise,
-            };
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced)).toBe(false);
-        });
-
-        test('should handle partial license objects', () => {
-            const license = {
-                IsLicensed: 'true',
-                SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced,
-            };
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.Professional)).toBe(true);
-        });
-
-        test('should return false for empty license object', () => {
-            const license = {};
-            expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.Professional)).toBe(false);
-        });
-    });
 });

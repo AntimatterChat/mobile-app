@@ -7,7 +7,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {observeIncomingCalls} from '@calls/state';
 import {queryAllMyChannelsForTeam} from '@queries/servers/channel';
-import {observeCurrentTeamId, observeCurrentUserId, observeLicense} from '@queries/servers/system';
+import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {observeShowToS} from '@queries/servers/terms_of_service';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
@@ -18,10 +18,6 @@ import ChannelsList from './channel_list';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const isLicensed = observeLicense(database).pipe(
-        switchMap((lcs) => (lcs ? of$(lcs.IsLicensed === 'true') : of$(false))),
-    );
-
     const teamsCount = queryMyTeams(database).observeCount(false);
 
     const showIncomingCalls = observeIncomingCalls().pipe(
@@ -44,7 +40,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             switchMap((v) => of$(v > 0)),
             distinctUntilChanged(),
         ),
-        isLicensed,
         showToS: observeShowToS(database).pipe(distinctUntilChanged()),
         currentUserId: observeCurrentUserId(database),
         hasCurrentUser: observeCurrentUser(database).pipe(

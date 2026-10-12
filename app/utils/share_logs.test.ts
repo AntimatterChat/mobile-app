@@ -191,14 +191,8 @@ describe('emailLogs', () => {
 });
 
 describe('getDefaultReportAProblemLink', () => {
-    it('should return licensed link when isLicensed is true', () => {
-        const link = getDefaultReportAProblemLink(true);
-        expect(link).toBe('https://mattermost.com/pl/report_a_problem_licensed');
-    });
-
-    it('should return unlicensed link when isLicensed is false', () => {
-        const link = getDefaultReportAProblemLink(false);
-        expect(link).toBe('https://mattermost.com/pl/report_a_problem_unlicensed');
+    it('should return the Antimatter help page', () => {
+        expect(getDefaultReportAProblemLink()).toBe('https://antimatter.chat/help.html');
     });
 });
 

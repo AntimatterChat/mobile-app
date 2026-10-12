@@ -7,7 +7,7 @@ import {RESULTS} from 'react-native-permissions';
 import {handleKickFromChannel, fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {fetchConfig} from '@actions/remote/systems';
 import {fetchMyTeams, handleKickFromTeam} from '@actions/remote/team';
 import {fetchMe} from '@actions/remote/user';
 import {Screens} from '@constants';
@@ -104,8 +104,7 @@ describe('actions/remote/entry/common', () => {
     describe('entry', () => {
         it('should fetch initial data successfully', async () => {
             const mockConfig = {Version: '7.8.0'};
-            const mockLicense = {};
-            (fetchConfigAndLicense as jest.Mock).mockResolvedValue({error: false, config: mockConfig, license: mockLicense});
+            (fetchConfig as jest.Mock).mockResolvedValue({error: false, config: mockConfig});
 
             const mockPreferences = {preferences: []};
             (fetchMyPreferences as jest.Mock).mockResolvedValue(mockPreferences);
@@ -147,7 +146,7 @@ describe('actions/remote/entry/common', () => {
         });
 
         it('should complete the entry when fetching roles fails', async () => {
-            (fetchConfigAndLicense as jest.Mock).mockResolvedValue({error: false, config: {Version: '7.8.0'}, license: {}});
+            (fetchConfig as jest.Mock).mockResolvedValue({error: false, config: {Version: '7.8.0'}});
             (fetchMyPreferences as jest.Mock).mockResolvedValue({preferences: []});
             (fetchMyTeams as jest.Mock).mockResolvedValue({teams: [], memberships: []});
             (fetchMe as jest.Mock).mockResolvedValueOnce({user: {id: 'user1', roles: '', username: 'user1'}});
@@ -164,7 +163,7 @@ describe('actions/remote/entry/common', () => {
 
         it('should handle errors in data fetching', async () => {
             const mockError = new Error('Network error');
-            (fetchConfigAndLicense as jest.Mock).mockResolvedValue({error: mockError});
+            (fetchConfig as jest.Mock).mockResolvedValue({error: mockError});
 
             const result = await entry(serverUrl);
 

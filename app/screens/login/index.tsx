@@ -31,7 +31,6 @@ export interface LoginOptionsProps extends LaunchProps {
     config: ClientConfig;
     hasLoginForm: boolean;
     isModal?: boolean;
-    license: ClientLicense;
     serverDisplayName: string;
     serverUrl: string;
     ssoOptions: SsoWithOptions;
@@ -82,7 +81,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const LoginOptions = ({
     config, extra,
-    hasLoginForm, isModal, launchType, launchError, license,
+    hasLoginForm, isModal, launchType, launchError,
     serverDisplayName, serverUrl, ssoOptions, theme,
 }: LoginOptionsProps) => {
     const styles = getStyles(theme);
@@ -129,8 +128,8 @@ const LoginOptions = ({
     }, [hasLoginForm, numberSSOs, styles.subheader]);
 
     const goToSso = usePreventDoubleTap(useCallback((ssoType: string) => {
-        navigateToScreen(Screens.SSO, {config, extra, isModal, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl});
-    }, [config, extra, isModal, launchError, launchType, license, serverDisplayName, serverUrl, theme]));
+        navigateToScreen(Screens.SSO, {config, extra, isModal, launchError, launchType, theme, ssoType, serverDisplayName, serverUrl});
+    }, [config, extra, isModal, launchError, launchType, serverDisplayName, serverUrl, theme]));
 
     const optionsSeparator = hasLoginForm && Boolean(numberSSOs) && (
         <LoginOptionsSeparator
@@ -215,7 +214,6 @@ const LoginOptions = ({
                             config={config}
                             extra={extra}
                             isModal={isModal}
-                            license={license}
                             launchError={launchError}
                             launchType={launchType}
                             theme={theme}
@@ -231,7 +229,7 @@ const LoginOptions = ({
                             ssoOnly={!hasLoginForm}
                             ssoOptions={ssoOptions}
                             theme={theme}
-                            isIntuneEnabled={IntuneManager.isIntuneEnabledForConfigAndLicense(config, license)}
+                            isIntuneEnabled={IntuneManager.isIntuneEnabledForConfig(config)}
                             intuneAuthService={config.IntuneAuthService}
                         />
                         }

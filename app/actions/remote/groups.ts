@@ -4,7 +4,6 @@
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
-import {getLicense} from '@queries/servers/system';
 import {getTeamById} from '@queries/servers/team';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -15,12 +14,7 @@ import type {Client} from '@client/rest';
 
 export const fetchGroupsForAutocomplete = async (serverUrl: string, query: string, fetchOnly = false) => {
     try {
-        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const license = await getLicense(database);
-        if (!license || license.IsLicensed !== 'true') {
-            return [];
-        }
-
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getGroups({query, includeMemberCount: true});
 
@@ -38,12 +32,7 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
 
 export const fetchGroupsByNames = async (serverUrl: string, names: string[], fetchOnly = false) => {
     try {
-        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const license = await getLicense(database);
-        if (!license || license.IsLicensed !== 'true') {
-            return [];
-        }
-
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client: Client = NetworkManager.getClient(serverUrl);
         const promises: Array <Promise<Group[]>> = [];
 
@@ -68,12 +57,7 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
 
 export const fetchGroupsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) => {
     try {
-        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const license = await getLicense(database);
-        if (!license || license.IsLicensed !== 'true') {
-            return {groups: [], groupChannels: []};
-        }
-
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToChannel(channelId, undefined, groupLabel);
 
@@ -100,12 +84,7 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
 
 export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetchOnly = false) => {
     try {
-        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const license = await getLicense(database);
-        if (!license || license.IsLicensed !== 'true') {
-            return {groups: [], groupTeams: []};
-        }
-
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToTeam(teamId);
 
@@ -131,12 +110,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
 
 export const fetchGroupsForMember = async (serverUrl: string, userId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) => {
     try {
-        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const license = await getLicense(database);
-        if (!license || license.IsLicensed !== 'true') {
-            return {groups: [], groupMemberships: []};
-        }
-
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToMembership(userId, false, groupLabel);
 

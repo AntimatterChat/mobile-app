@@ -51,7 +51,6 @@ describe('JoinCallBanner', () => {
             limitRestrictedInfo: {
                 limitRestricted: false,
                 maxParticipants: 8,
-                isCloudStarter: false,
             },
         };
     }
@@ -74,7 +73,7 @@ describe('JoinCallBanner', () => {
 
     it('should not join a call that is at capacity', () => {
         const props = getBaseProps();
-        props.limitRestrictedInfo = {limitRestricted: true, maxParticipants: 8, isCloudStarter: false};
+        props.limitRestrictedInfo = {limitRestricted: true, maxParticipants: 8};
         const {getByTestId} = renderWithIntlAndTheme(<JoinCallBanner {...props}/>);
 
         fireEvent.press(getByTestId('calls.join_call_banner.join'));

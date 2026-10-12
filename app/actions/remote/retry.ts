@@ -10,7 +10,7 @@ import NetworkManager from '@managers/network_manager';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryDisplayNamePreferences} from '@queries/servers/preference';
-import {prepareCommonSystemValues, getConfig, getLicense} from '@queries/servers/system';
+import {prepareCommonSystemValues, getConfig} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
@@ -19,7 +19,7 @@ import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, type MyChannelsR
 import {fetchPostsForChannel} from './post';
 import {fetchMyPreferences, type MyPreferencesRequest} from './preference';
 import {fetchRolesIfNeeded} from './role';
-import {type ConfigAndLicenseRequest, fetchConfigAndLicense} from './systems';
+import {type ConfigRequest, fetchConfig} from './systems';
 import {fetchMyTeams, type MyTeamsRequest} from './team';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -47,9 +47,9 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
             return {error: true};
         }
 
-        // Fetch in parallel server config & license / user preferences / teams / team membership
-        const promises: [Promise<ConfigAndLicenseRequest>, Promise<MyPreferencesRequest>, Promise<MyTeamsRequest>] = [
-            fetchConfigAndLicense(serverUrl, true),
+        // Fetch in parallel server config / user preferences / teams / team membership
+        const promises: [Promise<ConfigRequest>, Promise<MyPreferencesRequest>, Promise<MyTeamsRequest>] = [
+            fetchConfig(serverUrl, true),
             fetchMyPreferences(serverUrl, true),
             fetchMyTeams(serverUrl, true),
         ];
@@ -109,7 +109,6 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
             prepareCommonSystemValues(
                 operator,
                 {
-                    license: clData.license!,
                     currentTeamId: initialTeam?.id,
                     currentChannelId: initialChannel?.id,
                 },
@@ -121,7 +120,7 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
         const directChannels = chData!.channels!.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], clData.config?.LockTeammateNameDisplay, clData.config?.TeammateNameDisplay, clData.license);
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], clData.config?.LockTeammateNameDisplay, clData.config?.TeammateNameDisplay);
             fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), user.locale, teammateDisplayNameSetting, user.id);
         }
 
@@ -162,7 +161,6 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
             user_id: p.userId,
             value: p.value,
         }));
-        const license = await getLicense(database);
         const config = await getConfig(database);
 
         // fetch channels / channel membership for initial team
@@ -199,7 +197,7 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
         const directChannels = chData!.channels!.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay);
             fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), user.locale, teammateDisplayNameSetting, user.id);
         }
 

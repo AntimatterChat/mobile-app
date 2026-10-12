@@ -75,7 +75,6 @@ import {
     type GlobalCallsState,
     type IncomingCalls,
 } from '@calls/types/calls';
-import {License} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
@@ -1243,7 +1242,7 @@ describe('useCallsState', () => {
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
             last_retrieved_at: 123,
-            sku_short_name: License.SKU_SHORT_NAME.Professional,
+            sku_short_name: 'professional',
             MaxCallParticipants: 8,
             EnableRecordings: true,
             bot_user_id: '',

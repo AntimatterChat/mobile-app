@@ -6,9 +6,8 @@ import {isRootedExperimentalAsync} from 'expo-device';
 import {Alert, Platform} from 'react-native';
 import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 
-import {License} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getConfigBooleanValue, getLicense} from '@queries/servers/system';
+import {getConfigBooleanValue} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import * as GeneralUtils from '@utils/general';
 
@@ -82,10 +81,6 @@ describe('SessionAttributesManager', () => {
         manager = new SessionAttributesManagerSingleton();
         (DatabaseManager.serverDatabases as Record<string, unknown>)[serverUrl] = {database: mockDatabase};
         jest.mocked(getConfigBooleanValue).mockResolvedValue(true);
-        jest.mocked(getLicense).mockResolvedValue({
-            IsLicensed: 'true',
-            SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced,
-        } as ClientLicense);
         mockFetchSessionAttributesManifest.mockResolvedValue({manifest});
         jest.mocked(isRootedExperimentalAsync).mockResolvedValue(false);
         jest.mocked(check).mockResolvedValue(RESULTS.GRANTED);
@@ -142,14 +137,6 @@ describe('SessionAttributesManager', () => {
 
         expect(mockRemoveSessionAttributesServer).toHaveBeenCalledWith(serverUrl);
         expect(mockSetSessionAttributesManifest).not.toHaveBeenCalled();
-    });
-
-    it('should remove the server when the license tier is too low', async () => {
-        jest.mocked(getLicense).mockResolvedValue({SkuShortName: License.SKU_SHORT_NAME.Professional} as ClientLicense);
-
-        await manager.refreshManifest(serverUrl);
-
-        expect(mockRemoveSessionAttributesServer).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should clear the manifest when the server returns an empty manifest', async () => {

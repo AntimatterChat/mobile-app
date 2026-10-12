@@ -4,7 +4,7 @@
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 
-import {fetchDataRetentionPolicy, fetchConfigAndLicense} from './systems';
+import {fetchDataRetentionPolicy, fetchConfig} from './systems';
 
 const serverUrl = 'baseHandler.test.com';
 
@@ -30,17 +30,11 @@ const config = {
     EnableDeveloper: 'true',
 } as ClientConfig;
 
-const license = {
-    IsLicensed: 'true',
-    DataRetention: 'true',
-} as ClientLicense;
-
 const mockClient = {
     getGlobalDataRetentionPolicy: jest.fn(() => globalPolicy),
     getTeamDataRetentionPolicies: jest.fn(() => ({policies: [teamPolicy], total_count: 1})),
     getChannelDataRetentionPolicies: jest.fn(() => ({policies: [channelPolicy], total_count: 1})),
     getClientConfigOld: jest.fn(() => config),
-    getClientLicenseOld: jest.fn(() => license),
 };
 
 jest.mock('@managers/network_manager', () => ({
@@ -99,29 +93,25 @@ describe('systems', () => {
         expect(result.error).toBeDefined();
     });
 
-    it('fetchConfigAndLicense - base case', async () => {
-        const result = await fetchConfigAndLicense(serverUrl);
+    it('fetchConfig - base case', async () => {
+        const result = await fetchConfig(serverUrl);
         expect(result).toBeDefined();
         expect(result.config).toBeDefined();
-        expect(result.license).toBeDefined();
         expect(result.config).toEqual(config);
-        expect(result.license).toEqual(license);
     });
 
-    it('fetchConfigAndLicense - fetch only', async () => {
-        const result = await fetchConfigAndLicense(serverUrl, true);
+    it('fetchConfig - fetch only', async () => {
+        const result = await fetchConfig(serverUrl, true);
         expect(result).toBeDefined();
         expect(result.config).toBeDefined();
-        expect(result.license).toBeDefined();
         expect(result.config).toEqual(config);
-        expect(result.license).toEqual(license);
     });
 
-    it('fetchConfigAndLicense - error case', async () => {
+    it('fetchConfig - error case', async () => {
         mockClient.getClientConfigOld.mockImplementationOnce(() => {
             throw new Error('error');
         });
-        const result = await fetchConfigAndLicense(serverUrl);
+        const result = await fetchConfig(serverUrl);
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
     });

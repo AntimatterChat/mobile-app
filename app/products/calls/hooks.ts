@@ -50,7 +50,6 @@ import type {NavigationButtonProps} from '@components/navigation_button';
 const DEFAULT_LIMIT_RESTRICTED_INFO: LimitRestrictedInfo = {
     limitRestricted: false,
     maxParticipants: 0,
-    isCloudStarter: false,
 };
 
 // Runs fn if calls is enabled on the server, otherwise alerts and sets msgPostfix to

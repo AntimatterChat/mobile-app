@@ -7,7 +7,6 @@ import {View} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
 import {Preferences} from '@constants';
-import {DEFAULT_REPORT_A_PROBLEM_EMAIL} from '@constants/report_a_problem';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {logDebug} from '@utils/log';
 import {emailLogs, getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
@@ -48,7 +47,6 @@ describe('screens/report_a_problem/report_problem', () => {
         allowDownloadLogs: true,
         attachLogsEnabled: false,
         currentUserId: 'user1',
-        isFreeEdition: false,
         metadata: {
             currentUserId: 'user1',
             currentTeamId: 'team1',
@@ -166,12 +164,10 @@ describe('screens/report_a_problem/report_problem', () => {
         });
     });
 
-    it('handles default report type when paid edition', async () => {
+    it('handles default report type by opening the default link', async () => {
         const props = {
             ...baseProps,
             reportAProblemType: 'default',
-            isFreeEdition: false,
-            siteName: 'Test Site',
         };
 
         const {getByText} = renderWithIntl(
@@ -180,25 +176,7 @@ describe('screens/report_a_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByText('Report a problem'));
-            expect(emailLogs).toHaveBeenCalledWith(props.metadata, props.siteName, DEFAULT_REPORT_A_PROBLEM_EMAIL, false);
-            expect(tryOpenURL).not.toHaveBeenCalled();
-        });
-    });
-
-    it('handles default report type when free edition', async () => {
-        const props = {
-            ...baseProps,
-            reportAProblemType: 'default',
-            isFreeEdition: true,
-        };
-
-        const {getByText} = renderWithIntl(
-            <ReportProblem {...props}/>,
-        );
-
-        await act(async () => {
-            fireEvent.press(getByText('Report a problem'));
-            expect(getDefaultReportAProblemLink).toHaveBeenCalledWith(false);
+            expect(getDefaultReportAProblemLink).toHaveBeenCalledWith();
             expect(tryOpenURL).toHaveBeenCalledWith('default-link');
             expect(emailLogs).not.toHaveBeenCalled();
         });

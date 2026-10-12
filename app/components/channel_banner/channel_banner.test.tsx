@@ -4,8 +4,7 @@
 import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
-import {General, License} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {bottomSheet} from '@screens/navigation';
@@ -49,8 +48,6 @@ describe('ChannelBanner', () => {
                 };
             });
         });
-
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}], prepareRecordsOnly: false});
     });
 
     afterEach(async () => {
@@ -58,7 +55,7 @@ describe('ChannelBanner', () => {
         // failed assertion cannot leave the flag on for the tests after it.
         await operator.handleConfigs({
             configs: [],
-            configsToDelete: [{id: 'FeatureFlagChannelAttributes', value: 'true'}, {id: 'BuildEnterpriseReady', value: 'true'}],
+            configsToDelete: [{id: 'FeatureFlagChannelAttributes', value: 'true'}],
             prepareRecordsOnly: false,
         });
     });
@@ -203,7 +200,7 @@ describe('ChannelBanner', () => {
             });
         });
         await operator.handleConfigs({
-            configs: [{id: 'FeatureFlagChannelAttributes', value: 'true'}, {id: 'BuildEnterpriseReady', value: 'true'}],
+            configs: [{id: 'FeatureFlagChannelAttributes', value: 'true'}],
             configsToDelete: [],
             prepareRecordsOnly: false,
         });

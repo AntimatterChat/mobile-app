@@ -295,7 +295,7 @@ describe('Calls Hooks', () => {
 
     describe('useNavigationHeaderCallButtonForDM', () => {
         const channelId = 'channel1';
-        const notLimitRestricted = {limitRestricted: false, maxParticipants: 8, isCloudStarter: false};
+        const notLimitRestricted = {limitRestricted: false, maxParticipants: 8};
 
         beforeEach(() => {
             (useChannelsWithCalls as jest.Mock).mockReturnValue({});
@@ -515,7 +515,7 @@ describe('Calls Hooks', () => {
         });
 
         it('should show the capacity alert and not join when the call is at the participant limit', async () => {
-            const limitRestrictedInfo = {limitRestricted: true, maxParticipants: 8, isCloudStarter: false};
+            const limitRestrictedInfo = {limitRestricted: true, maxParticipants: 8};
             (observeIsCallLimitRestricted as jest.Mock).mockReturnValue(of$(limitRestrictedInfo));
             (useChannelsWithCalls as jest.Mock).mockReturnValue({[channelId]: true});
 

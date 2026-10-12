@@ -5,11 +5,9 @@ import Emm from '@mattermost/react-native-emm';
 import {Platform, type EventSubscription} from 'react-native';
 
 import {getCurrentUserLocale} from '@actions/local/user';
-import {License} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getConfig, getLicense} from '@queries/servers/system';
+import {getConfig} from '@queries/servers/system';
 import {showBiometricFailureAlertForOrganization} from '@utils/alerts';
-import {isMinimumLicenseTier} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 
 import type {
@@ -45,8 +43,8 @@ if (Platform.OS === 'ios') {
  */
 export class IntuneManagerSingleton {
 
-    isIntuneEnabledForConfigAndLicense(config: ClientConfig, license?: ClientLicense): boolean {
-        return Boolean(Intune) && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced) &&
+    isIntuneEnabledForConfig(config: ClientConfig): boolean {
+        return Boolean(Intune) &&
             config.IntuneMAMEnabled === 'true' && Boolean(config.IntuneScope) && Boolean(config.IntuneAuthService);
     }
 
@@ -58,8 +56,7 @@ export class IntuneManagerSingleton {
         try {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             const config = await getConfig(database);
-            const license = await getLicense(database);
-            return this.isIntuneEnabledForConfigAndLicense(config, license);
+            return this.isIntuneEnabledForConfig(config);
         } catch {
             return false;
         }
@@ -168,7 +165,7 @@ export class IntuneManagerSingleton {
             if (serverUrl) {
                 const isEnabled = await this.isIntuneMAMEnabledForServer(serverUrl);
                 if (!isEnabled) {
-                    logDebug('IntuneManager: Server is not licensed or configured, clearing current identity');
+                    logDebug('IntuneManager: Intune is not configured on the server, clearing current identity');
                     await Intune.setCurrentIdentity(null);
                     logDebug('IntuneManager: Current identity cleared');
                     return;

@@ -164,10 +164,7 @@ const Notifications = ({
                     testID='notification_settings.automatic_replies.option'
                 />
             )}
-            <SendTestNotificationNotice
-                serverVersion={serverVersion}
-                userId={currentUser?.id || ''}
-            />
+            <SendTestNotificationNotice serverVersion={serverVersion}/>
         </SettingContainer>
     );
 };

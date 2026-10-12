@@ -4,8 +4,7 @@
 import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
-import {License, Screens} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {Screens} from '@constants';
 import {PostPriorityType} from '@constants/post';
 import NetworkManager from '@managers/network_manager';
 import {navigateToScreen} from '@screens/navigation';
@@ -271,16 +270,10 @@ describe('DraftInput', () => {
             await operator.handleConfigs({
                 configs: [
                     {id: 'EnableBurnOnRead', value: 'true'},
-                    {id: 'BuildEnterpriseReady', value: 'true'},
                     {id: 'BurnOnReadDurationSeconds', value: '300'},
                     {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
                 ],
                 configsToDelete: [],
-                prepareRecordsOnly: false,
-            });
-
-            await operator.handleSystem({
-                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
                 prepareRecordsOnly: false,
             });
 

@@ -9,7 +9,6 @@ import Animated from 'react-native-reanimated';
 import Markdown from '@components/markdown';
 import {isChannelMentions} from '@components/markdown/channel_mention/channel_mention';
 import {Screens} from '@constants';
-import {usePostConfig} from '@context/post_config';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {getPostTranslatedMessage, getPostTranslation, isFromBot, isFromPlugin, isFromWebhook, isPostEphemeral} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -80,18 +79,12 @@ const Message = ({
     const maxHeight = Math.round((dimensions.height * 0.5) + SHOW_MORE_HEIGHT);
     const animatedStyle = useShowMoreAnimatedStyle(height, maxHeight, open);
     const style = getStyleSheet(theme);
-    const postConfig = usePostConfig();
     const intl = useIntl();
 
     // We need to memoize these two values because they are actually getters that return a new list
     // on every render. We need to trust that changes in the currentUser will trigger the recalculation.
     const mentionKeys = useMemo(() => currentUser?.mentionKeys ?? undefined, [currentUser]);
-    const highlightKeys = useMemo(() => {
-        if (postConfig.isHighlightWithoutNotificationLicensed) {
-            return currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS;
-        }
-        return EMPTY_HIGHLIGHT_KEYS;
-    }, [currentUser, postConfig.isHighlightWithoutNotificationLicensed]);
+    const highlightKeys = useMemo(() => currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS, [currentUser]);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => {
         const h = event.nativeEvent.layout.height;

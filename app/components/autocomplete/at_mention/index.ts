@@ -8,7 +8,6 @@ import {switchMap} from 'rxjs/operators';
 import {Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel} from '@queries/servers/role';
-import {observeLicense} from '@queries/servers/system';
 import {observeCurrentTeam, observeTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -23,10 +22,6 @@ type OwnProps = {
 }
 const enhanced = withObservables(['teamId'], ({database, channelId, teamId}: WithDatabaseArgs & OwnProps) => {
     const currentUser = observeCurrentUser(database);
-
-    const hasLicense = observeLicense(database).pipe(
-        switchMap((lcs) => of$(lcs?.IsLicensed === 'true')),
-    );
 
     let useChannelMentions: Observable<boolean>;
     let useGroupMentions: Observable<boolean>;
@@ -45,8 +40,8 @@ const enhanced = withObservables(['teamId'], ({database, channelId, teamId}: Wit
         );
 
         useChannelMentions = combineLatest([currentUser, currentChannel]).pipe(switchMap(([u, c]) => observePermissionForChannel(database, c, u, Permissions.USE_CHANNEL_MENTIONS, false)));
-        useGroupMentions = combineLatest([currentUser, currentChannel, hasLicense]).pipe(
-            switchMap(([u, c, lcs]) => (lcs ? observePermissionForChannel(database, c, u, Permissions.USE_GROUP_MENTIONS, false) : of$(false))),
+        useGroupMentions = combineLatest([currentUser, currentChannel]).pipe(
+            switchMap(([u, c]) => observePermissionForChannel(database, c, u, Permissions.USE_GROUP_MENTIONS, false)),
         );
     } else {
         useChannelMentions = of$(false);

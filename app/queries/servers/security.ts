@@ -4,52 +4,28 @@
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {License} from '@constants';
-
-import {observeConfigBooleanValue, observeIsMinimumLicenseTier, observeLicense} from './system';
+import {observeConfigBooleanValue} from './system';
 
 import type {Database} from '@nozbe/watermelondb';
 
 export const observeCanUploadFiles = (database: Database) => {
     const enableFileAttachments = observeConfigBooleanValue(database, 'EnableFileAttachments', true);
     const enableMobileFileUpload = observeConfigBooleanValue(database, 'EnableMobileFileUpload', true);
-    const license = observeLicense(database);
 
-    return combineLatest([enableFileAttachments, enableMobileFileUpload, license]).pipe(
-        switchMap(([efa, emfu, l]) => of$(
-            efa &&
-                (l?.IsLicensed !== 'true' || l?.Compliance !== 'true' || emfu),
-        )),
+    return combineLatest([enableFileAttachments, enableMobileFileUpload]).pipe(
+        switchMap(([efa, emfu]) => of$(efa && emfu)),
         distinctUntilChanged(),
     );
 };
 
 export const observeCanDownloadFiles = (database: Database) => {
-    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload', true);
-    const license = observeLicense(database);
-
-    return combineLatest([enableMobileFileDownload, license]).pipe(
-        switchMap(([emfd, l]) => of$((l?.IsLicensed !== 'true' || l?.Compliance !== 'true' || emfd))),
-        distinctUntilChanged(),
-    );
+    return observeConfigBooleanValue(database, 'EnableMobileFileDownload', true);
 };
 
 export const observeEnableSecureFilePreview = (database: Database) => {
-    const enableSecureFilePreview = observeConfigBooleanValue(database, 'MobileEnableSecureFilePreview', false);
-    const isAvailable = observeIsMinimumLicenseTier(database, License.SKU_SHORT_NAME.EnterpriseAdvanced);
-
-    return combineLatest([enableSecureFilePreview, isAvailable]).pipe(
-        switchMap(([esfp, is]) => of$(is && esfp)),
-        distinctUntilChanged(),
-    );
+    return observeConfigBooleanValue(database, 'MobileEnableSecureFilePreview', false);
 };
 
 export const observeAllowPdfLinkNavigation = (database: Database) => {
-    const allowPdfLinkNavigation = observeConfigBooleanValue(database, 'MobileAllowPdfLinkNavigation', false);
-    const isAvailable = observeIsMinimumLicenseTier(database, License.SKU_SHORT_NAME.EnterpriseAdvanced);
-
-    return combineLatest([allowPdfLinkNavigation, isAvailable]).pipe(
-        switchMap(([esfp, is]) => of$(is && esfp)),
-        distinctUntilChanged(),
-    );
+    return observeConfigBooleanValue(database, 'MobileAllowPdfLinkNavigation', false);
 };

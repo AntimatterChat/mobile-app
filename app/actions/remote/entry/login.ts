@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {fetchConfig} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
@@ -29,7 +29,7 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
     PerformanceMetricsManager.startTimeToInteraction();
 
     try {
-        const clData = await fetchConfigAndLicense(serverUrl, false);
+        const clData = await fetchConfig(serverUrl, false);
         if (clData.error) {
             return {error: clData.error};
         }

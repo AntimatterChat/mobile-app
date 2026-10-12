@@ -50,24 +50,13 @@ export async function addNewServer(theme: Theme, serverUrl?: string, displayName
     navigateToScreen(Screens.SERVER, props);
 }
 
-export function loginOptions(config: ClientConfig, license: ClientLicense) {
-    const isLicensed = license.IsLicensed === 'true';
-    const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
+export function loginOptions(config: ClientConfig) {
+    const samlEnabled = config.EnableSaml === 'true';
     const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-    const isMinServerVersionForCloudOAuthChanges = isMinimumServerVersion(config.Version, 7, 6);
-    let googleEnabled = false;
-    let o365Enabled = false;
-    let openIdEnabled = false;
-    if (isMinServerVersionForCloudOAuthChanges) {
-        googleEnabled = config.EnableSignUpWithGoogle === 'true';
-        o365Enabled = config.EnableSignUpWithOffice365 === 'true';
-        openIdEnabled = config.EnableSignUpWithOpenId === 'true';
-    } else {
-        googleEnabled = config.EnableSignUpWithGoogle === 'true' && isLicensed;
-        o365Enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license.Office365OAuth === 'true';
-        openIdEnabled = config.EnableSignUpWithOpenId === 'true' && isLicensed;
-    }
-    const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
+    const googleEnabled = config.EnableSignUpWithGoogle === 'true';
+    const o365Enabled = config.EnableSignUpWithOffice365 === 'true';
+    const openIdEnabled = config.EnableSignUpWithOpenId === 'true';
+    const ldapEnabled = config.EnableLdap === 'true';
     const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
     const ssoOptions: SsoWithOptions = {
         [Sso.SAML]: {enabled: samlEnabled, text: config.SamlLoginButtonText},
@@ -87,13 +76,12 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
     };
 }
 
-export async function loginToServer(theme: Theme, serverUrl: string, displayName: string, config: ClientConfig, license: ClientLicense) {
-    const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
+export async function loginToServer(theme: Theme, serverUrl: string, displayName: string, config: ClientConfig) {
+    const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config);
     const props = {
         config,
         hasLoginForm,
         launchType: Launch.AddServer,
-        license,
         serverDisplayName: displayName,
         serverUrl,
         ssoOptions,

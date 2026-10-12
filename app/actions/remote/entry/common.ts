@@ -8,7 +8,7 @@ import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '
 import {fetchChannelById, fetchMyChannelsForTeam, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
 import {type MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
-import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
+import {fetchConfig, fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {fetchMyTeams, handleKickFromTeam, type MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, type MyUserRequest} from '@actions/remote/user';
 import {General, Preferences, Screens} from '@constants';
@@ -86,7 +86,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
         let lastDisconnectedAt = since || await getLastFullSync(database);
 
         const [confResp, prefData] = await Promise.all([
-            fetchConfigAndLicense(serverUrl, false, groupLabel),
+            fetchConfig(serverUrl, false, groupLabel),
             fetchMyPreferences(serverUrl, true, groupLabel),
         ]);
 
@@ -206,7 +206,7 @@ export async function handleAutotranslationChanges(serverUrl: string, meData: My
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        // Config changes already handled in storeConfigAndLicense
+        // Config changes already handled in storeConfigForServer
         const enableAutoTranslation = (await getConfigValue(operator.database, 'EnableAutoTranslation')) === 'true';
         if (!enableAutoTranslation) {
             return;

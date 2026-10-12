@@ -86,7 +86,6 @@ class SecurityManagerSingleton {
     constructor() {
         AppState.addEventListener('change', this.onAppStateChange);
         DeviceEventEmitter.addListener(Events.ACTIVE_SERVER_CHANGED, this.setActiveServer);
-        DeviceEventEmitter.addListener(Events.LICENSE_CHANGED, this.onLicenseChanged);
         DeviceEventEmitter.addListener(Events.CONFIG_CHANGED, this.onConfigChanged);
 
         // Setup Intune event listeners
@@ -247,27 +246,6 @@ class SecurityManagerSingleton {
             const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(serverUrl);
 
             // Only set screen capture policy if enrollment wasn't needed/succeeded
-            if (enrollmentOk && !this.isEnrolling) {
-                await IntuneManager.setCurrentIdentity(serverUrl);
-                this.setScreenCapturePolicy(serverUrl);
-            }
-        }
-    };
-
-    onLicenseChanged = async (event: {serverUrl: string; license: ClientLicense}) => {
-        const {serverUrl, license} = event;
-
-        logDebug('SecurityManager: License changed', {isLicensed: license.IsLicensed, sku: license.SkuShortName});
-
-        this.serverConfig[serverUrl] = this.serverConfig[serverUrl] || {};
-
-        const intunePolicy = await IntuneManager.getPolicy(serverUrl);
-        this.serverConfig[serverUrl].intunePolicy = intunePolicy;
-
-        if (serverUrl === this.activeServer) {
-            // Check if MAM enrollment needed (method handles all checks internally)
-            const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(serverUrl);
-
             if (enrollmentOk && !this.isEnrolling) {
                 await IntuneManager.setCurrentIdentity(serverUrl);
                 this.setScreenCapturePolicy(serverUrl);

@@ -9,7 +9,6 @@ import {sendTestNotification} from '@actions/remote/notifications';
 import SectionNotice from '@components/section_notice';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useExternalLink} from '@hooks/use_external_link';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {tryOpenURL} from '@utils/url';
@@ -21,10 +20,9 @@ const TIME_TO_IDLE = 3000;
 
 type Props = {
     serverVersion: string;
-    userId: string;
-    isCloud: boolean;
-    telemetryId: string;
 }
+
+const TROUBLESHOOTING_URL = 'https://antimatter.chat/help.html';
 
 type ButtonState = 'idle'|'sending'|'sent'|'error';
 
@@ -38,9 +36,6 @@ const styles = StyleSheet.create({
 
 const SendTestNotificationNotice = ({
     serverVersion,
-    userId,
-    isCloud,
-    telemetryId,
 }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -48,15 +43,9 @@ const SendTestNotificationNotice = ({
     const isSending = useRef(false);
     const timeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
-    const [href] = useExternalLink({
-        userId,
-        isCloud,
-        telemetryId,
-    }, 'https://antimatter.chat/help.html');
-
     const onGoToNotificationDocumentation = useCallback(() => {
-        tryOpenURL(href);
-    }, [href]);
+        tryOpenURL(TROUBLESHOOTING_URL);
+    }, []);
 
     const onSendTestNotificationClick = useCallback(async () => {
         if (isSending.current) {

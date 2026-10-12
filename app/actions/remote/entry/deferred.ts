@@ -25,7 +25,6 @@ export async function deferredAppEntryActions(
     currentUserId: string, currentUserLocale: string,
     preferences: PreferenceType[] | undefined,
     config: ClientConfig,
-    license: ClientLicense | undefined,
     teamData: MyTeamsRequest,
     chData: MyChannelsRequest | undefined,
     meData: MyUserRequest | undefined,
@@ -39,7 +38,6 @@ export async function deferredAppEntryActions(
         currentUserLocale,
         preferences,
         config,
-        license,
         teamData,
         chData,
         meData,
@@ -55,7 +53,7 @@ export async function deferredAppEntryActions(
 
 export async function restDeferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
-    config: ClientConfig, license: ClientLicense | undefined, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined, meData: MyUserRequest | undefined,
+    config: ClientConfig, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined, meData: MyUserRequest | undefined,
     initialTeamId?: string, initialChannelId?: string, groupLabel?: BaseRequestGroupLabel,
 ) {
     const isCRTEnabled = (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads, config.Version)) || false;
@@ -66,7 +64,7 @@ export async function restDeferredAppEntryActions(
     setTimeout(async () => {
         // sidebar DM & GM profiles
         if (channelsToFetchProfiles.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay);
             fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId, false, requestLabel);
         }
 

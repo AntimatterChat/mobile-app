@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {doPing} from '@actions/remote/general';
-import {fetchConfigAndLicense, type ConfigAndLicenseRequest} from '@actions/remote/systems';
+import {fetchConfig, type ConfigRequest} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {getPreauthSecret} from '@init/credentials';
 import SecurityManager from '@managers/security_manager';
@@ -42,7 +42,7 @@ export async function switchToServer(serverUrl: string, callback?: () => void) {
     callback?.();
 }
 
-export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape, callback: (data?: ConfigAndLicenseRequest) => void) {
+export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape, callback: (data?: ConfigRequest) => void) {
     const server = await getServer(serverUrl);
     if (!server) {
         logError(`Switch to Server with url ${serverUrl} not found`);
@@ -59,7 +59,7 @@ export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape,
         return;
     }
 
-    const data = await fetchConfigAndLicense(server.url, true);
+    const data = await fetchConfig(server.url, true);
     if (data.error) {
         alertServerError(intl, data.error);
         callback?.();

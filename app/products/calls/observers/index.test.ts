@@ -10,10 +10,10 @@ import {
     observeIncomingCalls,
 } from '@calls/state';
 import {DefaultCallsState, DefaultIncomingCalls} from '@calls/types/calls';
-import {General, License} from '@constants';
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
-import {observeConfigValue, observeLicense} from '@queries/servers/system';
+import {observeConfigValue} from '@queries/servers/system';
 import {observeUser, queryUsersById} from '@queries/servers/user';
 
 import {
@@ -112,7 +112,6 @@ describe('Calls Observers', () => {
         it('should detect when call limit is not restricted', async () => {
             (observeCallsConfig as jest.Mock).mockReturnValue(of$({
                 MaxCallParticipants: 8,
-                sku_short_name: License.SKU_SHORT_NAME.Professional,
             }));
             (observeCallsState as jest.Mock).mockReturnValue(of$({
                 calls: {
@@ -121,20 +120,17 @@ describe('Calls Observers', () => {
                     },
                 },
             }));
-            (observeLicense as jest.Mock).mockReturnValue(of$({Cloud: 'false'}));
 
             const result = await firstValueFrom(observeIsCallLimitRestricted(database, serverUrl, channelId));
             expect(result).toEqual({
                 limitRestricted: false,
                 maxParticipants: 8,
-                isCloudStarter: false,
             });
         });
 
         it('should detect when call limit is restricted', async () => {
             (observeCallsConfig as jest.Mock).mockReturnValue(of$({
                 MaxCallParticipants: 3,
-                sku_short_name: License.SKU_SHORT_NAME.Starter,
             }));
             (observeCallsState as jest.Mock).mockReturnValue(of$({
                 calls: {
@@ -143,13 +139,11 @@ describe('Calls Observers', () => {
                     },
                 },
             }));
-            (observeLicense as jest.Mock).mockReturnValue(of$({Cloud: 'true'}));
 
             const result = await firstValueFrom(observeIsCallLimitRestricted(database, serverUrl, channelId));
             expect(result).toEqual({
                 limitRestricted: true,
                 maxParticipants: 3,
-                isCloudStarter: true,
             });
         });
     });

@@ -148,12 +148,7 @@ desc 'Configure the app before building'
 lane :configure do
   json = load_config_json('../dist/assets/config.json')
 
-  # Set the Segment API Key
-  unless ENV['RUDDER_API_KEY'].nil? || ENV['RUDDER_API_KEY'].empty?
-    json['RudderApiKey'] =  ENV['RUDDER_API_KEY']
-  end
-
-  # Configure Sentry if enabled
+  # Configure Sentry if enabled (off by default; set SENTRY_ENABLED and your own DSN to use it)
   if ENV['SENTRY_ENABLED'] == 'true'
     json['SentryEnabled'] = true
     json['SentryOrg'] = ENV['SENTRY_ORG']

@@ -11,10 +11,9 @@ import {
     observeIncomingCalls,
 } from '@calls/state';
 import {fillUserModels, getDMCalleeId, hasOtherUserJoined, userIds} from '@calls/utils';
-import {License} from '@constants';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
-import {observeConfigValue, observeLicense} from '@queries/servers/system';
+import {observeConfigValue} from '@queries/servers/system';
 import {observeUser, queryUsersById} from '@queries/servers/user';
 import UserModel from '@typings/database/models/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -26,7 +25,6 @@ import type {Database} from '@nozbe/watermelondb';
 export type LimitRestrictedInfo = {
     limitRestricted: boolean;
     maxParticipants: number;
-    isCloudStarter: boolean;
 }
 
 export const observeIsCallsEnabledInChannel = (database: Database, serverUrl: string, channelId: Observable<string>) => {
@@ -68,22 +66,13 @@ export const observeIsCallLimitRestricted = (database: Database, serverUrl: stri
         switchMap((cs) => of$(Object.keys(cs.calls[channelId]?.sessions || {}).length)),
         distinctUntilChanged(),
     );
-    const isCloud = observeLicense(database).pipe(
-        switchMap((l) => of$(l?.Cloud === 'true')),
-        distinctUntilChanged(),
-    );
-    const skuShortName = observeCallsConfig(serverUrl).pipe(
-        switchMap((c) => of$(c.sku_short_name)),
-        distinctUntilChanged(),
-    );
-    return combineLatest([maxParticipants, callNumOfParticipants, isCloud, skuShortName]).pipe(
-        switchMap(([max, numParticipants, cloud, sku]) => of$({
+    return combineLatest([maxParticipants, callNumOfParticipants]).pipe(
+        switchMap(([max, numParticipants]) => of$({
             limitRestricted: max !== 0 && numParticipants >= max,
             maxParticipants: max,
-            isCloudStarter: cloud && sku === License.SKU_SHORT_NAME.Starter,
         })),
         distinctUntilChanged((prev, curr) =>
-            prev.limitRestricted === curr.limitRestricted && prev.maxParticipants === curr.maxParticipants && prev.isCloudStarter === curr.isCloudStarter),
+            prev.limitRestricted === curr.limitRestricted && prev.maxParticipants === curr.maxParticipants),
     ) as Observable<LimitRestrictedInfo>;
 };
 

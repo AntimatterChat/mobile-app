@@ -5,7 +5,7 @@ import {createIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
 import {doPing} from '@actions/remote/general';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {fetchConfig} from '@actions/remote/systems';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
@@ -124,11 +124,11 @@ describe('switchToServerAndLogin', () => {
         expect(alertServerError).toHaveBeenCalledWith(intl, 'ping error');
     });
 
-    it('should alert server error when fetching config and license fails', async () => {
+    it('should alert server error when fetching the config fails', async () => {
         const server = {url: 'serverUrl'} as ServersModel;
         jest.mocked(getServer).mockResolvedValueOnce(server);
         jest.mocked(doPing).mockResolvedValueOnce({});
-        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({error: 'config error'});
+        jest.mocked(fetchConfig).mockResolvedValueOnce({error: 'config error'});
 
         await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());
 
@@ -140,7 +140,7 @@ describe('switchToServerAndLogin', () => {
         const config = {DiagnosticId: 'diagId', MobileEnableBiometrics: 'true', SiteName: 'Site'} as ClientConfig;
         jest.mocked(getServer).mockResolvedValueOnce(server);
         jest.mocked(doPing).mockResolvedValueOnce({});
-        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config});
+        jest.mocked(fetchConfig).mockResolvedValueOnce({config});
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce({lastActiveAt: 123} as ServersModel);
 
         await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());
@@ -151,10 +151,9 @@ describe('switchToServerAndLogin', () => {
     it('should authenticate with biometrics and login to server', async () => {
         const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
         const config = {DiagnosticId: 'diagId', MobileEnableBiometrics: 'true', SiteName: 'Site'} as ClientConfig;
-        const license = {} as ClientLicense;
         jest.mocked(getServer).mockResolvedValueOnce(server);
         jest.mocked(doPing).mockResolvedValueOnce({});
-        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(fetchConfig).mockResolvedValueOnce({config});
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
         jest.mocked(SecurityManager.authenticateWithBiometrics).mockResolvedValueOnce(true);
 
@@ -162,7 +161,7 @@ describe('switchToServerAndLogin', () => {
         await Actions.switchToServerAndLogin('serverUrl', intl, callback);
 
         expect(canReceiveNotifications).toHaveBeenCalledWith('serverUrl', undefined, intl);
-        expect(callback).toHaveBeenCalledWith({config, license});
+        expect(callback).toHaveBeenCalledWith({config});
     });
 
     it('should not proceed if device is jailbroken', async () => {
@@ -170,7 +169,7 @@ describe('switchToServerAndLogin', () => {
         const config = {DiagnosticId: 'diagId', MobileJailbreakProtection: 'true'} as ClientConfig;
         jest.mocked(getServer).mockResolvedValueOnce(server);
         jest.mocked(doPing).mockResolvedValueOnce({});
-        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config});
+        jest.mocked(fetchConfig).mockResolvedValueOnce({config});
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
         jest.mocked(SecurityManager.isDeviceJailbroken).mockResolvedValueOnce(true);
 
@@ -184,13 +183,12 @@ describe('switchToServerAndLogin', () => {
     it('should retrieve and use pre-auth secret when reconnecting after logout', async () => {
         const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
         const config = {DiagnosticId: 'diagId'} as ClientConfig;
-        const license = {} as ClientLicense;
         const preauthSecret = 'test-secret-123';
 
         jest.mocked(getServer).mockResolvedValueOnce(server);
         jest.mocked(getPreauthSecret).mockResolvedValueOnce(preauthSecret);
         jest.mocked(doPing).mockResolvedValueOnce({});
-        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(fetchConfig).mockResolvedValueOnce({config});
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
 
         await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());
@@ -202,12 +200,11 @@ describe('switchToServerAndLogin', () => {
     it('should work correctly when no pre-auth secret is stored', async () => {
         const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
         const config = {DiagnosticId: 'diagId'} as ClientConfig;
-        const license = {} as ClientLicense;
 
         jest.mocked(getServer).mockResolvedValueOnce(server);
         jest.mocked(getPreauthSecret).mockResolvedValueOnce(undefined);
         jest.mocked(doPing).mockResolvedValueOnce({});
-        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(fetchConfig).mockResolvedValueOnce({config});
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
 
         await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());

@@ -136,7 +136,6 @@ class TestHelperSingleton {
         });
 
         const systems = await prepareCommonSystemValues(operator, {
-            license: {} as ClientLicense,
             currentChannelId: '',
             currentTeamId: this.basicTeam!.id,
             currentUserId: this.basicUser!.id,

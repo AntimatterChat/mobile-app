@@ -3,11 +3,10 @@
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import {applicationId, nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import {getLicenseLoadMetric} from '@actions/remote/license';
 import Config from '@assets/config.json';
 import AntimatterLogo from '@components/antimatter_logo';
 import Button from '@components/button';
@@ -16,7 +15,6 @@ import SettingContainer from '@components/settings/container';
 import {Screens} from '@constants';
 import AboutLinks from '@constants/about_links';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
@@ -66,14 +64,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         infoContainer: {
             flexDirection: 'column',
         },
-        info: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
-        },
-        licenseContainer: {
-            flexDirection: 'row',
-            marginTop: 20,
-        },
         noticeContainer: {
             flexDirection: 'column',
         },
@@ -119,29 +109,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 type AboutProps = {
     config: ClientConfig;
-    license?: ClientLicense;
 }
-const About = ({config, license}: AboutProps) => {
+const About = ({config}: AboutProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const isTablet = useIsTablet();
-    const serverUrl = useServerUrl();
-    const [loadMetric, setLoadMetric] = useState<number | null>(null);
-
-    useEffect(() => {
-        const fetchLoadMetric = async () => {
-            const isLicensed = license?.IsLicensed === 'true';
-            const result = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
-
-            // Only set the metric if we got a number back
-            if (result !== null && typeof result === 'number') {
-                setLoadMetric(result);
-            }
-        };
-
-        fetchLoadMetric();
-    }, [config.Version, license?.IsLicensed, serverUrl]);
 
     const openURL = useCallback((url: string) => {
         const onError = () => {
@@ -192,17 +165,12 @@ const About = ({config, license}: AboutProps) => {
             const server = buildNumber === version ? intl.formatMessage({id: 'settings.about.server.version.noBuild', defaultMessage: 'Server Version: {version}'}, {version}) : intl.formatMessage({id: 'settings.about.server.version', defaultMessage: 'Server Version: {version} (Build {buildNumber})'}, {version, buildNumber});
             const database = intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database: {driverName}'}, {driverName: config.SQLDriverName});
             const databaseSchemaVersion = intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version: {version}'}, {version: config.SchemaVersion});
-            let copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
-
-            if (loadMetric !== null) {
-                const loadMetricStr = intl.formatMessage({id: 'settings.about.license.load_metric', defaultMessage: 'Load Metric: {load}'}, {load: loadMetric});
-                copiedString += `\n${loadMetricStr}`;
-            }
+            const copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
 
             Clipboard.setString(copiedString);
             showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: Screens.ABOUT});
         },
-        [intl, config.BuildNumber, config.Version, config.SQLDriverName, config.SchemaVersion, loadMetric],
+        [intl, config.BuildNumber, config.Version, config.SQLDriverName, config.SchemaVersion],
     );
 
     return (
@@ -213,11 +181,8 @@ const About = ({config, license}: AboutProps) => {
                         size={80}
                         testID='about.logo'
                     />
-                    <Title
-                        config={config}
-                        license={license}
-                    />
-                    <Subtitle config={config}/>
+                    <Title/>
+                    <Subtitle/>
                     <View
                         style={styles.thinLine}
                     />
@@ -253,22 +218,6 @@ const About = ({config, license}: AboutProps) => {
                             {serverVersion}
                         </Text>
                     </View>
-                    {loadMetric !== null && (
-                        <View style={styles.group}>
-                            <Text
-                                style={styles.leftHeading}
-                                testID='about.license_load_metric.title'
-                            >
-                                {intl.formatMessage({id: 'settings.about.license.load_metric.title', defaultMessage: 'Load Metric:'})}
-                            </Text>
-                            <Text
-                                style={styles.rightHeading}
-                                testID='about.license_load_metric.value'
-                            >
-                                {loadMetric}
-                            </Text>
-                        </View>
-                    )}
                     <View style={styles.group}>
                         <Text
                             style={styles.leftHeading}
@@ -308,22 +257,7 @@ const About = ({config, license}: AboutProps) => {
                             size='m'
                         />
                     </View>
-                    {license?.IsLicensed === 'true' && (
-                        <View style={styles.licenseContainer}>
-                            <FormattedText
-                                defaultMessage='Licensed to: {company}'
-                                id={'settings.about.licensed'}
-                                style={styles.info}
-                                testID='about.licensee'
-                                values={{company: license.Company}}
-                            />
-                        </View>
-                    )}
-                    <LearnMore
-                        config={config}
-                        license={license}
-                        onPress={handleAboutTeam}
-                    />
+                    <LearnMore onPress={handleAboutTeam}/>
                     {!ANTIMATTER_BUNDLE_IDS.includes(applicationId || '') &&
                     <FormattedText
                         defaultMessage='{site} is powered by Antimatter'
@@ -389,20 +323,6 @@ const About = ({config, license}: AboutProps) => {
                                 testID='about.build_hash.value'
                             >
                                 {config.BuildHash}
-                            </Text>
-                        </View>
-                        <View>
-                            <FormattedText
-                                defaultMessage='EE Build Hash:'
-                                id={'about.hashee'}
-                                style={styles.footerTitleText}
-                                testID='about.build_hash_enterprise.title'
-                            />
-                            <Text
-                                style={styles.footerText}
-                                testID='about.build_hash_enterprise.value'
-                            >
-                                {config.BuildHashEnterprise}
                             </Text>
                         </View>
                     </View>

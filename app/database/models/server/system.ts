@@ -13,7 +13,7 @@ const {SYSTEM} = MM_TABLES.SERVER;
 
 /**
  * The System model is another set of key-value pair combination but this one
- * will mostly hold configuration information about the client, the licences and some
+ * will mostly hold configuration information about the client and some
  * custom data (e.g. recent emoji used)
  */
 export default class SystemModel extends Model implements SystemModelInterface {

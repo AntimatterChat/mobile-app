@@ -5,7 +5,6 @@ import {Q, type Database} from '@nozbe/watermelondb';
 import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
-import {License} from '@constants';
 import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES} from '@constants/channel_attributes';
 import {
     CLASSIFICATIONS_FIELD_NAME,
@@ -23,7 +22,7 @@ import {
 } from '@utils/channel_attributes';
 import {deriveClassificationBannerState} from '@utils/classification';
 
-import {getConfigValue, observeConfigBooleanValue, observeIsMinimumLicenseTier} from './system';
+import {getConfigValue, observeConfigBooleanValue} from './system';
 
 import type {PropertyFieldModel, PropertyValueModel, SystemModel} from '@database/models/server';
 
@@ -109,23 +108,12 @@ const EMPTY_FIELDS: PropertyFieldModel[] = [];
 /**
  * Whether channel attributes are available on this server.
  *
- * Gated on the ChannelAttributes flag and an Enterprise Advanced licence. A
- * server that predates the flag does not send it, so the flag read doubles as
- * the version gate and no version constant is needed.
- *
- * Note this is stricter than the server, which gates the access_control group at
- * Enterprise tier. The tighter tier is a product decision; making the two agree
- * needs a feature-scoped check server-side, because the group hook is shared
- * with Custom Profile Attributes and Classification Markings.
+ * Gated on the ChannelAttributes flag. A server that predates the flag does not
+ * send it, so the flag read doubles as the version gate and no version constant
+ * is needed.
  */
 export const observeChannelAttributesEnabled = (database: Database) => {
-    const flag = observeConfigBooleanValue(database, 'FeatureFlagChannelAttributes', false);
-    const isLicensed = observeIsMinimumLicenseTier(database, License.SKU_SHORT_NAME.EnterpriseAdvanced);
-
-    return combineLatest([flag, isLicensed]).pipe(
-        map(([enabled, licensed]) => enabled && licensed),
-        distinctUntilChanged(),
-    );
+    return observeConfigBooleanValue(database, 'FeatureFlagChannelAttributes', false);
 };
 
 /**

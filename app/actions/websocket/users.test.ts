@@ -13,7 +13,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {deleteCustomProfileAttributesByFieldId} from '@queries/servers/custom_profile';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getLicense} from '@queries/servers/system';
+import {getConfig} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
 import * as logUtils from '@utils/log';
@@ -243,8 +243,6 @@ describe('WebSocket Users Actions', () => {
                     }),
                 ]),
             );
-
-            jest.mocked(getLicense).mockResolvedValue({} as ClientLicense);
 
             const msg = {
                 data: {

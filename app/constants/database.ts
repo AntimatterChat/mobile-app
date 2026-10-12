@@ -71,7 +71,6 @@ export const SYSTEM_IDENTIFIERS = {
     LAST_DISMISSED_BANNER: 'lastDismissedBanner',
     LAST_SEEN_TIME: 'lastSeenTime',
     LAST_SERVER_VERSION_CHECK: 'LastServerVersionCheck',
-    LICENSE: 'license',
     OFFLINE_SINCE: 'offlineSince',
     ONLY_UNREADS: 'onlyUnreads',
     PUSH_VERIFICATION_STATUS: 'pushVerificationStatus',

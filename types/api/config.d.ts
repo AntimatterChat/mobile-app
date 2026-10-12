@@ -18,9 +18,7 @@ interface ClientConfig {
     BannerText: string;
     BannerTextColor: string;
     BuildDate: string;
-    BuildEnterpriseReady: string;
     BuildHash: string;
-    BuildHashEnterprise: string;
     BuildNumber: string;
     BurnOnReadMaximumTimeToLiveSeconds: string;
     BurnOnReadDurationSeconds: string;

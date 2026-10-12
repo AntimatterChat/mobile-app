@@ -115,14 +115,8 @@ describe('Server Utils', () => {
                 EnableSignInWithUsername: 'true',
                 Version: '5.0.0',
             } as ClientConfig;
-            const license = {
-                IsLicensed: 'true',
-                SAML: 'true',
-                Office365OAuth: 'true',
-                LDAP: 'true',
-            } as ClientLicense;
 
-            const result = loginOptions(config, license);
+            const result = loginOptions(config);
 
             expect(result).toEqual({
                 hasLoginForm: true,
@@ -154,15 +148,9 @@ describe('Server Utils', () => {
             EnableSignInWithUsername: 'true',
             Version: '5.0.0',
         } as ClientConfig;
-        const license = {
-            IsLicensed: 'true',
-            SAML: 'true',
-            Office365OAuth: 'true',
-            LDAP: 'true',
-        } as ClientLicense;
 
         it('should call dismissBottomSheet and showModal with LOGIN screen', async () => {
-            await loginToServer(theme, serverUrl, displayName, config, license);
+            await loginToServer(theme, serverUrl, displayName, config);
 
             expect(navigateToScreen).toHaveBeenCalledWith(Screens.LOGIN, expect.any(Object));
         });
@@ -171,7 +159,7 @@ describe('Server Utils', () => {
 
     it('should call showModal with SSO screen if redirectSSO is true', async () => {
         const configWithSingleSSO = {...config, EnableSignInWithEmail: 'false', EnableSignInWithUsername: 'false'};
-        await loginToServer(theme, serverUrl, displayName, configWithSingleSSO, license);
+        await loginToServer(theme, serverUrl, displayName, configWithSingleSSO);
 
         expect(showModal).toHaveBeenCalledWith(Screens.SSO, '', expect.any(Object), expect.any(Object));
     });*/

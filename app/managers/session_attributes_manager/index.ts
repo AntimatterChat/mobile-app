@@ -16,15 +16,13 @@ import {Alert, Platform} from 'react-native';
 import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 
 import {fetchSessionAttributesManifest} from '@actions/remote/session_attributes';
-import {License} from '@constants';
 import {SESSION_ATTRIBUTES_SSID_FIELD} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE} from '@i18n';
-import {getConfigBooleanValue, getLicense} from '@queries/servers/system';
+import {getConfigBooleanValue} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
 import {getIntlShape} from '@utils/general';
-import {isMinimumLicenseTier} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
 const messages = defineMessages({
@@ -64,10 +62,7 @@ export class SessionAttributesManagerSingleton {
                 return;
             }
 
-            const sessionAttributesEnabled = await getConfigBooleanValue(database, 'FeatureFlagSessionAttributes');
-            const license = await getLicense(database);
-            const enabled = sessionAttributesEnabled &&
-                isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+            const enabled = await getConfigBooleanValue(database, 'FeatureFlagSessionAttributes');
             if (!enabled) {
                 removeSessionAttributesServer(serverUrl);
                 return;

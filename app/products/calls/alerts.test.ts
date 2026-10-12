@@ -70,32 +70,11 @@ describe('alerts', () => {
             },
         };
 
-        it('shows alert for cloud starter', () => {
+        it('shows the participant limit alert', () => {
             const mockAlert = jest.spyOn(Alert, 'alert');
             showLimitRestrictedAlert({
                 limitRestricted: true,
                 maxParticipants: 8,
-                isCloudStarter: true,
-            }, intl as any);
-
-            expect(mockAlert).toHaveBeenCalledWith(
-                'This call is at capacity',
-                'Upgrade to Cloud Professional or Cloud Enterprise to enable group calls with more than 8 participants.',
-                [
-                    {
-                        text: 'Okay',
-                        style: 'cancel',
-                    },
-                ],
-            );
-        });
-
-        it('shows alert for non-cloud starter', () => {
-            const mockAlert = jest.spyOn(Alert, 'alert');
-            showLimitRestrictedAlert({
-                limitRestricted: true,
-                maxParticipants: 8,
-                isCloudStarter: false,
             }, intl as any);
 
             expect(mockAlert).toHaveBeenCalledWith(

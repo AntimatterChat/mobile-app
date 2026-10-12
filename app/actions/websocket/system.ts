@@ -6,42 +6,12 @@ import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
 import {applyPersistenceModeChange} from '@actions/remote/refresh';
-import {License} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
-import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
+import {getConfig, getCurrentTeamId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
-
-export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        const license = msg.data.license;
-        const systems: IdValue[] = [{id: SYSTEM_IDENTIFIERS.LICENSE, value: JSON.stringify(license)}];
-
-        const prevLicense = await getLicense(database);
-        await operator.handleSystem({systems, prepareRecordsOnly: false});
-
-        if (license?.LockTeammateNameDisplay && (prevLicense?.LockTeammateNameDisplay !== license.LockTeammateNameDisplay)) {
-            updateDmGmDisplayName(serverUrl);
-        }
-
-        const prevSessionAttributes = prevLicense?.SkuShortName === License.SKU_SHORT_NAME.EnterpriseAdvanced;
-        const newSessionAttributes = license?.SkuShortName === License.SKU_SHORT_NAME.EnterpriseAdvanced;
-        if (newSessionAttributes !== prevSessionAttributes) {
-            if (newSessionAttributes) {
-                await SessionAttributesManager.refreshManifest(serverUrl);
-            } else {
-                SessionAttributesManager.removeServer(serverUrl);
-            }
-        }
-    } catch {
-        // do nothing
-    }
-}
 
 export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {

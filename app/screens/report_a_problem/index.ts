@@ -7,7 +7,7 @@ import {map} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {observeConfigBooleanValue, observeConfigValue, observeCurrentUserId, observeIsFreeEdition, observeReportAProblemMetadata} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigValue, observeCurrentUserId, observeReportAProblemMetadata} from '@queries/servers/system';
 
 import ReportProblem from './report_problem';
 
@@ -18,7 +18,6 @@ const enhanced = withObservables([], ({database}) => {
         reportAProblemLink: observeConfigValue(database, 'ReportAProblemLink'),
         siteName: observeConfigValue(database, 'SiteName'),
         allowDownloadLogs: observeConfigBooleanValue(database, 'AllowDownloadLogs', true),
-        isFreeEdition: observeIsFreeEdition(database),
         metadata: observeReportAProblemMetadata(database),
         currentUserId: observeCurrentUserId(database),
         attachLogsEnabled: queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.ADVANCED_SETTINGS, Preferences.ATTACH_APP_LOGS).

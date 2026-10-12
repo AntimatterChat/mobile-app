@@ -3,7 +3,6 @@
 
 /* eslint-disable max-lines */
 
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 
@@ -90,24 +89,14 @@ describe('groups', () => {
     });
 
     it('fetchGroupsForAutocomplete - base case', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForAutocomplete(serverUrl, group1.name) as GroupModel[];
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
         expect(result[0].id).toBe(group1.id);
     });
 
-    it('fetchGroupsForAutocomplete - no license', async () => {
-        const result = await fetchGroupsForAutocomplete(serverUrl, group1.name) as GroupModel[];
-        expect(result).toBeDefined();
-        expect(result.length).toBe(0);
-    });
-
     it('fetchGroupsForAutocomplete - no groups', async () => {
         mockClient.getGroups.mockImplementationOnce(jest.fn(() => []));
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForAutocomplete(serverUrl, group1.name) as GroupModel[];
         expect(result).toBeDefined();
         expect(result.length).toBe(0);
@@ -120,24 +109,14 @@ describe('groups', () => {
     });
 
     it('fetchGroupsByNames - base case', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsByNames(serverUrl, [group1.name]) as GroupModel[];
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
         expect(result[0].id).toBe(group1.id);
     });
 
-    it('fetchGroupsByNames - no license', async () => {
-        const result = await fetchGroupsByNames(serverUrl, [group1.name]) as GroupModel[];
-        expect(result).toBeDefined();
-        expect(result.length).toBe(0);
-    });
-
     it('fetchGroupsByNames - no groups', async () => {
         mockClient.getGroups.mockImplementationOnce(jest.fn(() => []));
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsByNames(serverUrl, [group1.name]) as GroupModel[];
         expect(result).toBeDefined();
         expect(result.length).toBe(0);
@@ -150,8 +129,6 @@ describe('groups', () => {
     });
 
     it('fetchGroupsForChannel - base case', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForChannel(serverUrl, channel.id);
         expect(result).toBeDefined();
         expect(result.groups).toBeDefined();
@@ -162,19 +139,8 @@ describe('groups', () => {
         expect(result.groupChannels?.[0].channelId).toBe(channel.id);
     });
 
-    it('fetchGroupsForChannel - no license', async () => {
-        const result = await fetchGroupsForChannel(serverUrl, channel.id);
-        expect(result).toBeDefined();
-        expect(result.groups).toBeDefined();
-        expect(result.groups?.length).toBe(0);
-        expect(result.groupChannels).toBeDefined();
-        expect(result.groupChannels?.length).toBe(0);
-    });
-
     it('fetchGroupsForChannel - no groups', async () => {
         mockClient.getAllGroupsAssociatedToChannel.mockImplementationOnce(jest.fn(() => ({groups: [], total_group_count: 0})));
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForChannel(serverUrl, channel.id);
         expect(result).toBeDefined();
         expect(result.groups).toBeDefined();
@@ -190,8 +156,6 @@ describe('groups', () => {
     });
 
     it('fetchGroupsForTeam - base case', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForTeam(serverUrl, teamId);
         expect(result).toBeDefined();
         expect(result.groups).toBeDefined();
@@ -202,19 +166,8 @@ describe('groups', () => {
         expect(result.groupTeams?.[0].teamId).toBe(teamId);
     });
 
-    it('fetchGroupsForTeam - no license', async () => {
-        const result = await fetchGroupsForTeam(serverUrl, teamId);
-        expect(result).toBeDefined();
-        expect(result.groups).toBeDefined();
-        expect(result.groups?.length).toBe(0);
-        expect(result.groupTeams).toBeDefined();
-        expect(result.groupTeams?.length).toBe(0);
-    });
-
     it('fetchGroupsForTeam - no groups', async () => {
         mockClient.getAllGroupsAssociatedToTeam.mockImplementationOnce(jest.fn(() => ({groups: [], total_group_count: 0})));
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForTeam(serverUrl, teamId);
         expect(result).toBeDefined();
         expect(result.groups).toBeDefined();
@@ -230,8 +183,6 @@ describe('groups', () => {
     });
 
     it('fetchGroupsForMember - base case', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForMember(serverUrl, user1.id);
         expect(result).toBeDefined();
         expect(result.groups).toBeDefined();
@@ -242,19 +193,8 @@ describe('groups', () => {
         expect(result.groupMemberships?.[0].userId).toBe(user1.id);
     });
 
-    it('fetchGroupsForMember - no license', async () => {
-        const result = await fetchGroupsForMember(serverUrl, user1.id);
-        expect(result).toBeDefined();
-        expect(result.groups).toBeDefined();
-        expect(result.groups?.length).toBe(0);
-        expect(result.groupMemberships).toBeDefined();
-        expect(result.groupMemberships?.length).toBe(0);
-    });
-
     it('fetchGroupsForMember - no groups', async () => {
         mockClient.getAllGroupsAssociatedToMembership.mockImplementationOnce(jest.fn(() => []));
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForMember(serverUrl, user1.id);
         expect(result).toBeDefined();
         expect(result.groups).toBeDefined();
@@ -270,8 +210,6 @@ describe('groups', () => {
     });
 
     it('fetchFilteredTeamGroups - base case', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchFilteredTeamGroups(serverUrl, group1.name, teamId) as GroupModel[];
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
@@ -285,8 +223,6 @@ describe('groups', () => {
     });
 
     it('fetchFilteredChannelGroups - base case', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchFilteredChannelGroups(serverUrl, group1.name, channel.id) as GroupModel[];
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
@@ -301,8 +237,6 @@ describe('groups', () => {
 
     it('fetchGroupsForTeamIfConstrained - base case', async () => {
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForTeamIfConstrained(serverUrl, teamId) as {groups?: GroupModel[]; groupTeams?: GroupTeamModel[]};
         expect(result).toBeDefined();
         expect(result.groups).toBeDefined();
@@ -315,8 +249,6 @@ describe('groups', () => {
 
     it('fetchGroupsForTeamIfConstrained - not constrained', async () => {
         await operator.handleTeam({teams: [{...team, group_constrained: false}], prepareRecordsOnly: false});
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForTeamIfConstrained(serverUrl, teamId) as {groups?: GroupModel[]; groupTeams?: GroupTeamModel[]};
         expect(result).toBeDefined();
         expect(result.groups).toBeUndefined();
@@ -331,8 +263,6 @@ describe('groups', () => {
 
     it('fetchGroupsForChannelIfConstrained - base case', async () => {
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForChannelIfConstrained(serverUrl, channel.id) as {groups?: GroupModel[]; groupChannels?: GroupChannelModel[]};
         expect(result).toBeDefined();
         expect(result.groups).toBeDefined();
@@ -345,8 +275,6 @@ describe('groups', () => {
 
     it('fetchGroupsForChannelIfConstrained - not constrained', async () => {
         await operator.handleChannel({channels: [{...channel, group_constrained: false}], prepareRecordsOnly: false});
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
-
         const result = await fetchGroupsForChannelIfConstrained(serverUrl, channel.id) as {groups?: GroupModel[]; groupChannels?: GroupChannelModel[]};
         expect(result).toBeDefined();
         expect(result.groups).toBeUndefined();
