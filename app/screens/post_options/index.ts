@@ -156,6 +156,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
+    // Whoever can edit a thread's first message can name the thread, when threads are collapsed (Fusion's rule).
+    const canNameThread = (post.rootId || isSystemMessage(post)) ? of$(false) : combineLatest([canEdit, observeIsCRTEnabled(database)]).pipe(
+        switchMap(([edit, crt]) => of$(edit && crt)),
+    );
+
     const canMarkAsUnread = combineLatest([currentUser, channelIsArchived]).pipe(
         switchMap(([user, isArchived]) => of$(
             !isArchived && (
@@ -214,6 +219,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         canDelete,
         canReply,
         canReplyInline,
+        canNameThread,
         canPin,
         combinedPost: of$(combinedPost),
         isSaved,

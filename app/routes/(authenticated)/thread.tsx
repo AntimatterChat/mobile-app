@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useDatabase} from '@nozbe/watermelondb/react';
 import {useNavigation} from 'expo-router';
-import {useCallback, useEffect} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 
 import Header from '@components/navigation_header/header';
@@ -10,7 +11,9 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePropsFromParams} from '@hooks/props_from_params';
+import {observePost} from '@queries/servers/post';
 import ThreadScreen from '@screens/thread';
+import {getThreadTitle} from '@utils/thread_title';
 
 import type {NativeStackHeaderProps} from '@react-navigation/native-stack';
 
@@ -33,7 +36,16 @@ export default function ThreadRoute() {
     const defaultHeight = useDefaultHeaderHeight();
     const {channelName, rootId, title: routeTitle} = usePropsFromParams<{channelName: string; rootId: string; title?: string}>();
 
-    const title = routeTitle || intl.formatMessage(threadMessages.thread);
+    const database = useDatabase();
+
+    // A named thread shows its name, as it changes.
+    const [threadTitle, setThreadTitle] = useState('');
+    useEffect(() => {
+        const subscription = observePost(database, rootId).subscribe((root) => setThreadTitle(getThreadTitle(root)));
+        return () => subscription.unsubscribe();
+    }, [database, rootId]);
+
+    const title = threadTitle || routeTitle || intl.formatMessage(threadMessages.thread);
     const subtitle = channelName ? intl.formatMessage(threadMessages.threadIn, {channelName}) : undefined;
 
     const handleBack = useCallback(() => {

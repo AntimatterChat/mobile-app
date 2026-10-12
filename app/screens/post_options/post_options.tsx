@@ -22,6 +22,7 @@ import AppBindingsPostOptions from './options/app_bindings_post_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
+import NameThreadOption from './options/name_thread_option';
 import PinChannelOption from './options/pin_channel_option';
 import SpoilerOption from './options/spoiler_option';
 import ReactionBar from './reaction_bar';
@@ -40,6 +41,7 @@ type PostOptionsProps = {
     canPin: boolean;
     canReply: boolean;
     canReplyInline?: boolean;
+    canNameThread?: boolean;
     canViewTranslation: boolean;
     combinedPost?: Post | PostModel;
     isSaved: boolean;
@@ -55,7 +57,7 @@ type PostOptionsProps = {
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
-    canMarkAsUnread, canPin, canReply, canReplyInline = false, canViewTranslation,
+    canMarkAsUnread, canPin, canReply, canReplyInline = false, canNameThread = false, canViewTranslation,
     combinedPost, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
     isBoRPost, showBoRReadReceipts, borReceiptData, currentUser,
@@ -81,6 +83,7 @@ const PostOptions = ({
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
             canMarkAsUnread, canPin, canReply, canReplyInline, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler,
+            canNameThread,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
@@ -96,7 +99,7 @@ const PostOptions = ({
         }
 
         return items;
-    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canReplyInline, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
+    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canReplyInline, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler, canNameThread, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
 
     const renderContent = () => {
         return (
@@ -155,6 +158,7 @@ const PostOptions = ({
                     postId={post.id}
                 />
                 }
+                {canNameThread && <NameThreadOption post={post}/>}
                 {canEdit &&
                 <EditOption
                     post={post}

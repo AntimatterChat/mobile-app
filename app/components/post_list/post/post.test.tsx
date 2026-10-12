@@ -311,3 +311,54 @@ describe('inline replies', () => {
         expect(InlineReplyRef).not.toHaveBeenCalled();
     });
 });
+
+describe('named threads', () => {
+    let database: Database;
+    const serverUrl = 'http://www.someserverurl.com';
+
+    function getProps(post: PostModel, location: ComponentProps<typeof Post>['location']): ComponentProps<typeof Post> {
+        return {
+            appsEnabled: false,
+            mmBlocksEnabled: false,
+            canDelete: false,
+            customEmojiNames: [],
+            filesInfo: [],
+            hasReactions: false,
+            hasReplies: false,
+            highlightReplyBar: false,
+            isEphemeral: false,
+            isPostAddChannelMember: false,
+            commentCount: 0,
+            location,
+            post,
+            isLastPost: false,
+            isChannelAutotranslated: false,
+            testID: 'post',
+        };
+    }
+
+    beforeEach(async () => {
+        await NetworkManager.createClient(serverUrl);
+        database = (await TestHelper.setupServerDatabase(serverUrl)).database;
+    });
+
+    afterEach(async () => {
+        await TestHelper.tearDown();
+        NetworkManager.invalidateClient(serverUrl);
+    });
+
+    it('should show the name of the thread under its first message', async () => {
+        const post = TestHelper.fakePostModel({id: 'root', rootId: '', props: {am_thread_title: 'Release 2.1'}});
+        const {findByText} = renderWithEverything(<Post {...getProps(post, Screens.CHANNEL)}/>, {database, serverUrl});
+
+        expect(await findByText('Release 2.1')).toBeTruthy();
+    });
+
+    it('should leave it to the header in the thread', async () => {
+        const post = TestHelper.fakePostModel({id: 'root', rootId: '', props: {am_thread_title: 'Release 2.1'}});
+        const {queryByText} = renderWithEverything(<Post {...getProps(post, Screens.THREAD)}/>, {database, serverUrl});
+
+        await waitFor(() => expect(Body).toHaveBeenCalled());
+        expect(queryByText('Release 2.1')).toBeNull();
+    });
+});

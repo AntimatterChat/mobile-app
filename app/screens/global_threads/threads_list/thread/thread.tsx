@@ -11,6 +11,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
 import RemoveMarkdown from '@components/remove_markdown';
+import ThreadName from '@components/thread_name';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -22,6 +23,7 @@ import {formatTimestampsInText} from '@utils/dynamic_timestamp';
 import {getPostTranslatedMessage, getPostTranslation} from '@utils/post';
 import {isSpoilerPost} from '@utils/spoiler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getThreadTitle} from '@utils/thread_title';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
@@ -105,6 +107,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
         },
+        threadName: {marginBottom: 4},
         spoiler: {
             flexDirection: 'row',
             alignItems: 'center',
@@ -184,6 +187,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
     message = formatTimestampsInText(message, {locale: intl.locale}).replace(/^-# /gm, '');
 
     const threadStarterName = displayUsername(author, intl.locale, teammateNameDisplay);
+    const threadTitle = post.deleteAt ? '' : getThreadTitle(post);
     const threadItemTestId = `${testID}.thread_item.${thread.id}`;
 
     const needBadge = thread.unreadMentions || thread.unreadReplies;
@@ -313,6 +317,13 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                             style={styles.date}
                         />
                     </View>
+                    {Boolean(threadTitle) && (
+                        <ThreadName
+                            title={threadTitle}
+                            style={styles.threadName}
+                            testID={`${threadItemTestId}.thread_name`}
+                        />
+                    )}
                     {postBody}
                     {Boolean(post && thread) &&
                     <ThreadFooter

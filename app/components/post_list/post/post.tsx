@@ -17,6 +17,7 @@ import InlineReplyRef from '@components/inline_reply/quoted_ref';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
+import ThreadName from '@components/thread_name';
 import {Screens} from '@constants';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import {PROFILE_PICTURE_SIZE} from '@constants/view';
@@ -36,6 +37,7 @@ import {dismissKeyboard} from '@utils/keyboard';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {isSpoilerPost} from '@utils/spoiler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getThreadTitle} from '@utils/thread_title';
 
 import Avatar from './avatar';
 import Body from './body';
@@ -127,6 +129,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
+        threadName: {marginTop: 4},
     };
 });
 
@@ -451,6 +454,9 @@ const Post = ({
         );
     }
 
+    // A named thread shows its name under its first message, but in the thread itself, whose header shows it.
+    const threadTitle = !post.rootId && location !== Screens.THREAD && !hasBeenDeleted ? getThreadTitle(post) : '';
+
     let unreadDot;
     let footer;
     if (isCRTEnabled && thread && location !== Screens.THREAD && !(rootId && location === Screens.PERMALINK)) {
@@ -498,6 +504,13 @@ const Post = ({
                         <View style={rightColumnStyle}>
                             {header}
                             {body}
+                            {Boolean(threadTitle) && (
+                                <ThreadName
+                                    title={threadTitle}
+                                    style={styles.threadName}
+                                    testID={`${itemTestID}.thread_name`}
+                                />
+                            )}
                             {footer}
                         </View>
                         {unreadDot}
