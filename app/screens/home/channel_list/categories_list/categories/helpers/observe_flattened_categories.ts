@@ -4,15 +4,17 @@
 import {of as of$, combineLatest, type Observable} from 'rxjs';
 import {switchMap, map, distinctUntilChanged} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
+import {Permissions, Preferences} from '@constants';
 import {DMS_CATEGORY, MANAGED_LOCAL_CATEGORY_PREFIX, UNREADS_CATEGORY} from '@constants/categories';
 import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
 import {filterAndSortMyChannels, makeChannelsMap} from '@helpers/database';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {getChannelById, observeChannelsByLastPostAt, observeNotifyPropsByChannels, queryMyChannelUnreads} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
+import {observePermissionForTeam} from '@queries/servers/role';
 import {observeCurrentChannelId, observeLastUnreadChannelId} from '@queries/servers/system';
-import {observeDeactivatedUsers} from '@queries/servers/user';
+import {observeTeam} from '@queries/servers/team';
+import {observeDeactivatedUsers, observeUser} from '@queries/servers/user';
 import {
     type ChannelWithMyChannel,
     filterArchivedChannels,
@@ -192,8 +194,8 @@ const observeFlattenedUnreads = (
     );
 };
 
-const processCategoriesData = (categoriesData: CategoryData[], unreadsOnTopValue: boolean): FlattenedCategoriesData => {
-    const filtered = filterManagedDuplicates(categoriesData);
+const processCategoriesData = (categoriesData: CategoryData[], unreadsOnTopValue: boolean, showEmptyManaged = false): FlattenedCategoriesData => {
+    const filtered = filterEmptyManaged(filterManagedDuplicates(categoriesData), showEmptyManaged);
 
     const unreadChannelIds = new Set<string>();
     for (const catData of filtered) {
@@ -212,6 +214,14 @@ const processCategoriesData = (categoriesData: CategoryData[], unreadsOnTopValue
 
     const items = flattenCategories(processed, unreadsOnTopValue);
     return {items, unreadChannelIds};
+};
+
+// The managed categories show only with channels in them, except to the community's admins, who fill them.
+const filterEmptyManaged = (categoriesData: CategoryData[], showEmpty: boolean): CategoryData[] => {
+    if (showEmpty) {
+        return categoriesData;
+    }
+    return categoriesData.filter((catData) => catData.sortedChannels.length || !catData.category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX));
 };
 
 const filterManagedDuplicates = (categoriesData: CategoryData[]): CategoryData[] => {
@@ -247,6 +257,7 @@ const observeFlattenedCategoriesNormal = (
     currentUserId: string,
     locale: string,
     isTablet: boolean,
+    showEmptyManaged: Observable<boolean>,
 ): Observable<FlattenedCategoriesData> => {
     if (categories.length === 0) {
         return of$({items: [], unreadChannelIds: new Set<string>()});
@@ -262,8 +273,8 @@ const observeFlattenedCategoriesNormal = (
         observeCategoryData(category, database, currentUserId, locale, isTablet),
     );
 
-    return combineLatest([combineLatest(categoryDataObservables), unreadsOnTop]).pipe(
-        map(([categoriesData, unreadsOnTopValue]) => processCategoriesData(categoriesData, unreadsOnTopValue)),
+    return combineLatest([combineLatest(categoryDataObservables), unreadsOnTop, showEmptyManaged]).pipe(
+        map(([categoriesData, unreadsOnTopValue, showEmpty]) => processCategoriesData(categoriesData, unreadsOnTopValue, showEmpty)),
         distinctUntilChanged((prev, curr) => {
             if (prev.items.length !== curr.items.length) {
                 return false;
@@ -328,7 +339,12 @@ export const observeFlattenedCategories = (
     // Observe categories for the current team
     const categories = queryCategoriesByTeamIds(database, [currentTeamId]).observeWithColumns(['sort_order', 'collapsed']);
 
+    const showEmptyManaged = combineLatest([observeTeam(database, currentTeamId), observeUser(database, currentUserId)]).pipe(
+        switchMap(([team, user]) => observePermissionForTeam(database, team, user, Permissions.MANAGE_TEAM, false)),
+        distinctUntilChanged(),
+    );
+
     return categories.pipe(
-        switchMap((cats) => observeFlattenedCategoriesNormal(sortCategories(cats), database, currentUserId, locale, isTablet)),
+        switchMap((cats) => observeFlattenedCategoriesNormal(sortCategories(cats), database, currentUserId, locale, isTablet, showEmptyManaged)),
     );
 };

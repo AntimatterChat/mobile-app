@@ -316,6 +316,7 @@
   "channel_list.dms_category": "Direct messages",
   "channel_list.favorites_category": "Favorites",
   "channel_list.find_channels": "Find channels...",
+  "channel_list.server_category_locked": "Set up for everyone by the community's admins. Its channels stay here.",
   "channel_loader.someone": "Someone",
   "channel_modal.descriptionHelp": "Describe how this channel should be used.",
   "channel_modal.header": "Header",

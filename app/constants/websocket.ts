@@ -106,6 +106,7 @@ const WebsocketEvents = {
     PROPERTY_FIELD_UPDATED: 'property_field_updated',
     PROPERTY_FIELD_DELETED: 'property_field_deleted',
     PROPERTY_VALUES_UPDATED: 'property_values_updated',
+    SERVER_CATEGORIES_UPDATED: 'server_categories_updated',
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED: 'custom_profile_attributes_field_updated',
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_CREATED: 'custom_profile_attributes_field_created',
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED: 'custom_profile_attributes_field_deleted',

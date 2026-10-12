@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DMS_CATEGORY} from '@constants/categories';
+import {DMS_CATEGORY, MANAGED_LOCAL_CATEGORY_PREFIX} from '@constants/categories';
 import DatabaseManager from '@database/manager';
+import {getChannelCategory, getManagedCategoryForChannel} from '@queries/servers/categories';
 import {setCurrentUserId} from '@queries/servers/system';
 
 import {
@@ -157,6 +158,21 @@ describe('category local actions', () => {
             expect(error).toBeUndefined();
             expect(models).toBeDefined();
             expect(models!.length).toBe(3);
+        });
+
+        it('storeCategories - prune takes a channel out of a managed category it left', async () => {
+            const managedId = `${MANAGED_LOCAL_CATEGORY_PREFIX}${teamId1}:Community`;
+            const managed = {id: managedId, team_id: teamId1, type: 'custom', display_name: 'Community', channel_ids: [channelId1]} as CategoryWithChannels;
+            const channels = {id: 'channels_category', team_id: teamId1, type: 'channels', channel_ids: [channelId1]} as CategoryWithChannels;
+            await storeCategories(serverUrl, [managed, channels], true);
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            expect(await getManagedCategoryForChannel(database, teamId1, channelId1)).toBeDefined();
+
+            // Its person moved it to their favourites: the managed category keeps no link to it.
+            const favorites = {id: 'favorites_category', team_id: teamId1, type: 'favorites', channel_ids: [channelId1]} as CategoryWithChannels;
+            await storeCategories(serverUrl, [{...managed, channel_ids: []}, {...channels, channel_ids: []}, favorites], true);
+            expect(await getManagedCategoryForChannel(database, teamId1, channelId1)).toBeUndefined();
+            expect((await getChannelCategory(database, teamId1, channelId1))?.id).toBe('favorites_category');
         });
 
         it('storeCategories - handle database not found', async () => {

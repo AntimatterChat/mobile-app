@@ -6,7 +6,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import EphemeralStore from '@store/ephemeral_store';
 
-import {makeManagedCategoryId, computeManagedSortOrder, mergeManagedMappingsIntoSidebarCategories, fetchManagedCategoryPropertyIds} from './managed_categories_merge';
+import {makeManagedCategoryId, computeManagedSortOrder, managedCategoryNames, mergeManagedMappingsIntoSidebarCategories, fetchManagedCategoryPropertyIds} from './managed_categories_merge';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -109,6 +109,50 @@ describe('managed_categories_merge helpers', () => {
 
             expect(result[0].sort_order).toBe(computeManagedSortOrder(0));
             expect(result[1].sort_order).toBe(computeManagedSortOrder(1));
+        });
+
+        describe('with the server categories of an Antimatter community', () => {
+            const serverCategories = [
+                {name: 'Voice', sort_order: 2, locked: true},
+                {name: 'Information', sort_order: 0, locked: true},
+                {name: 'Community', sort_order: 1, locked: false},
+            ];
+            const personal = [
+                {id: 'fav', team_id: teamId, type: 'favorites', channel_ids: ['open1', 'locked1']},
+                {id: 'mine', team_id: teamId, type: 'custom', channel_ids: ['open2']},
+                {id: 'chans', team_id: teamId, type: 'channels', channel_ids: ['open3']},
+            ] as CategoryWithChannels[];
+
+            it('should follow the server\'s order, then the unlisted categories by name, and keep empty ones', async () => {
+                const mappings = {open3: 'community', x: 'Zeta', y: 'Alpha'};
+                const result = await mergeManagedMappingsIntoSidebarCategories(database, teamId, [], mappings, {serverCategories});
+
+                expect(result.map((c) => c.display_name)).toEqual(['Information', 'Community', 'Voice', 'Alpha', 'Zeta']);
+                expect(result[0].channel_ids).toEqual([]);
+                expect(result[1].channel_ids).toEqual(['open3']);
+                expect(result[3].sort_order).toBe(computeManagedSortOrder(3));
+            });
+
+            it('should leave a channel of an open category where its person put it, but not one of a locked category', async () => {
+                const mappings = {open1: 'Community', open2: 'Community', open3: 'Community', locked1: 'Information'};
+                const result = await mergeManagedMappingsIntoSidebarCategories(database, teamId, personal, mappings, {serverCategories});
+
+                expect(result.find((c) => c.display_name === 'Community')?.channel_ids).toEqual(['open3']);
+                expect(result.find((c) => c.display_name === 'Information')?.channel_ids).toEqual(['locked1']);
+                expect(result.slice(-3)).toEqual(personal);
+            });
+
+            it('should fold the categories its person folded', async () => {
+                const result = await mergeManagedMappingsIntoSidebarCategories(database, teamId, [], {}, {serverCategories, collapsed: ['Voice']});
+
+                expect(result.map((c) => c.collapsed)).toEqual([false, false, true]);
+            });
+        });
+    });
+
+    describe('managedCategoryNames', () => {
+        it('should order by name without a server list', () => {
+            expect(managedCategoryNames(undefined, ['b', 'a10', 'a9', 'b'])).toEqual(['a9', 'a10', 'b']);
         });
     });
 

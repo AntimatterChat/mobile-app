@@ -7,6 +7,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {toggleCollapseCategory} from '@actions/local/category';
+import {saveServerCategoryCollapsed} from '@actions/remote/category';
 import CompassIcon from '@components/compass_icon';
 import {CHANNELS_CATEGORY, FAVORITES_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import {useServerUrl} from '@context/server';
@@ -40,16 +41,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     muted: {
         opacity: 0.32,
     },
+    lock: {
+        marginLeft: 4,
+        color: changeOpacity(theme.sidebarText, 0.48),
+    },
 }));
 
 type Props = {
     category: CategoryModel;
     hasChannels: boolean;
+
+    // A category the community's admins set up for everyone, and whether it keeps its channels.
+    managed?: boolean;
+    locked?: boolean;
 }
 
 const AnimatedCompassIcon = Animated.createAnimatedComponent(CompassIcon);
 
-const CategoryHeader = ({category, hasChannels}: Props) => {
+const CategoryHeader = ({category, hasChannels, managed = false, locked = false}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -57,7 +66,13 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
     const rotate = useSharedValue(category.collapsed ? -90 : 0);
 
     // Action
-    const toggleCollapse = useCallback(() => toggleCollapseCategory(serverUrl, category.id), [category.id, serverUrl]);
+    const toggleCollapse = useCallback(async () => {
+        const {category: toggled} = await toggleCollapseCategory(serverUrl, category.id);
+        if (managed && toggled) {
+            // A server category folds for its person in all their apps.
+            saveServerCategoryCollapsed(serverUrl, toggled.teamId, toggled.displayName, toggled.collapsed);
+        }
+    }, [category.id, managed, serverUrl]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -111,6 +126,15 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
                 >
                     {displayName}
                 </Text>
+                {locked && (
+                    <CompassIcon
+                        name='lock-outline'
+                        size={14}
+                        style={styles.lock}
+                        accessibilityLabel={formatMessage({id: 'channel_list.server_category_locked', defaultMessage: 'Set up for everyone by the community\'s admins. Its channels stay here.'})}
+                        testID={`channel_list.category_header.${category.type}.locked`}
+                    />
+                )}
             </View>
         </TouchableOpacity>
     );

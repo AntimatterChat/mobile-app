@@ -16,6 +16,9 @@ export const CATEGORIES_TO_KEEP = {
     TEAMS_ORDER: 'teams_order',
     THEME: 'theme',
     SYSTEM_NOTICE: 'system_notice',
+
+    // Antimatter: the server categories each person folded, per community (a JSON list of names).
+    SERVER_CATEGORIES_COLLAPSED: 'fusion_server_collapsed',
 };
 
 const CATEGORIES = {

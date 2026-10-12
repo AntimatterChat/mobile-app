@@ -50,11 +50,24 @@ export async function prepareCategoriesAndCategoriesChannels(operator: ServerDat
         const flattenedModels = models.flat();
 
         const teamIdToChannelIds = new Map<String, Set<String>>();
+
+        // The channels filed in managed categories: a channel taken out of them (an open server category's channel
+        // its person moved to their own category) leaves them even though it stays in the team.
+        const teamIdToManagedChannelIds = new Map<String, Set<String>>();
         categories.forEach((category) => {
             const value = teamIdToChannelIds.get(category.team_id) || new Set();
             category.channel_ids.forEach(value.add, value);
             teamIdToChannelIds.set(category.team_id, value);
+            if (category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
+                const managed = teamIdToManagedChannelIds.get(category.team_id) || new Set();
+                category.channel_ids.forEach(managed.add, managed);
+                teamIdToManagedChannelIds.set(category.team_id, managed);
+            }
         });
+        const isStale = (category: CategoryModel, channelId: string) => {
+            const kept = category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX) ? teamIdToManagedChannelIds : teamIdToChannelIds;
+            return !kept.get(category.teamId)?.has(channelId);
+        };
 
         if (prune && categories.length) {
             const remoteCategoryIds = new Set(categories.map((cat) => cat.id));
@@ -68,13 +81,13 @@ export async function prepareCategoriesAndCategoriesChannels(operator: ServerDat
 
                 if (remoteCategoryIds.has(localCategory.id)) {
                     for (const localCC of localCategoryChannels) {
-                        if (!teamIdToChannelIds.get(localCategory.teamId)?.has(localCC.channelId)) {
+                        if (isStale(localCategory, localCC.channelId)) {
                             flattenedModels.push(localCC.prepareDestroyPermanently());
                         }
                     }
                 } else {
                     for (const cc of localCategoryChannels) {
-                        if (!teamIdToChannelIds.get(localCategory.teamId)?.has(cc.channelId)) {
+                        if (isStale(localCategory, cc.channelId)) {
                             flattenedModels.push(cc.prepareDestroyPermanently());
                         }
                     }
@@ -179,6 +192,15 @@ export const getIsChannelFavorited = async (database: Database, teamId: string, 
 export const observeIsChannelFavorited = (database: Database, teamId: string, channelId: string) => {
     return queryChannelCategory(database, teamId, channelId).observe().pipe(
         switchMap((result) => (result.length ? of$(result[0].type === FAVORITES_CATEGORY) : of$(false))),
+        distinctUntilChanged(),
+    );
+};
+
+export const observeManagedCategoryForChannel = (database: Database, teamId: string, channelId: string) => {
+    return database.get<CategoryModel>(CATEGORY).query(
+        Q.on(CATEGORY_CHANNEL, Q.where('id', getManagedCategoryChannelId(teamId, channelId))),
+    ).observe().pipe(
+        map((result) => result[0]),
         distinctUntilChanged(),
     );
 };
