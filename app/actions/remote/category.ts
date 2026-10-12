@@ -9,7 +9,7 @@ import {computeManagedSortOrder, fetchManagedCategoryPropertyIds, makeManagedCat
 import NetworkManager from '@managers/network_manager';
 import {getCategoryById, getChannelCategory, queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {getChannelById} from '@queries/servers/channel';
-import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
+import {getCurrentTeamId, getManagedChannelCategoriesEnabled} from '@queries/servers/system';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -28,11 +28,11 @@ export const fetchCategories = async (serverUrl: string, teamId: string, prune =
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const managedCategoriesEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
+        const managedCategoriesEnabled = await getManagedChannelCategoriesEnabled(database);
 
         const {categories: nonManagedCategories} = await client.getCategories('me', teamId, groupLabel);
         let categories = nonManagedCategories;
-        if (managedCategoriesEnabled === 'true') {
+        if (managedCategoriesEnabled) {
             fetchManagedCategoryPropertyIds(serverUrl);
             const mappings = await client.getManagedCategories(teamId, groupLabel);
             categories = await mergeManagedMappingsIntoSidebarCategories(database, teamId, nonManagedCategories, mappings);
@@ -57,8 +57,8 @@ export async function addChannelToManagedCategoryIfNeeded(serverUrl: string, cha
     }
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
-        if (managedEnabled !== 'true') {
+        const managedEnabled = await getManagedChannelCategoriesEnabled(database);
+        if (!managedEnabled) {
             return;
         }
         const channelId = channel.id;

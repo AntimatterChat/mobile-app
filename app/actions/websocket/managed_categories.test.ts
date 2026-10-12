@@ -7,7 +7,7 @@ import DatabaseManager from '@database/manager';
 import {fetchManagedCategoryPropertyIds} from '@helpers/sidebar/managed_categories_merge';
 import {getManagedCategoryForChannel} from '@queries/servers/categories';
 import {getChannelById} from '@queries/servers/channel';
-import {getConfigValue} from '@queries/servers/system';
+import {getManagedChannelCategoriesEnabled} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 
 import {handleManagedChannelCategoriesPropertyValuesUpdated} from './managed_categories';
@@ -28,7 +28,7 @@ jest.mock('@queries/servers/channel', () => ({
     getChannelById: jest.fn(),
 }));
 jest.mock('@queries/servers/system', () => ({
-    getConfigValue: jest.fn(),
+    getManagedChannelCategoriesEnabled: jest.fn(),
 }));
 jest.mock('@utils/log', () => ({logDebug: jest.fn()}));
 
@@ -50,7 +50,7 @@ describe('handleManagedChannelCategoriesPropertyValuesUpdated', () => {
     beforeEach(async () => {
         jest.clearAllMocks();
         await DatabaseManager.init([serverUrl]);
-        (getConfigValue as jest.Mock).mockResolvedValue('true');
+        jest.mocked(getManagedChannelCategoriesEnabled).mockResolvedValue(true);
         EphemeralStore.setManagedCategoryPropertyIds(serverUrl, propertyIds);
         (getChannelById as jest.Mock).mockResolvedValue({id: channelId, teamId});
         (getManagedCategoryForChannel as jest.Mock).mockResolvedValue(undefined);
@@ -62,7 +62,7 @@ describe('handleManagedChannelCategoriesPropertyValuesUpdated', () => {
     });
 
     it('should skip when feature is disabled', async () => {
-        (getConfigValue as jest.Mock).mockResolvedValue('false');
+        jest.mocked(getManagedChannelCategoriesEnabled).mockResolvedValue(false);
 
         await handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, makeMsg());
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {hasReliableWebsocket, isZeroPersistenceConfig} from './config';
+import {hasReliableWebsocket, isManagedChannelCategoriesConfig, isZeroPersistenceConfig} from './config';
 
 describe('Config utilities', () => {
     test('hasReliableWebsocket', () => {
@@ -37,6 +37,21 @@ describe('Config utilities', () => {
                 MobileEphemeralModeEnabled: 'true',
                 MobileEphemeralModeAutoCacheCleanupDays: '0',
             } as ClientConfig)).toBe(true);
+        });
+    });
+
+    describe('isManagedChannelCategoriesConfig', () => {
+        it('should be on with the feature flag of current servers', () => {
+            expect(isManagedChannelCategoriesConfig({FeatureFlagManagedChannelCategories: 'true'})).toBe(true);
+        });
+
+        it('should be on with the setting of Mattermost 11.7', () => {
+            expect(isManagedChannelCategoriesConfig({EnableManagedChannelCategories: 'true'})).toBe(true);
+        });
+
+        it('should be off when neither is set', () => {
+            expect(isManagedChannelCategoriesConfig({FeatureFlagManagedChannelCategories: 'false'})).toBe(false);
+            expect(isManagedChannelCategoriesConfig(undefined)).toBe(false);
         });
     });
 });

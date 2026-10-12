@@ -4,7 +4,7 @@
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
 import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels, queryCategoryChannelsByChannelId, getManagedCategoryForChannel, getManagedCategoryChannelById} from '@queries/servers/categories';
-import {getConfigValue, getCurrentUserId} from '@queries/servers/system';
+import {getCurrentUserId, getManagedChannelCategoriesEnabled} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
@@ -115,8 +115,8 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
 export async function removeChannelFromManagedCategoryIfNeeded(serverUrl: string, teamId: string, channelId: string) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
-        if (managedEnabled !== 'true') {
+        const managedEnabled = await getManagedChannelCategoriesEnabled(database);
+        if (!managedEnabled) {
             return;
         }
 

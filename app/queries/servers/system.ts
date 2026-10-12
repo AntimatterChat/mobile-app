@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
-
 import {Database, Q} from '@nozbe/watermelondb';
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {modelName} from 'expo-device';
@@ -13,6 +11,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
+import {isManagedChannelCategoriesConfig} from '@utils/config';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {logError} from '@utils/log';
@@ -244,6 +243,14 @@ export const getIsDataRetentionEnabled = async (database: Database) => {
     const dataRetentionEnableMessageDeletion = await getConfigValue(database, 'DataRetentionEnableMessageDeletion');
 
     return dataRetentionEnableMessageDeletion === 'true';
+};
+
+export const getManagedChannelCategoriesEnabled = async (database: Database) => {
+    const [flag, setting] = await Promise.all([
+        getConfigValue(database, 'FeatureFlagManagedChannelCategories'),
+        getConfigValue(database, 'EnableManagedChannelCategories'),
+    ]);
+    return isManagedChannelCategoriesConfig({FeatureFlagManagedChannelCategories: flag, EnableManagedChannelCategories: setting});
 };
 
 export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {

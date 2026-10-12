@@ -61,6 +61,25 @@ describe('fetchCategories', () => {
         expect(result).toEqual({categories: mockCategories});
     });
 
+    it('should merge the server-managed categories when the server has the managed categories flag', async () => {
+        await operator.handleConfigs({
+            configs: [{id: 'FeatureFlagManagedChannelCategories', value: 'true'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        const mockClient = {
+            getCategories: jest.fn().mockResolvedValue({categories: mockCategories}),
+            getManagedCategories: jest.fn().mockResolvedValue({}),
+            getPropertyGroup: jest.fn().mockResolvedValue({id: 'group'}),
+            getPropertyFields: jest.fn().mockResolvedValue([]),
+        };
+        (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
+
+        await fetchCategories(serverUrl, teamId, false, true);
+
+        expect(mockClient.getManagedCategories).toHaveBeenCalledWith(teamId, undefined);
+    });
+
     it('should handle error during fetch categories', async () => {
         const mockClient = {
             getCategories: jest.fn().mockRejectedValue(error),

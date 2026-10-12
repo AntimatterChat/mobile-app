@@ -7,15 +7,15 @@ import DatabaseManager from '@database/manager';
 import {fetchManagedCategoryPropertyIds} from '@helpers/sidebar/managed_categories_merge';
 import {getManagedCategoryForChannel} from '@queries/servers/categories';
 import {getChannelById} from '@queries/servers/channel';
-import {getConfigValue} from '@queries/servers/system';
+import {getManagedChannelCategoriesEnabled} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {logDebug} from '@utils/log';
 
 export async function handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl: string, msg: WebSocketMessage) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const enabled = await getConfigValue(database, 'EnableManagedChannelCategories');
-        if (enabled !== 'true') {
+        const enabled = await getManagedChannelCategoriesEnabled(database);
+        if (!enabled) {
             return;
         }
 

@@ -10,6 +10,7 @@ import DatabaseManager from '@database/manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import {isManagedChannelCategoriesConfig} from '@utils/config';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
@@ -23,8 +24,8 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             updateDmGmDisplayName(serverUrl);
         }
 
-        const prevManagedSetting = prevConfig?.EnableManagedChannelCategories;
-        const newManagedSetting = config?.EnableManagedChannelCategories;
+        const prevManagedSetting = isManagedChannelCategoriesConfig(prevConfig);
+        const newManagedSetting = isManagedChannelCategoriesConfig(config);
         if (newManagedSetting !== prevManagedSetting) {
             EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
             const currentTeamId = await getCurrentTeamId(database);

@@ -131,6 +131,7 @@ interface ClientConfig {
     FeatureFlagPostPriority?: string;
     FeatureFlagChannelBookmarks?: string;
     FeatureFlagCustomProfileAttributes?: string;
+    FeatureFlagManagedChannelCategories?: string;
     FeatureFlagMmBlocksEnabled?: string;
     FeatureFlagSessionAttributes?: string;
     ForgotPasswordLink?: string;
