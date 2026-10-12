@@ -7,15 +7,14 @@ import {Text, View} from 'react-native';
 import Video from 'react-native-video';
 
 import ExpoImage from '@components/expo_image';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import NetworkManager from '@managers/network_manager';
 import {getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {GIF_POST_PROP, STICKER_SIZE, gifDisplayMedia, gifDisplaySize, gifMediaUrl, parseGifItem} from '../../utils/gifs';
+import {useGifMediaSource} from '../../hooks/gif_media';
+import {GIF_POST_PROP, STICKER_SIZE, gifDisplayMedia, gifDisplaySize, parseGifItem} from '../../utils/gifs';
 
 import type {GifMedia} from '../../types';
 import type PostModel from '@typings/database/models/servers/post';
@@ -58,23 +57,8 @@ type MediaProps = {
 };
 
 // GifMediaView shows an animated GIF or WebP, or plays a muted, looping video.
-const GifMediaView = ({media, label, width, height, fit}: MediaProps) => {
-    const serverUrl = useServerUrl();
-    const source = useMemo(() => {
-        const src = gifMediaUrl(serverUrl, media.url);
-        if (!src) {
-            return undefined;
-        }
-        if (!src.needsAuth) {
-            return {uri: src.uri};
-        }
-        try {
-            return {uri: src.uri, headers: NetworkManager.getClient(serverUrl).getRequestHeaders('GET')};
-        } catch {
-            return {uri: src.uri};
-        }
-    }, [serverUrl, media.url]);
-
+export const GifMediaView = ({media, label, width, height, fit}: MediaProps) => {
+    const source = useGifMediaSource(media.url);
     const style = useMemo(() => ({width, height}), [width, height]);
 
     if (!source) {

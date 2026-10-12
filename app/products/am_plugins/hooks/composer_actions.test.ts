@@ -44,6 +44,15 @@ describe('useComposerPluginActions', () => {
         expect(navigateToScreen).toHaveBeenCalledWith(Screens.AM_CREATE_POLL, {channelId: 'channel1', rootId: 'root1'});
     });
 
+    it('should offer to send a GIF or sticker when the server runs the GIFs plugin', () => {
+        amPluginsStore.setEnabledPlugins(SERVER_URL, ['com.antimatterchat.gifs']);
+        const {result} = renderHook(() => useComposerPluginActions('channel1'), {wrapper});
+
+        expect(result.current.map((a) => a.text)).toEqual(['GIF or sticker']);
+        result.current[0].onPress();
+        expect(navigateToScreen).toHaveBeenCalledWith(Screens.AM_GIF_PICKER, {channelId: 'channel1', rootId: ''});
+    });
+
     it('should offer nothing outside a channel', () => {
         amPluginsStore.setEnabledPlugins(SERVER_URL, ['com.antimatterchat.polls']);
         const {result} = renderHook(() => useComposerPluginActions(undefined), {wrapper});
