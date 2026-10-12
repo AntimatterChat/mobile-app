@@ -16,6 +16,9 @@ export const CATEGORIES_TO_KEEP = {
     TEAMS_ORDER: 'teams_order',
     THEME: 'theme',
     SYSTEM_NOTICE: 'system_notice',
+
+    // Antimatter: whether inline replies notify the quoted author (see utils/inline_reply).
+    INLINE_REPLIES: 'inline_replies',
 };
 
 const CATEGORIES = {
