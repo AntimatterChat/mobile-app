@@ -36,7 +36,11 @@ type PostType = PostTypesUserCreatable
     | 'custom_llmbot'
     | 'custom_llm_postback'
     | 'custom_agent_mention_reminder'
-    | 'custom_poll';
+    | 'custom_poll'
+    | 'custom_antimatter_note'
+    | 'custom_am_whiteboard'
+    | 'custom_todo'
+    | 'custom_antimatter_gif';
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph' | 'permalink';
 

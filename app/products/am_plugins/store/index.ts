@@ -4,11 +4,11 @@
 import {BehaviorSubject} from 'rxjs';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
-import type {Poll} from '../types';
+import type {Poll, TodoLists} from '../types';
 
-// In-memory state of the Antimatter plugins, per server: which plugins are enabled and the polls
-// seen. None of it is kept in the database: polls change live and are fetched again after a
-// reconnection.
+// In-memory state of the Antimatter plugins, per server: which plugins are enabled, the polls seen
+// and the user's todo lists. None of it is kept in the database: polls and todos change live and
+// are fetched again after a reconnection.
 
 class ServerSubjects<T> {
     private subjects = new Map<string, BehaviorSubject<T>>();
@@ -32,6 +32,7 @@ class ServerSubjects<T> {
 class AmPluginsStore {
     private plugins = new ServerSubjects<Set<string>>(() => new Set());
     private polls = new ServerSubjects<Record<string, Poll>>(() => ({}));
+    private todos = new ServerSubjects<TodoLists | undefined>(() => undefined);
 
     // Plugins
 
@@ -79,9 +80,24 @@ class AmPluginsStore {
         );
     }
 
+    // The todo plugin's lists
+
+    getTodoLists(serverUrl: string) {
+        return this.todos.get(serverUrl).getValue();
+    }
+
+    setTodoLists(serverUrl: string, lists: TodoLists) {
+        this.todos.get(serverUrl).next(lists);
+    }
+
+    observeTodoLists(serverUrl: string) {
+        return this.todos.get(serverUrl).asObservable();
+    }
+
     clear(serverUrl: string) {
         this.plugins.clear(serverUrl);
         this.polls.clear(serverUrl);
+        this.todos.clear(serverUrl);
     }
 }
 

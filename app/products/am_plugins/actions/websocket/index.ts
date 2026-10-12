@@ -11,6 +11,7 @@ import {amPluginsStore} from '../../store';
 import {myVotesFromVoters} from '../../utils/polls';
 import {refreshEnabledPlugins} from '../remote/plugins';
 import {reloadPolls} from '../remote/polls';
+import {refreshTodoListsIfLoaded} from '../remote/todo';
 
 import type {Poll} from '../../types';
 
@@ -58,6 +59,9 @@ export function handleAmPluginsEvents(serverUrl: string, msg: WebSocketMessage) 
         case AM_PLUGIN_WEBSOCKET_EVENTS.POLL_MY_VOTES:
             handlePollMyVotes(serverUrl, msg);
             break;
+        case AM_PLUGIN_WEBSOCKET_EVENTS.TODO_REFRESH:
+            refreshTodoListsIfLoaded(serverUrl);
+            break;
         case WebsocketEvents.PLUGIN_ENABLED:
         case WebsocketEvents.PLUGIN_DISABLED:
         case WebsocketEvents.PLUGIN_STATUSES_CHANGED:
@@ -71,5 +75,6 @@ export async function handleAmPluginsReconnect(serverUrl: string) {
     await Promise.all([
         refreshEnabledPlugins(serverUrl),
         reloadPolls(serverUrl),
+        refreshTodoListsIfLoaded(serverUrl),
     ]);
 }

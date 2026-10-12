@@ -40,3 +40,61 @@ export type PollRequest = {
     anonymous: boolean;
     duration_minutes: number;
 };
+
+// A note or whiteboard (notes and whiteboard plugins)
+export type PluginDoc = {
+    id: string;
+    title: string;
+    channel_id: string;
+    creator_id: string;
+    create_at: number;
+    update_at: number;
+    shared_post_id?: string;
+};
+
+export type TodoItem = {
+    id: string;
+    message: string;
+};
+
+// The user's personal todo lists (todo plugin, GET /lists)
+export type TodoLists = {
+    my?: TodoItem[];
+    in?: TodoItem[];
+    out?: TodoItem[];
+};
+
+export type TodoAction = 'accept' | 'complete' | 'remove';
+
+export type GifKind = 'gif' | 'sticker';
+
+export type GifMedia = {
+    url: string;
+    width?: number;
+    height?: number;
+    video?: boolean;
+};
+
+// A GIF or sticker (gifs plugin)
+export type GifItem = {
+    id: string;
+    kind: GifKind;
+    title?: string;
+    description?: string;
+    preview: GifMedia;
+    post: GifMedia;
+    image?: GifMedia;
+    still?: GifMedia;
+    attribution?: string;
+    source_url?: string;
+};
+
+export type GifPage = {
+    items: GifItem[];
+    next?: string;
+};
+
+export type GifsConfig = {
+    configured: boolean;
+    stickers: boolean;
+};
