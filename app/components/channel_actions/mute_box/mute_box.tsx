@@ -4,10 +4,13 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
-import {toggleMuteChannel} from '@actions/remote/channel';
+import {muteChannelFor, unmuteChannel} from '@actions/remote/timed_mute';
 import OptionBox from '@components/option_box';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
+import {showMuteChannelSnackbar} from '@utils/snack_bar';
+
+import {showMuteDurations} from './mute_durations';
 
 import type {StyleProp, ViewStyle} from 'react-native';
 
@@ -23,17 +26,25 @@ const MutedBox = ({channelId, containerStyle, isMuted, showSnackBar = false, tes
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
+    // Muting asks for how long, as in Fusion; unmuting also forgets when a timed mute was to end.
     const handleOnPress = useCallback(async () => {
         await dismissBottomSheet();
-        toggleMuteChannel(serverUrl, channelId, showSnackBar);
-    }, [channelId, serverUrl, showSnackBar]);
+        if (!isMuted) {
+            showMuteDurations(channelId, showSnackBar);
+            return;
+        }
+        const {error} = await unmuteChannel(serverUrl, channelId);
+        if (!error && showSnackBar) {
+            showMuteChannelSnackbar(false, () => muteChannelFor(serverUrl, channelId, 0));
+        }
+    }, [channelId, isMuted, serverUrl, showSnackBar]);
 
     const muteActionTestId = isMuted ? `${testID}.unmute.action` : `${testID}.mute.action`;
 
     return (
         <OptionBox
-            activeIconName='bell-off-outline'
-            activeText={intl.formatMessage({id: 'channel_info.muted', defaultMessage: 'Muted'})}
+            activeIconName={isMuted ? 'bell-off-outline' : undefined}
+            activeText={isMuted ? intl.formatMessage({id: 'channel_info.muted', defaultMessage: 'Muted'}) : undefined}
             containerStyle={containerStyle}
             iconName='bell-outline'
             isActive={isMuted}

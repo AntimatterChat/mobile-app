@@ -19,6 +19,9 @@ export const CATEGORIES_TO_KEEP = {
 
     // Antimatter: whether inline replies notify the quoted author (see utils/inline_reply).
     INLINE_REPLIES: 'inline_replies',
+
+    // Antimatter: when timed mutes end (see utils/timed_mute).
+    MUTE_UNTIL: 'fusion_mute_until',
 };
 
 const CATEGORIES = {

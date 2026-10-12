@@ -21,8 +21,7 @@ describe('setThreadTitle', () => {
     const root = TestHelper.fakePost({id: 'root-id', channel_id: 'channel-id', props: {from_bot: 'true'}});
 
     beforeAll(() => {
-        // eslint-disable-next-line
-        // @ts-ignore
+        // @ts-expect-error a client with only what's needed
         NetworkManager.getClient = () => mockClient;
     });
 
