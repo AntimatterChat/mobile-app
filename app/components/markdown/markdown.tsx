@@ -21,8 +21,10 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getScheme} from '@utils/url';
 
+import {applyAntimatterSyntax, type WalltimeContext} from './antimatter_transform';
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
+import DynamicTimestamp from './dynamic_timestamp';
 import Hashtag from './hashtag';
 import InlineActionButton from './inline_action_button';
 import InlineEntityLink, {type InlineEntityType} from './inline_entity_link';
@@ -39,6 +41,7 @@ import MarkdownTableCell, {type MarkdownTableCellProps} from './markdown_table_c
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {type MarkdownTableRowProps} from './markdown_table_row';
 import {addListItemIndices, autolinkPhoneNumbers, combineTextNodes, highlightMentions, highlightWithoutNotification, highlightSearchPatterns, parseTaskLists, processInlineEntities, pullOutImages} from './transform';
+import Walltime from './walltime';
 
 import type {ChannelMentions} from './channel_mention/channel_mention';
 import type {
@@ -89,6 +92,9 @@ export type MarkdownProps = {
     /** integration_format for postActionWithCookie when mmBlocksActionCookie is set. */
     integrationFormat?: PostActionIntegrationFormat;
     isUnsafeLinksPost?: boolean;
+
+    // Antimatter: set to show the times written in a message ("3pm CET") in the reader's time zone too.
+    walltime?: WalltimeContext;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -128,6 +134,18 @@ const getExtraPropsForNode = (node: any) => {
 
     if (node.type === 'checkbox') {
         extraProps.isChecked = node.isChecked;
+    }
+
+    if (node.type === 'am_timestamp') {
+        extraProps.seconds = node.seconds;
+        extraProps.timestampStyle = node.timestampStyle;
+    }
+
+    if (node.type === 'am_walltime') {
+        extraProps.start = node.start;
+        extraProps.end = node.end;
+        extraProps.zone = node.zone;
+        extraProps.explicit = node.explicit;
     }
 
     if (node.type === 'inline_entity_link') {
@@ -197,6 +215,7 @@ const Markdown = ({
     mmBlocksActionCookie,
     integrationFormat,
     isUnsafeLinksPost,
+    walltime,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
     const blockStyles = useMemo<MarkdownBlockStyles>(() => getMarkdownBlockStyles(theme), [theme]);
@@ -560,6 +579,30 @@ const Markdown = ({
         );
     }, [baseTextStyle]);
 
+    const renderTimestamp = useCallback(({context, literal, seconds, timestampStyle}: {context: string[]; literal: string; seconds: number; timestampStyle: string}) => {
+        return (
+            <DynamicTimestamp
+                seconds={seconds}
+                timestampStyle={timestampStyle}
+                literal={literal}
+                textStyle={computeTextStyle(textStyles, baseTextStyle, context)}
+            />
+        );
+    }, [baseTextStyle, textStyles]);
+
+    const renderWalltime = useCallback(({context, literal, start, end, zone, explicit}: {context: string[]; literal: string; start: number; end?: number; zone: string; explicit: boolean}) => {
+        return (
+            <Walltime
+                literal={literal}
+                start={start}
+                end={end}
+                zone={zone}
+                explicit={explicit}
+                textStyle={computeTextStyle(textStyles, baseTextStyle, context)}
+            />
+        );
+    }, [baseTextStyle, textStyles]);
+
     const renderParagraph = useCallback(({children, first}: {children: ReactElement[]; first: boolean}) => {
         if (!children || children.length === 0) {
             return null;
@@ -667,6 +710,9 @@ const Markdown = ({
             highlight_without_notification: Renderer.forwardChildren,
             checkbox: renderCheckbox,
             inline_entity_link: renderInlineEntityLink,
+            custom_inline: Renderer.forwardChildren, // Antimatter's subtext (SUBTEXT_NODE)
+            am_timestamp: renderTimestamp,
+            am_walltime: renderWalltime,
 
             editedIndicator: renderEditedIndicator,
             maxNodesWarning: renderMaxNodesWarning,
@@ -711,6 +757,8 @@ const Markdown = ({
         renderTableCell,
         renderCheckbox,
         renderInlineEntityLink,
+        renderTimestamp,
+        renderWalltime,
         renderEditedIndicator,
         renderMaxNodesWarning,
         maxNodes,
@@ -732,6 +780,7 @@ const Markdown = ({
                 ast = autolinkPhoneNumbers(ast);
             }
             ast = processInlineEntities(ast, serverUrl);
+            ast = applyAntimatterSyntax(ast, walltime);
             if (mentionKeys) {
                 ast = highlightMentions(ast, mentionKeys);
             }
@@ -794,7 +843,7 @@ const Markdown = ({
                 />
             );
         }
-    }, [channelId, disableLinks, highlightKeys, isEdited, isUnsafeLinksPost, mentionKeys, parser, postId, renderer, searchPatterns, serverUrl, style.errorMessage, value]);
+    }, [channelId, disableLinks, highlightKeys, isEdited, isUnsafeLinksPost, mentionKeys, parser, postId, renderer, searchPatterns, serverUrl, style.errorMessage, value, walltime]);
 
     return output;
 };

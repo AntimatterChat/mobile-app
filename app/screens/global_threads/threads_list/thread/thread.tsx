@@ -18,6 +18,7 @@ import {useTheme} from '@context/theme';
 import {useSpoilerShown} from '@hooks/spoiler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateToScreen} from '@screens/navigation';
+import {formatTimestampsInText} from '@utils/dynamic_timestamp';
 import {getPostTranslatedMessage, getPostTranslation} from '@utils/post';
 import {isSpoilerPost} from '@utils/spoiler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -178,6 +179,9 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
     if (isChannelAutotranslated && post.type === '' && translation?.state === 'ready') {
         message = getPostTranslatedMessage(message, translation);
     }
+
+    // Antimatter's dynamic timestamps and subtext marks, which the excerpt doesn't render.
+    message = formatTimestampsInText(message, {locale: intl.locale}).replace(/^-# /gm, '');
 
     const threadStarterName = displayUsername(author, intl.locale, teammateNameDisplay);
     const threadItemTestId = `${testID}.thread_item.${thread.id}`;

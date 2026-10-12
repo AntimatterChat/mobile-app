@@ -6,6 +6,7 @@ import {useIntl, type IntlShape} from 'react-intl';
 import {type StyleProp, Text, type TextStyle, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {formatTimestampsInText} from '@utils/dynamic_timestamp';
 import {plainText, quotedIcon, type Quoted} from '@utils/inline_reply';
 
 type Props = {
@@ -28,7 +29,7 @@ export function quotedText(intl: IntlShape, quoted: Quoted, variant: 'ref' | 'ba
         return intl.formatMessage({id: 'spoiler.title', defaultMessage: 'Spoiler'});
     }
     if (quoted.message.trim()) {
-        return plainText(quoted.message, 160);
+        return plainText(formatTimestampsInText(quoted.message, {locale: intl.locale}), 160);
     }
     if (variant === 'bar') {
         if (onlyImages) {

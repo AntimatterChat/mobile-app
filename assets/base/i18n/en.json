@@ -683,6 +683,7 @@
   "markdown.max_nodes.error": "This message is too long to be shown fully on a mobile device. Please view it on desktop or contact an admin to increase this limit.",
   "markdown.parse_error": "An error occurred while parsing this text",
   "markdown.render_error": "An error occurred while rendering this text",
+  "markdown.walltime": "{local} your time · {written} as written",
   "mentions.empty.paragraph": "You'll see messages here when someone mentions you or uses terms you're monitoring.",
   "mentions.empty.title": "No Mentions yet",
   "mm_blocks_content.cannot_display": "Cannot display content",

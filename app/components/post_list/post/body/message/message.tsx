@@ -33,6 +33,7 @@ type MessageProps = {
     searchPatterns?: SearchPattern[];
     theme: Theme;
     isChannelAutotranslated: boolean;
+    authorZone?: string;
 }
 
 const SHOW_MORE_HEIGHT = 54;
@@ -72,6 +73,7 @@ const Message = ({
     searchPatterns,
     theme,
     isChannelAutotranslated,
+    authorZone,
 }: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
@@ -93,6 +95,9 @@ const Message = ({
         }
     }, [maxHeight]);
     const onPress = () => setOpen(!open);
+
+    // The times written in the message ("3pm") are read in the author's time zone, on the day it was posted.
+    const walltime = useMemo(() => ({zone: authorZone, postedAt: post.createAt}), [authorZone, post.createAt]);
 
     const channelMentions = useMemo(() => {
         return isChannelMentions(post.props?.channel_mentions) ? post.props.channel_mentions : EMPTY_CHANNEL_MENTIONS;
@@ -146,6 +151,7 @@ const Message = ({
                             searchPatterns={searchPatterns}
                             theme={theme}
                             isUnsafeLinksPost={Boolean(post.props?.unsafe_links && post.props.unsafe_links !== '')}
+                            walltime={walltime}
                         />
                     </View>
                 </ScrollView>

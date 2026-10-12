@@ -34,6 +34,7 @@ export function getCodeFont() {
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
     const codeFont = getCodeFont();
     const platformHeadingPadding = Platform.select({ios: 3, default: 12});
+    const subtext = typography('Body', 75);
 
     return {
         emph: {
@@ -121,6 +122,14 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
         search_highlight: {
             backgroundColor: theme.mentionHighlightBg,
             color: theme.mentionHighlightLink,
+        },
+
+        // Antimatter: a line starting with "-# " is subtext, small and muted, as in Discord and Fusion. Its nodes are
+        // custom_inline ones (SUBTEXT_NODE in components/markdown/antimatter_transform).
+        custom_inline: {
+            fontSize: subtext.fontSize,
+            lineHeight: subtext.lineHeight,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
         },
     };
 });
