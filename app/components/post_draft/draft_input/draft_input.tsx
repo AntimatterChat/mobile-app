@@ -9,6 +9,7 @@ import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area
 import {scheduleOnRN} from 'react-native-worklets';
 
 import RewritingIndicator from '@agents/components/rewriting_indicator';
+import InlineReplyBar from '@components/inline_reply/reply_bar';
 import {Screens} from '@constants';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
@@ -250,6 +251,11 @@ function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
+                    <InlineReplyBar
+                        channelId={channelId}
+                        rootId={rootId}
+                        focus={focus}
+                    />
                     <Header
                         noMentionsError={noMentionsError}
                         postPriority={postPriority}

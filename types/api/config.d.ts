@@ -84,6 +84,9 @@ interface ClientConfig {
     EnableOutgoingWebhooks: string;
     EnablePostIconOverride: string;
     EnablePostUsernameOverride: string;
+
+    // Antimatter: whether posts may reply inline to another post (their reply_to prop).
+    EnableInlineReplies?: string;
     EnablePreviewFeatures: string;
     EnablePreviewModeBanner: string;
     EnablePublicLink: string;

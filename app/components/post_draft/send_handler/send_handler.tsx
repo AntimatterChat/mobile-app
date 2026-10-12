@@ -9,6 +9,8 @@ import DraftInput from '@components/post_draft/draft_input/';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
+import {useInlineReply} from '@hooks/inline_reply';
+import {inlineReplyProps} from '@utils/inline_reply';
 
 import type {DraftType} from '@constants/draft';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
@@ -47,6 +49,7 @@ type Props = {
     postPriority: PostPriority;
     postBoRConfig?: PostBoRConfig;
     isSpoiler?: boolean;
+    mentionQuotedAuthor?: boolean;
 
     draftType?: DraftType;
     postId?: string;
@@ -98,6 +101,7 @@ export default function SendHandler({
     onPostCreated,
     postBoRConfig,
     isSpoiler = false,
+    mentionQuotedAuthor = true,
     location,
 }: Props) {
     const serverUrl = useServerUrl();
@@ -114,8 +118,28 @@ export default function SendHandler({
         updateDraftSpoiler(serverUrl, channelId, rootId, spoiler);
     }, [serverUrl, channelId, rootId]);
 
+    // The message the draft replies to inline, if any.
+    const [replyTo, setReplyTo] = useInlineReply(serverUrl, channelId, rootId);
+
     // The Antimatter props the draft is sent with.
-    const postProps = useMemo(() => (isSpoiler ? {spoiler: true} : undefined), [isSpoiler]);
+    const postProps = useMemo(() => {
+        if (!isSpoiler && !replyTo) {
+            return undefined;
+        }
+        return {
+            ...(isSpoiler ? {spoiler: true} : {}),
+            ...(replyTo ? inlineReplyProps(replyTo, mentionQuotedAuthor) : {}),
+        };
+    }, [isSpoiler, replyTo, mentionQuotedAuthor]);
+
+    // The drafts screen shows no reply bar: its drafts are sent as they show.
+    const draftViewProps = useMemo(() => (isSpoiler ? {spoiler: true} : undefined), [isSpoiler]);
+
+    // Once sent, the draft replies to nothing anymore.
+    const clearDraftAndReply = useCallback(() => {
+        clearDraft();
+        setReplyTo('');
+    }, [clearDraft, setReplyTo]);
 
     const {handleSendMessage, canSend} = useHandleSendMessage({
         value,
@@ -131,7 +155,7 @@ export default function SendHandler({
         currentUserId,
         channelType,
         postPriority,
-        clearDraft,
+        clearDraft: clearDraftAndReply,
         onPostCreated,
         postBoRConfig,
         postProps,
@@ -160,7 +184,7 @@ export default function SendHandler({
                 draftReceiverUserName={draftReceiverUserName}
                 draftType={draftType}
                 postId={postId}
-                postProps={postProps}
+                postProps={draftViewProps}
             />
         );
     }

@@ -6,7 +6,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption, ShowTranslationOption} from '@components/common_post_options';
+import {CopyPermalinkOption, FollowThreadOption, InlineReplyOption, ReplyOption, SaveOption, ShowTranslationOption} from '@components/common_post_options';
 import CopyTextOption from '@components/copy_text_option';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -39,6 +39,7 @@ type PostOptionsProps = {
     canMarkAsUnread: boolean;
     canPin: boolean;
     canReply: boolean;
+    canReplyInline?: boolean;
     canViewTranslation: boolean;
     combinedPost?: Post | PostModel;
     isSaved: boolean;
@@ -54,7 +55,7 @@ type PostOptionsProps = {
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
-    canMarkAsUnread, canPin, canReply, canViewTranslation,
+    canMarkAsUnread, canPin, canReply, canReplyInline = false, canViewTranslation,
     combinedPost, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
     isBoRPost, showBoRReadReceipts, borReceiptData, currentUser,
@@ -79,7 +80,7 @@ const PostOptions = ({
         const items: Array<string | number> = [1];
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
-            canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler,
+            canMarkAsUnread, canPin, canReply, canReplyInline, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
@@ -95,7 +96,7 @@ const PostOptions = ({
         }
 
         return items;
-    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
+    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canReplyInline, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
 
     const renderContent = () => {
         return (
@@ -110,7 +111,18 @@ const PostOptions = ({
                     />
                 }
                 {canAddReaction && <ReactionBar postId={post.id}/>}
-                {canReply && <ReplyOption post={post}/>}
+                {canReplyInline &&
+                <InlineReplyOption
+                    post={post}
+                    sourceScreen={sourceScreen}
+                />
+                }
+                {canReply &&
+                <ReplyOption
+                    post={post}
+                    inThread={canReplyInline}
+                />
+                }
                 {shouldRenderFollow && <FollowThreadOption thread={thread}/>}
                 {canMarkAsUnread && !isSystemPost &&
                 <MarkAsUnreadOption

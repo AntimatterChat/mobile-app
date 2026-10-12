@@ -10,6 +10,7 @@ import {General} from '@constants';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {getInlineReply, setInlineReply} from '@utils/inline_reply';
 import {sendMessageWithAlert} from '@utils/post';
 import {canPostDraftInChannelOrThread} from '@utils/scheduled_post';
 
@@ -259,5 +260,33 @@ describe('components/post_draft/send_handler/SendHandler', () => {
 
         // Varify removeDraft function is been called.
         expect(removeDraft).toHaveBeenCalled();
+    });
+
+    it('should send an inline reply with the spoiler, then reply to nothing anymore', async () => {
+        const serverUrl = 'https://sendhandler.test.com';
+        const server = await TestHelper.setupServerDatabase(serverUrl);
+        jest.mocked(createPost).mockResolvedValueOnce({data: true});
+        setInlineReply(serverUrl, 'channel-id', '', 'quoted-id');
+
+        const wrapper = renderWithEverything(
+            <SendHandler
+                {...baseProps}
+                value='Sure!'
+                isSpoiler={true}
+                mentionQuotedAuthor={false}
+            />, {database: server.database, serverUrl},
+        );
+
+        await act(async () => {
+            fireEvent.press(wrapper.getByTestId('test_send_handler.send_action.send.button'));
+        });
+
+        await waitFor(() => {
+            expect(createPost).toHaveBeenCalledWith(serverUrl, expect.objectContaining({
+                message: 'Sure!',
+                props: {spoiler: true, reply_to: 'quoted-id', reply_to_mention: false},
+            }), []);
+        });
+        expect(getInlineReply(serverUrl, 'channel-id', '')).toBe('');
     });
 });

@@ -3,6 +3,7 @@
 
 import React, {type ComponentProps} from 'react';
 
+import InlineReplyRef from '@components/inline_reply/quoted_ref';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemHeader from '@components/system_header';
 import {Screens} from '@constants';
@@ -24,6 +25,7 @@ import type PostModel from '@typings/database/models/servers/post';
 jest.mock('@managers/performance_metrics_manager');
 jest.mock('@components/post_list/post/burn_on_read/unrevealed');
 jest.mock('@components/system_header', () => jest.fn());
+jest.mock('@components/inline_reply/quoted_ref', () => jest.fn());
 jest.mock('./avatar', () => jest.fn());
 jest.mock('./body', () => jest.fn());
 jest.mock('./header', () => jest.fn());
@@ -252,5 +254,60 @@ describe('spoilers', () => {
         await waitFor(() => {
             expect(jest.mocked(Body).mock.lastCall?.[0]).toMatchObject({spoilerHidden: false});
         });
+    });
+});
+
+describe('inline replies', () => {
+    let database: Database;
+    const serverUrl = 'http://www.someserverurl.com';
+
+    function getProps(post: PostModel): ComponentProps<typeof Post> {
+        return {
+            appsEnabled: false,
+            mmBlocksEnabled: false,
+            canDelete: false,
+            customEmojiNames: [],
+            filesInfo: [],
+            hasReactions: false,
+            hasReplies: false,
+            highlightReplyBar: false,
+            isEphemeral: false,
+            isPostAddChannelMember: false,
+            commentCount: 0,
+            location: Screens.CHANNEL,
+            post,
+            isLastPost: false,
+            isChannelAutotranslated: false,
+        };
+    }
+
+    beforeEach(async () => {
+        await NetworkManager.createClient(serverUrl);
+        database = (await TestHelper.setupServerDatabase(serverUrl)).database;
+        jest.clearAllMocks();
+    });
+
+    afterEach(async () => {
+        await TestHelper.tearDown();
+        NetworkManager.invalidateClient(serverUrl);
+    });
+
+    it('should quote the message a reply answers', async () => {
+        const post = TestHelper.fakePostModel({props: {reply_to: 'quoted-id'}});
+        renderWithEverything(<Post {...getProps(post)}/>, {database, serverUrl});
+
+        await waitFor(() => {
+            expect(jest.mocked(InlineReplyRef).mock.lastCall?.[0]).toMatchObject({post});
+        });
+    });
+
+    it('should not quote anything above a deleted reply', async () => {
+        const post = TestHelper.fakePostModel({props: {reply_to: 'quoted-id'}, deleteAt: 10});
+        renderWithEverything(<Post {...getProps(post)}/>, {database, serverUrl});
+
+        await waitFor(() => {
+            expect(Body).toHaveBeenCalled();
+        });
+        expect(InlineReplyRef).not.toHaveBeenCalled();
     });
 });

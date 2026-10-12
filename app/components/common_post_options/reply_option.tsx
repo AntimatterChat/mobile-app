@@ -13,6 +13,9 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     post: PostModel;
+
+    // Set when the message can also be replied to inline: this option then says that it replies in the thread.
+    inThread?: boolean;
 }
 
 const messages = defineMessages({
@@ -20,8 +23,12 @@ const messages = defineMessages({
         id: 'mobile.post_info.reply',
         defaultMessage: 'Reply',
     },
+    replyInThread: {
+        id: 'mobile.post_info.reply_in_thread',
+        defaultMessage: 'Reply in thread',
+    },
 });
-const ReplyOption = ({post}: Props) => {
+const ReplyOption = ({post, inThread = false}: Props) => {
     const serverUrl = useServerUrl();
 
     const handleReply = useCallback(async () => {
@@ -32,8 +39,8 @@ const ReplyOption = ({post}: Props) => {
 
     return (
         <BaseOption
-            message={messages.reply}
-            iconName='reply-outline'
+            message={inThread ? messages.replyInThread : messages.reply}
+            iconName={inThread ? 'message-text-outline' : 'reply-outline'}
             onPress={handleReply}
             testID='post_options.reply_post.option'
         />

@@ -11,6 +11,7 @@ import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {observeFirstDraft, queryDraft} from '@queries/servers/drafts';
+import {observeMentionsQuotedAuthor} from '@queries/servers/inline_reply';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeFirstScheduledPost, queryScheduledPost} from '@queries/servers/scheduled_post';
 import {observeConfigBooleanValue, observeConfigIntValue, observeCurrentUserId} from '@queries/servers/system';
@@ -114,6 +115,7 @@ const enhanced = withObservables(['channelId', 'rootId', 'draftType'], (ownProps
         postPriority,
         postBoRConfig,
         isSpoiler,
+        mentionQuotedAuthor: observeMentionsQuotedAuthor(database),
     };
 });
 

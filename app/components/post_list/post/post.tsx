@@ -13,6 +13,7 @@ import AgentPost from '@agents/components/agent_post';
 import {isAgentMentionReminderPost, isAgentPost} from '@agents/utils';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
 import {isCallsCustomMessage} from '@calls/utils';
+import InlineReplyRef from '@components/inline_reply/quoted_ref';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
@@ -30,6 +31,7 @@ import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
+import {replyToId} from '@utils/inline_reply';
 import {dismissKeyboard} from '@utils/keyboard';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {isSpoilerPost} from '@utils/spoiler';
@@ -191,6 +193,9 @@ const Post = ({
     // A spoiler's text and files stay hidden until its reader taps the post.
     const [spoilerShown, setSpoilerShown] = useSpoilerShown(post.id);
     const spoilerHidden = isSpoilerPost(post) && !hasBeenDeleted && !borPost && !spoilerShown;
+
+    // An inline reply quotes the message it answers above it.
+    const isInlineReply = Boolean(replyToId(post)) && !isEphemeral && !hasBeenDeleted && !isSystemPost;
     const [layoutWidth, setLayoutWidth] = useState(0);
     const shimmerAnimationProps = useShimmerAnimation(post, isChannelAutotranslated, intl.locale, layoutWidth, theme);
     const hasSameRoot = useMemo(() => {
@@ -487,6 +492,7 @@ const Post = ({
                         skipSavedHeader={skipSavedHeader}
                         skipPinnedHeader={skipPinnedHeader}
                     />
+                    {isInlineReply && <InlineReplyRef post={post}/>}
                     <View style={[styles.container, consecutiveStyle]}>
                         {postAvatar}
                         <View style={rightColumnStyle}>
