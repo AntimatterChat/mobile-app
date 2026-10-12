@@ -672,7 +672,7 @@ describe('actions', () => {
             expect(result.sent).toHaveLength(1);
             expect(result.notSent).toHaveLength(0);
             expect(result.sent[0].userId).toBe(userId);
-            expect(result.sent[0].reason).toBe('This guest has been added to the team and 2 channels.');
+            expect(result.sent[0].reason).toBe('This guest has been added to the community and 2 channels.');
         });
 
         it('should handle errors from sendGuestEmailInvitesToTeam', async () => {

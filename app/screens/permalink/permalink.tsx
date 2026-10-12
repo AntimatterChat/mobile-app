@@ -48,8 +48,8 @@ type Props = {
 }
 
 const messages = defineMessages({
-    joinTeamErrorTitle: {id: 'permalink.error.join_team.title', defaultMessage: 'Error joining the team'},
-    joinTeamErrorMessage: {id: 'permalink.error.join_team.message', defaultMessage: 'There was an error trying to join the team'},
+    joinTeamErrorTitle: {id: 'permalink.error.join_team.title', defaultMessage: 'Error joining the community'},
+    joinTeamErrorMessage: {id: 'permalink.error.join_team.message', defaultMessage: 'There was an error trying to join the community'},
     joinChannelErrorTitle: {id: 'permalink.error.join_channel.title', defaultMessage: 'Error joining the channel'},
     joinChannelErrorMessage: {id: 'permalink.error.join_channel.message', defaultMessage: 'There was an error trying to join the channel'},
 });

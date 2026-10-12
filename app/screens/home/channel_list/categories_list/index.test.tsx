@@ -227,7 +227,7 @@ describe('components/categories_list', () => {
             {database},
         );
 
-        expect(wrapper.queryByText('There was a problem loading content for this team.')).toBeNull();
+        expect(wrapper.queryByText('There was a problem loading content for this community.')).toBeNull();
 
         (useIsInitialSync as jest.Mock).mockReset();
     });

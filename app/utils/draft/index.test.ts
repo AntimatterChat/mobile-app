@@ -44,7 +44,7 @@ describe('draft utils', () => {
 
     it('should alert permalink bad team', () => {
         permalinkBadTeam(intl);
-        expect(Alert.alert).toHaveBeenCalledWith('', 'This link belongs to a deleted team or to a team to which you do not have access.', undefined);
+        expect(Alert.alert).toHaveBeenCalledWith('', 'This link belongs to a deleted community or to a community to which you do not have access.', undefined);
     });
 
     it('should alert error with fallback', () => {
