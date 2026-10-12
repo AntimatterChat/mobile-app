@@ -21,13 +21,17 @@ import UserProfileOptions, {type OptionsType} from './options';
 import UserProfileTitle, {HEADER_TEXT_HEIGHT} from './title';
 import UserInfo from './user_info';
 
+import type {CommunityLook} from '@queries/servers/community_groups';
 import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
+import type {CommunityGroup} from '@utils/community_groups';
 
 type Props = {
     canChangeMemberRoles: boolean;
     channelId?: string;
+    communityLook: CommunityLook;
+    communityRoles: CommunityGroup[];
     currentUserId: string;
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
@@ -57,6 +61,8 @@ const SINGLE_OPTION_HEIGHT = 68;
 const LABEL_HEIGHT = 58;
 const EXTRA_HEIGHT = 60;
 const MANAGE_ICON_HEIGHT = 72;
+const ROLES_ROW_HEIGHT = 30;
+const ROLES_PER_ROW = 3;
 
 const messages = defineMessages({
     manageMember: {
@@ -64,6 +70,7 @@ const messages = defineMessages({
         defaultMessage: 'Manage member',
     },
 });
+const NO_ROLES: CommunityGroup[] = [];
 const channelContextScreens: AvailableScreens[] = [Screens.CHANNEL, Screens.THREAD];
 
 type ShouldShowUserProfileOptionsProps = {
@@ -86,6 +93,8 @@ const UserProfile = ({
     canChangeMemberRoles,
     canManageAndRemoveMembers,
     channelId,
+    communityLook,
+    communityRoles,
     currentUserId,
     enablePostIconOverride,
     enablePostUsernameOverride,
@@ -137,6 +146,7 @@ const UserProfile = ({
     const showNickname = Boolean(user.nickname) && !override && !user.isBot && !manageMode;
     const showPosition = Boolean(user.position) && !override && !user.isBot && !manageMode;
     const showLocalTime = Boolean(localTime) && !override && !user.isBot && !manageMode;
+    const roles = override ? NO_ROLES : communityRoles;
 
     const headerText = manageMode ? formatMessage(messages.manageMember) : undefined;
 
@@ -146,6 +156,8 @@ const UserProfile = ({
         if (headerText) {
             title += HEADER_TEXT_HEIGHT;
         }
+
+        title += Math.ceil(roles.length / ROLES_PER_ROW) * ROLES_ROW_HEIGHT;
 
         if (showUserProfileOptions) {
             title += showOptions === 'all' ? OPTIONS_HEIGHT : SINGLE_OPTION_HEIGHT;
@@ -179,6 +191,7 @@ const UserProfile = ({
         ];
     }, [
         headerText,
+        roles.length,
         showUserProfileOptions,
         showCustomStatus,
         showNickname,
@@ -208,6 +221,9 @@ const UserProfile = ({
                     isChannelAdmin={isChannelAdmin}
                     isSystemAdmin={isSystemAdmin}
                     isTeamAdmin={isTeamAdmin}
+                    nameColor={override ? undefined : communityLook.roleColor}
+                    roles={roles}
+                    teamBadge={override ? undefined : communityLook.badge}
                     teammateDisplayName={teammateDisplayName}
                     user={user}
                     userIconOverride={userIconOverride}

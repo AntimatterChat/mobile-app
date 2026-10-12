@@ -66,7 +66,7 @@ const messages = defineMessages({
     },
     welcomePublic: {
         id: 'intro.welcome.public',
-        defaultMessage: 'Add some more team members to the channel or start a conversation below.',
+        defaultMessage: 'Add some more people from the community to the channel or start a conversation below.',
     },
     welcomePrivate: {
         id: 'intro.welcome.private',

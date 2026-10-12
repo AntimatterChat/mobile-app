@@ -150,6 +150,20 @@ export const leaveAndJoinWithAlert = async (
     return doJoinCall(joinServerUrl, joinChannelId, joinChannelType, newCall, intl, title, rootId);
 };
 
+// joinCallWithoutAlert joins a channel's call at once, leaving the current call if any: moving between Antimatter
+// voice channels needs no confirmation.
+export const joinCallWithoutAlert = async (intl: IntlShape, serverUrl: string, channelId: string) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const channel = await getChannelById(database, channelId);
+        const newCall = !getChannelsWithCalls(serverUrl)[channelId];
+        return await doJoinCall(serverUrl, channelId, channel?.type, newCall, intl);
+    } catch (error) {
+        logError('failed to join in joinCallWithoutAlert', error);
+        return false;
+    }
+};
+
 const doJoinCall = async (
     serverUrl: string,
     channelId: string,

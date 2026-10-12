@@ -29,9 +29,13 @@ export const getItemType = (item: FlattenedItem): 'unreads_header' | 'header' | 
     return item.type;
 };
 
+const NO_IDS = new Set<string>();
+
+// A folded category still lists its unread channels, and the voice channels with people in their call (liveIds).
 export const flattenCategories = (
     categoriesData: CategoryData[],
     unreadsOnTop: boolean,
+    liveIds: Set<string> = NO_IDS,
 ): FlattenedItem[] => {
     const result: FlattenedItem[] = [];
 
@@ -70,7 +74,7 @@ export const flattenCategories = (
             category,
         });
 
-        const channelsToShow = category.collapsed? sortedChannels.filter((channel) => unreadIds.has(channel.id)): sortedChannels;
+        const channelsToShow = category.collapsed ? sortedChannels.filter((channel) => unreadIds.has(channel.id) || liveIds.has(channel.id)) : sortedChannels;
 
         for (const channel of channelsToShow) {
             result.push({

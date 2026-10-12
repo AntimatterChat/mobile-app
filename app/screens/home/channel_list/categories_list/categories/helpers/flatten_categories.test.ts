@@ -131,6 +131,19 @@ describe('flatten_categories utils', () => {
                 expect(channelItem2.channelId).toBe('channel3');
             });
 
+            it('should keep listing a voice channel with people in its call in a collapsed category', () => {
+                const categoriesData: CategoryData[] = [{
+                    category: mockCategory2, // collapsed = true
+                    sortedChannels: [mockChannel1, mockChannel2, mockChannel3],
+                    unreadIds: new Set(['channel1']),
+                    allUnreadChannels: [mockChannel1],
+                }];
+
+                const result = flattenCategories(categoriesData, false, new Set(['channel2']));
+
+                expect(result.map((item) => (item.type === 'channel' ? item.channelId : item.type))).toEqual(['header', 'channel1', 'channel2']);
+            });
+
             it('should handle empty categories', () => {
                 const categoriesData: CategoryData[] = [{
                     category: mockCategory1,

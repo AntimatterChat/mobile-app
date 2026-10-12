@@ -50,6 +50,14 @@ export async function newConnection(
     let onPeerConnected: ((sessionId: string) => void) | null = null;
 
     const streams: MediaStream[] = [];
+
+    // Deafened (Antimatter voice channels): the call's remote audio is off, including streams that arrive later.
+    let deafened = false;
+    const applyDeafened = (remoteStream: MediaStream) => {
+        for (const track of remoteStream.getAudioTracks()) {
+            track.enabled = !deafened;
+        }
+    };
     let rtcMonitor: RTCMonitor | null = null;
     const logger = {
         logDebug,
@@ -443,6 +451,9 @@ export async function newConnection(
             }
 
             streams.push(remoteStream);
+            if (deafened) {
+                applyDeafened(remoteStream);
+            }
             if (remoteStream.getVideoTracks().length > 0) {
                 setScreenShareURL(remoteStream.toURL());
             }
@@ -487,6 +498,15 @@ export async function newConnection(
         });
     };
 
+    const setDeafened = (on: boolean) => {
+        deafened = on;
+        for (const s of streams) {
+            if (s !== stream) {
+                applyDeafened(s);
+            }
+        }
+    };
+
     const connection: CallsConnection = {
         disconnect,
         mute,
@@ -497,6 +517,7 @@ export async function newConnection(
         sendReaction,
         initializeVoiceTrack,
         setUserSelectedAudioRoute,
+        setDeafened,
     };
 
     return connection;

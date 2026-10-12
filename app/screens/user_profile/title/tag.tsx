@@ -21,7 +21,7 @@ const messages = defineMessages({
     },
     teamAdmin: {
         id: 'user_profile.team_admin',
-        defaultMessage: 'Team Admin',
+        defaultMessage: 'Community Admin',
     },
     channelAdmin: {
         id: 'user_profile.channel_admin',

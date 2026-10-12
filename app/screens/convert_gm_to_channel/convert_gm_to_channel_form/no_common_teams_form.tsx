@@ -28,12 +28,12 @@ export const NoCommonTeamForm = ({
 
     const header = formatMessage({
         id: 'channel_info.convert_gm_to_channel.warning.no_teams.header',
-        defaultMessage: 'Unable to convert to a channel because group members are part of different teams',
+        defaultMessage: 'Unable to convert to a channel because group members are part of different communities',
     });
 
     const body = formatMessage({
         id: 'channel_info.convert_gm_to_channel.warning.no_teams.body',
-        defaultMessage: 'Group Message cannot be converted to a channel because members are not a part of the same team. Add all members to a single team to convert this group message to a channel.',
+        defaultMessage: 'Group Message cannot be converted to a channel because members are not a part of the same community. Add all members to a single community to convert this group message to a channel.',
     });
 
     const buttonText = formatMessage({

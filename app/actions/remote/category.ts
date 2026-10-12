@@ -2,21 +2,26 @@
 // See LICENSE.txt for license information.
 
 import {storeCategories} from '@actions/local/category';
-import {General} from '@constants';
+import {General, Preferences} from '@constants';
 import {CHANNELS_CATEGORY, DMS_CATEGORY, FAVORITES_CATEGORY, MANAGED_CHANNEL_CATEGORIES_GROUP, MANAGED_LOCAL_CATEGORY_PREFIX} from '@constants/categories';
 import DatabaseManager from '@database/manager';
-import {computeManagedSortOrder, fetchManagedCategoryPropertyIds, makeManagedCategoryId, mergeManagedMappingsIntoSidebarCategories} from '@helpers/sidebar/managed_categories_merge';
+import {computeManagedSortOrder, fetchManagedCategoryPropertyIds, makeManagedCategoryId, managedCategoryNames, mergeManagedMappingsIntoSidebarCategories} from '@helpers/sidebar/managed_categories_merge';
 import NetworkManager from '@managers/network_manager';
 import {getCategoryById, getChannelCategory, queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {getChannelById} from '@queries/servers/channel';
-import {getCurrentTeamId, getManagedChannelCategoriesEnabled} from '@queries/servers/system';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {getCurrentTeamId, getCurrentUserId, getManagedChannelCategoriesEnabled} from '@queries/servers/system';
+import {getServerCategories, setServerCategories} from '@store/server_categories_store';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
+import {safeParseJSON} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {showFavoriteChannelSnackbar} from '@utils/snack_bar';
 
+import {savePreference} from './preference';
 import {forceLogoutIfNecessary} from './session';
 
+import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 export type CategoriesRequest = {
@@ -34,8 +39,12 @@ export const fetchCategories = async (serverUrl: string, teamId: string, prune =
         let categories = nonManagedCategories;
         if (managedCategoriesEnabled) {
             fetchManagedCategoryPropertyIds(serverUrl);
-            const mappings = await client.getManagedCategories(teamId, groupLabel);
-            categories = await mergeManagedMappingsIntoSidebarCategories(database, teamId, nonManagedCategories, mappings);
+            const [mappings, serverCategories] = await Promise.all([
+                client.getManagedCategories(teamId, groupLabel),
+                fetchServerCategoryList(serverUrl, teamId, groupLabel),
+            ]);
+            const collapsed = await getServerCategoriesCollapsed(database, teamId);
+            categories = await mergeManagedMappingsIntoSidebarCategories(database, teamId, nonManagedCategories, mappings, {serverCategories, collapsed});
         }
 
         if (!fetchOnly) {
@@ -49,6 +58,45 @@ export const fetchCategories = async (serverUrl: string, teamId: string, prune =
         return {error};
     }
 };
+
+// fetchServerCategoryList gets the categories a community's admins set up for everyone (Antimatter), in order, and
+// keeps them for the sidebar; servers without them give undefined.
+async function fetchServerCategoryList(serverUrl: string, teamId: string, groupLabel?: RequestGroupLabel) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const list = await client.getServerCategories(teamId, groupLabel);
+        setServerCategories(serverUrl, teamId, list);
+        return list;
+    } catch (error) {
+        logDebug('error on fetchServerCategoryList', getFullErrorMessage(error));
+        return undefined;
+    }
+}
+
+// getServerCategoriesCollapsed reads which server categories of a community its person folded, as the web app keeps
+// them (a JSON list of names), if it ever did.
+async function getServerCategoriesCollapsed(database: Database, teamId: string) {
+    const prefs = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.SERVER_CATEGORIES_COLLAPSED, teamId).fetch();
+    if (!prefs.length) {
+        return undefined;
+    }
+    const names = safeParseJSON(prefs[0].value);
+    return Array.isArray(names) ? names.filter((n): n is string => typeof n === 'string') : [];
+}
+
+// saveServerCategoryCollapsed keeps, for the person's other apps, that they folded or unfolded a server category.
+export async function saveServerCategoryCollapsed(serverUrl: string, teamId: string, name: string, collapsed: boolean) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const current = (await getServerCategoriesCollapsed(database, teamId)) ?? [];
+        const next = collapsed ? [...new Set([...current, name])] : current.filter((n) => n !== name);
+        const userId = await getCurrentUserId(database);
+        return savePreference(serverUrl, [{user_id: userId, category: Preferences.CATEGORIES.SERVER_CATEGORIES_COLLAPSED, name: teamId, value: JSON.stringify(next)}]);
+    } catch (error) {
+        logDebug('error on saveServerCategoryCollapsed', getFullErrorMessage(error));
+        return {error};
+    }
+}
 
 export async function addChannelToManagedCategoryIfNeeded(serverUrl: string, channel: Channel | ChannelModel) {
     const teamId = 'teamId' in channel ? channel.teamId : channel.team_id;
@@ -93,8 +141,7 @@ export async function addChannelToManagedCategoryIfNeeded(serverUrl: string, cha
         if (!existingCategory) {
             managedNames.push(categoryName);
         }
-        managedNames.sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
-        const sortedNames = [...new Set(managedNames)];
+        const sortedNames = managedCategoryNames(getServerCategories(serverUrl, teamId), managedNames);
         const sortOrder = computeManagedSortOrder(sortedNames.indexOf(categoryName));
 
         const reorderPromises = managedCategories.map(async (cat) => {

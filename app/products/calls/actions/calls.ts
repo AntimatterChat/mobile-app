@@ -62,6 +62,8 @@ import {isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
 
+import {loadVoiceChannels} from './voice';
+
 import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
@@ -189,6 +191,7 @@ export const loadConfigAndCalls = async (serverUrl: string, userId: string, grou
     if (res.data) {
         loadConfig(serverUrl, true, groupLabel);
         loadCalls(serverUrl, userId, groupLabel);
+        loadVoiceChannels(serverUrl, groupLabel);
     }
 };
 
@@ -395,6 +398,10 @@ export const unmuteMyself = () => {
         logDebug('calls: unmuteMyself had no voice track to unmute');
         clearStartUnmuted();
     }
+};
+
+export const setMyselfDeafened = (deafened: boolean) => {
+    connection?.setDeafened(deafened);
 };
 
 export const initializeVoiceTrack = () => {

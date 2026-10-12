@@ -466,6 +466,56 @@ describe('newConnection', () => {
         handlers.close();
     });
 
+    it('should turn the remote audio off while deafened, for streams that arrive later too', async () => {
+        const handlers: Record<string, any> = {};
+
+        // @ts-ignore
+        RTCPeer.mockImplementation(() => ({
+            on: (event: string, handler: any) => {
+                handlers[event] = handler;
+            },
+            once: jest.fn(),
+            off: jest.fn(),
+            getStats: jest.fn(),
+            destroy: jest.fn(),
+            signal: jest.fn(),
+        }));
+
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: (event: string, handler: any) => {
+                if (event === 'join') {
+                    handler();
+                }
+            },
+            send: jest.fn(),
+            close: jest.fn(),
+        }));
+
+        const connection = await newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, true, mockIntl);
+        await Promise.resolve();
+
+        const remoteStream = (track: {enabled: boolean}) => ({
+            getTracks: () => [track],
+            getAudioTracks: () => [track],
+            getVideoTracks: () => [],
+        });
+        const before = {enabled: true};
+        handlers.stream(remoteStream(before));
+
+        connection.setDeafened(true);
+        expect(before.enabled).toBe(false);
+
+        const after = {enabled: true};
+        handlers.stream(remoteStream(after));
+        expect(after.enabled).toBe(false);
+
+        connection.setDeafened(false);
+        expect(before.enabled).toBe(true);
+        expect(after.enabled).toBe(true);
+    });
+
     it('rtc peer close', async () => {
         const wsSend = jest.fn();
         const wsClose = jest.fn();

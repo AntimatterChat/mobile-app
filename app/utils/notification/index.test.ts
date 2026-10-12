@@ -96,7 +96,7 @@ describe('Notification Utils', () => {
             notificationError(intl, 'Team');
             expect(Alert.alert).toHaveBeenCalledWith(
                 'Message not found',
-                'This message belongs to a team where you are not a member.',
+                'This message belongs to a community where you are not a member.',
             );
             expect(navigateToRoot).toHaveBeenCalled();
         });

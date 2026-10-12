@@ -167,4 +167,40 @@ describe('Header', () => {
 
         expect(screen.getByTestId('post_header.ai_generated_indicator')).toHaveProp('accessibilityLabel', 'Message posted by @other-bot');
     });
+
+    it('should colour the author\'s name with their role and show their team\'s tag', () => {
+        const author = TestHelper.fakeUserModel({id: 'author', username: 'maya'});
+        const post = TestHelper.fakePostModel({userId: author.id});
+        const badge = {id: 'team', name: 'beta', display_name: 'Beta squad', description: '', source: 'custom', delete_at: 0, tag: 'BETA'};
+
+        renderWithIntlAndTheme(
+            <Header
+                {...defaultProps}
+                author={author}
+                post={post}
+                communityLook={{roleColor: '#e67e22', badge}}
+            />,
+        );
+
+        expect(screen.getByTestId('post_header.team_tag')).toBeVisible();
+        expect(screen.getByText('BETA')).toBeVisible();
+        expect(screen.getByTestId('post_header.display_name')).toHaveStyle({color: '#e67e22'});
+    });
+
+    it('should not show a team tag or role colour on a bot\'s post', () => {
+        const bot = TestHelper.fakeUserModel({id: 'bot', username: 'bot', isBot: true});
+        const post = TestHelper.fakePostModel({userId: bot.id});
+        const badge = {id: 'team', name: 'beta', display_name: 'Beta squad', description: '', source: 'custom', delete_at: 0, tag: 'BETA'};
+
+        renderWithIntlAndTheme(
+            <Header
+                {...defaultProps}
+                author={bot}
+                post={post}
+                communityLook={{roleColor: '#e67e22', badge}}
+            />,
+        );
+
+        expect(screen.queryByTestId('post_header.team_tag')).toBeNull();
+    });
 });

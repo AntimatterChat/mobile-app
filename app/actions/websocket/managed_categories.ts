@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {removeChannelFromManagedCategoryIfNeeded} from '@actions/local/category';
-import {addChannelToManagedCategoryIfNeeded} from '@actions/remote/category';
+import {addChannelToManagedCategoryIfNeeded, fetchCategories} from '@actions/remote/category';
 import DatabaseManager from '@database/manager';
 import {fetchManagedCategoryPropertyIds} from '@helpers/sidebar/managed_categories_merge';
 import {getManagedCategoryForChannel} from '@queries/servers/categories';
@@ -71,5 +71,21 @@ export async function handleManagedChannelCategoriesPropertyValuesUpdated(server
         }
     } catch (error) {
         logDebug('[handleManagedCategoryWS]', error);
+    }
+}
+
+// handleServerCategoriesUpdated lays out the sidebar again when a community's admins change its server categories
+// (Antimatter): their list, order or locks, or where channels are filed.
+export async function handleServerCategoriesUpdated(serverUrl: string, msg: WebSocketMessage<{team_id?: string}>) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const enabled = await getManagedChannelCategoriesEnabled(database);
+        const teamId = msg.data?.team_id || msg.broadcast?.team_id;
+        if (!enabled || !teamId) {
+            return;
+        }
+        await fetchCategories(serverUrl, teamId, true);
+    } catch (error) {
+        logDebug('[handleServerCategoriesUpdated]', error);
     }
 }

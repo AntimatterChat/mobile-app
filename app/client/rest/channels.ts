@@ -6,6 +6,7 @@ import {buildQueryString} from '@utils/helpers';
 import {PER_PAGE_DEFAULT} from './constants';
 
 import type ClientBase from './base';
+import type {ServerCategory} from '@store/server_categories_store';
 
 export interface ClientChannelsMix {
     getAllChannels: (page?: number, perPage?: number, notAssociatedToGroup?: string, excludeDefaultChannels?: boolean, includeTotalCount?: boolean) => Promise<any>;
@@ -60,6 +61,7 @@ export interface ClientChannelsMix {
     getAllChannelsFromAllTeams: (lastDeleteAt: number, includeDeleted: boolean, groupLabel?: RequestGroupLabel) => Promise<Channel[]>;
     getAllMyChannelMembersFromAllTeams: (page: number, perPage: number, groupLabel?: RequestGroupLabel) => Promise<ChannelMembership[]>;
     getManagedCategories: (teamId: string, groupLabel?: RequestGroupLabel) => Promise<Record<string, string>>;
+    getServerCategories: (teamId: string, groupLabel?: RequestGroupLabel) => Promise<ServerCategory[]>;
 }
 
 const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -104,6 +106,14 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
     getManagedCategories = async (teamId: string, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/channels/managed_categories`,
+            {method: 'get', groupLabel},
+        );
+    };
+
+    // The categories an Antimatter community's admins set up for everyone, in order.
+    getServerCategories = async (teamId: string, groupLabel?: RequestGroupLabel) => {
+        return this.doFetch(
+            `${this.getTeamRoute(teamId)}/server_categories`,
             {method: 'get', groupLabel},
         );
     };

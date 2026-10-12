@@ -6,6 +6,7 @@ import React, {type ComponentProps} from 'react';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import {leaveCallConfirmation} from '@calls/actions/calls';
+import {toggleDeafened} from '@calls/actions/voice_call';
 import CallAvatar from '@calls/components/call_avatar';
 import {DefaultCurrentCall, type CallSession} from '@calls/types/calls';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -20,6 +21,10 @@ jest.mock('@calls/actions', () => ({
 
 jest.mock('@calls/actions/calls', () => ({
     leaveCallConfirmation: jest.fn(),
+}));
+
+jest.mock('@calls/actions/voice_call', () => ({
+    toggleDeafened: jest.fn(),
 }));
 
 jest.mock('@calls/alerts', () => ({
@@ -143,6 +148,20 @@ describe('CurrentCallBar', () => {
         expect(muteMyself).not.toHaveBeenCalled();
         expect(unmuteMyself).not.toHaveBeenCalled();
         expect(leaveCallConfirmation).not.toHaveBeenCalled();
+    });
+
+    it('should offer to deafen in a voice channel\'s call only', () => {
+        const {queryByTestId} = renderWithIntlAndTheme(<CurrentCallBar {...getBaseProps()}/>);
+        expect(queryByTestId('calls.current_call_bar.deafen')).toBeNull();
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <CurrentCallBar
+                {...getBaseProps()}
+                myVoiceCall={{isVoiceChannel: true, deafened: true}}
+            />,
+        );
+        fireEvent.press(getByTestId('calls.current_call_bar.deafen'));
+        expect(toggleDeafened).toHaveBeenCalled();
     });
 
     it('should show the callee and Calling instead of a duration while ringing', () => {

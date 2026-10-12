@@ -34,7 +34,7 @@ const PlusMenuItem = ({pickerAction, onPress}: PlusMenuItemProps) => {
         },
         invitePeopleToTeam: {
             leftIcon: 'account-plus-outline',
-            text: intl.formatMessage({id: 'plus_menu.invite_people_to_team.title', defaultMessage: 'Invite people to the team'}),
+            text: intl.formatMessage({id: 'plus_menu.invite_people_to_team.title', defaultMessage: 'Invite people to the community'}),
             testID: 'plus_menu_item.invite_people_to_team',
         },
     };

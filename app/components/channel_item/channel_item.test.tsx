@@ -51,6 +51,29 @@ describe('components/channel_list/categories/body/channel_item', () => {
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
+    it('should show a voice channel with a speaker and no call icon', () => {
+        const wrapper = renderWithIntlAndTheme(
+            <ChannelItem
+                channel={{displayName: 'Lounge', type: 'O', shared: false, name: 'lounge', deleteAt: 0} as ChannelModel}
+                hasDraft={false}
+                isActive={false}
+                membersCount={0}
+                isMuted={false}
+                currentUserId={'id'}
+                testID='channel_item'
+                onPress={() => undefined}
+                isUnread={false}
+                mentionsCount={0}
+                hasCall={true}
+                isVoice={true}
+            />,
+        );
+
+        expect(wrapper.getByTestId('undefined.voice')).toBeTruthy();
+        expect(wrapper.queryByTestId('undefined.public')).toBeNull();
+        expect(wrapper.root.findAll((node) => node.props.name === 'phone-in-talk')).toHaveLength(0);
+    });
+
     it('should match snapshot when it has a draft', () => {
         const wrapper = renderWithIntlAndTheme(
             <ChannelItem

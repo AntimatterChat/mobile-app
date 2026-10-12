@@ -52,10 +52,10 @@ const NoTeams = () => {
                 <Empty theme={theme}/>
             </View>
             <Text style={styles.title}>
-                {intl.formatMessage({id: 'select_team.no_team.title', defaultMessage: 'No teams are available to join'})}
+                {intl.formatMessage({id: 'select_team.no_team.title', defaultMessage: 'No communities are available to join'})}
             </Text>
             <Text style={styles.description}>
-                {intl.formatMessage({id: 'select_team.no_team.description', defaultMessage: 'To join a team, ask a team admin for an invite, or create your own team. You may also want to check your email inbox for an invitation.'})}
+                {intl.formatMessage({id: 'select_team.no_team.description', defaultMessage: 'To join a community, ask a community admin for an invite, or create your own community. You may also want to check your email inbox for an invitation.'})}
             </Text>
             {/* {canCreateTeams && // TODO https://mattermost.atlassian.net/browse/MM-43622 (Use Button component instead of touchable)
                 <TouchableWithFeedback

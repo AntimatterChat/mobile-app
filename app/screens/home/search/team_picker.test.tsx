@@ -38,7 +38,7 @@ describe('TeamPicker', () => {
         });
     });
 
-    it('should render "All teams" when teamId is ALL_TEAMS_ID', async () => {
+    it('should render "All communities" when teamId is ALL_TEAMS_ID', async () => {
         const {getByText} = renderWithIntlAndTheme(
             <TeamPicker
                 setTeamId={jest.fn()}
@@ -48,7 +48,7 @@ describe('TeamPicker', () => {
             />,
         );
         await waitFor(() => {
-            expect(getByText('All teams')).toBeTruthy();
+            expect(getByText('All communities')).toBeTruthy();
         });
     });
 

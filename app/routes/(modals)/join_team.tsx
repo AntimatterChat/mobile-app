@@ -18,7 +18,7 @@ export default function JoinTeamRoute() {
     useEffect(() => {
         navigation.setOptions({
             headerShown: true,
-            headerTitle: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
+            headerTitle: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Community'}),
             ...getModalHeaderOptions(theme, navigateBack, 'close.join_team.button'),
         });
     }, [intl, navigation, theme]);

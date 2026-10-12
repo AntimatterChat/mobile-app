@@ -48,7 +48,7 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
-    const AllTeams: TeamModel = useMemo(() => ({id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All teams'})} as TeamModel), [intl]);
+    const AllTeams: TeamModel = useMemo(() => ({id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All communities'})} as TeamModel), [intl]);
 
     const teamList = useMemo(() => {
         const list = [...teams];
@@ -67,7 +67,7 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
                     setTeamId={setTeamId}
                     teams={teamList}
                     teamId={teamId}
-                    title={intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'})}
+                    title={intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a community to search'})}
                     crossTeamSearchEnabled={crossTeamSearchEnabled}
                 />
             );

@@ -214,7 +214,7 @@ describe('Search - Cross Team Search', () => {
         await wait(timeouts.ONE_SEC);
 
         // * m) Verify pop-up headed "Select a team to search"
-        await expect(element(by.text('Select a team to search'))).toBeVisible();
+        await expect(element(by.text('Select a community to search'))).toBeVisible();
 
         // # n) Tap on "All teams" option
         await waitFor(TeamDropdownMenuScreen.getAllTeamsItem()).toBeVisible().withTimeout(timeouts.TEN_SEC);

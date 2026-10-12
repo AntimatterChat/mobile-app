@@ -12,6 +12,7 @@ import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categorie
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeam, prepareMyTeams, queryMyTeamsByIds} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
+import {setCommunitySettings} from '@store/community_groups_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -111,6 +112,7 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const team: Team = JSON.parse(msg.data.team);
+        setCommunitySettings(serverUrl, [team]);
         operator.handleTeam({
             teams: [team],
             prepareRecordsOnly: false,

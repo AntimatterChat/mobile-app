@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import {removePost} from '@actions/local/post';
+import CommunityTeamTag from '@components/community_team_tag';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
@@ -35,6 +36,7 @@ import HeaderReply from './reply';
 import HeaderTag from './tag';
 import TranslateIcon from './translate_icon';
 
+import type {CommunityLook} from '@queries/servers/community_groups';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -42,6 +44,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type HeaderProps = {
     author?: UserModel;
     commentCount: number;
+    communityLook?: CommunityLook;
     currentUser?: UserModel;
     isAiGenerated: boolean;
     isAutoResponse: boolean;
@@ -57,6 +60,8 @@ type HeaderProps = {
     showPostPriority: boolean;
     shouldRenderReplyButton?: boolean;
 }
+
+const NO_LOOK: CommunityLook = {};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -88,7 +93,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = (props: HeaderProps) => {
     const {
-        author, commentCount = 0, currentUser, isAiGenerated, isAutoResponse, isChannelAutotranslated, isCRTEnabled,
+        author, commentCount = 0, communityLook = NO_LOOK, currentUser, isAiGenerated, isAutoResponse, isChannelAutotranslated, isCRTEnabled,
         isEphemeral, isPendingOrFailed, isSystemPost, isWebHook,
         location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton,
     } = props;
@@ -108,6 +113,7 @@ const Header = (props: HeaderProps) => {
     !isCustomStatusExpired(author) &&
     Boolean(customStatus?.emoji);
     const userIconOverride = ensureString(post.props?.override_icon_url);
+    const automated = isSystemPost || isWebHook || Boolean(author?.isBot);
     const usernameOverride = ensureString(post.props?.override_username);
     const intl = useIntl();
 
@@ -142,6 +148,7 @@ const Header = (props: HeaderProps) => {
                         usernameOverride={usernameOverride}
                         showCustomStatusEmoji={showCustomStatusEmoji}
                         customStatus={customStatus!}
+                        color={automated ? undefined : communityLook.roleColor}
                     />
                     {(!isSystemPost || isAutoResponse) &&
                     <HeaderTag
@@ -150,6 +157,12 @@ const Header = (props: HeaderProps) => {
                         showGuestTag={author?.isGuest && !postConfig.hideGuestTags}
                     />
                     }
+                    {!automated && communityLook.badge && (
+                        <CommunityTeamTag
+                            team={communityLook.badge}
+                            testID='post_header.team_tag'
+                        />
+                    )}
                     <FormattedTime
                         timezone={getUserTimezone(currentUser)}
                         isMilitaryTime={postConfig.isMilitaryTime}

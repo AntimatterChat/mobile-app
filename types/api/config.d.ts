@@ -56,6 +56,7 @@ interface ClientConfig {
     EnableCrossTeamSearch: 'true' | 'false';
     EnableCustomBrand: string;
     EnableCustomEmoji: string;
+    EnableCustomGroups?: string;
     EnableCustomTermsOfService: string;
     EnableCustomUserStatuses: string;
     EnableDeveloper: string;

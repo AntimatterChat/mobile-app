@@ -58,8 +58,8 @@ function TeamList({
     return (
         <View style={containerStyle}>
             <View>
-                <Text style={styles.title}>{intl.formatMessage({id: 'select_team.title', defaultMessage: 'Select a team'})}</Text>
-                <Text style={styles.description}>{intl.formatMessage({id: 'select_team.description', defaultMessage: 'You are not yet a member of any teams. Select one below to get started.'})}</Text>
+                <Text style={styles.title}>{intl.formatMessage({id: 'select_team.title', defaultMessage: 'Select a community'})}</Text>
+                <Text style={styles.description}>{intl.formatMessage({id: 'select_team.description', defaultMessage: 'You are not yet a member of any communities. Select one below to get started.'})}</Text>
             </View>
             {/* {canCreateTeam && ( // TODO https://mattermost.atlassian.net/browse/MM-43622
                 <>

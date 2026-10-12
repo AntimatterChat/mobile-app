@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -27,6 +27,9 @@ type HeaderDisplayNameProps = {
     usernameOverride?: string;
     showCustomStatusEmoji: boolean;
     customStatus: UserCustomStatus;
+
+    // The colour of the author's highest coloured role in the conversation's community.
+    color?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -65,10 +68,11 @@ const HeaderDisplayName = ({
     location, rootPostAuthor,
     shouldRenderReplyButton, theme,
     userIconOverride, userId, usernameOverride,
-    showCustomStatusEmoji, customStatus,
+    showCustomStatusEmoji, customStatus, color,
 }: HeaderDisplayNameProps) => {
     const dimensions = useWindowDimensions();
     const style = getStyleSheet(theme);
+    const nameStyle = useMemo(() => [style.displayName, color ? {color} : undefined], [style.displayName, color]);
 
     const onPress = usePreventDoubleTap(useCallback(() => {
         openUserProfile({
@@ -108,7 +112,7 @@ const HeaderDisplayName = ({
             >
                 <View style={displayNameStyle}>
                     <Text
-                        style={style.displayName}
+                        style={nameStyle}
                         ellipsizeMode={'tail'}
                         numberOfLines={1}
                         testID='post_header.display_name'

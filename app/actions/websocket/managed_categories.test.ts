@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {removeChannelFromManagedCategoryIfNeeded} from '@actions/local/category';
-import {addChannelToManagedCategoryIfNeeded} from '@actions/remote/category';
+import {addChannelToManagedCategoryIfNeeded, fetchCategories} from '@actions/remote/category';
 import DatabaseManager from '@database/manager';
 import {fetchManagedCategoryPropertyIds} from '@helpers/sidebar/managed_categories_merge';
 import {getManagedCategoryForChannel} from '@queries/servers/categories';
@@ -10,13 +10,14 @@ import {getChannelById} from '@queries/servers/channel';
 import {getManagedChannelCategoriesEnabled} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 
-import {handleManagedChannelCategoriesPropertyValuesUpdated} from './managed_categories';
+import {handleManagedChannelCategoriesPropertyValuesUpdated, handleServerCategoriesUpdated} from './managed_categories';
 
 jest.mock('@actions/local/category', () => ({
     removeChannelFromManagedCategoryIfNeeded: jest.fn(),
 }));
 jest.mock('@actions/remote/category', () => ({
     addChannelToManagedCategoryIfNeeded: jest.fn(),
+    fetchCategories: jest.fn(),
 }));
 jest.mock('@helpers/sidebar/managed_categories_merge', () => ({
     fetchManagedCategoryPropertyIds: jest.fn(),
@@ -151,5 +152,35 @@ describe('handleManagedChannelCategoriesPropertyValuesUpdated', () => {
 
         expect(removeChannelFromManagedCategoryIfNeeded).toHaveBeenCalledWith(serverUrl, teamId, channelId);
         expect(addChannelToManagedCategoryIfNeeded).not.toHaveBeenCalled();
+    });
+});
+
+describe('handleServerCategoriesUpdated', () => {
+    const serverUrl = 'http://test.server.com';
+    const msg = {data: {team_id: 'team1'}, broadcast: {team_id: 'team1'}} as WebSocketMessage;
+
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        await DatabaseManager.init([serverUrl]);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should lay out the community\'s categories again', async () => {
+        jest.mocked(getManagedChannelCategoriesEnabled).mockResolvedValue(true);
+
+        await handleServerCategoriesUpdated(serverUrl, msg);
+
+        expect(fetchCategories).toHaveBeenCalledWith(serverUrl, 'team1', true);
+    });
+
+    it('should do nothing when managed categories are off', async () => {
+        jest.mocked(getManagedChannelCategoriesEnabled).mockResolvedValue(false);
+
+        await handleServerCategoriesUpdated(serverUrl, msg);
+
+        expect(fetchCategories).not.toHaveBeenCalled();
     });
 });

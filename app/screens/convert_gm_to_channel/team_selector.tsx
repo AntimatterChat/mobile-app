@@ -21,8 +21,8 @@ type Props = {
 export const TeamSelector = ({commonTeams, onSelectTeam, selectedTeamId}: Props) => {
     const {formatMessage} = useIntl();
 
-    const label = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.label', defaultMessage: 'Team'});
-    const placeholder = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.placeholder', defaultMessage: 'Select a Team'});
+    const label = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.label', defaultMessage: 'Community'});
+    const placeholder = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.placeholder', defaultMessage: 'Select a Community'});
 
     const selectedTeam = useMemo(() => commonTeams.find((t) => t.id === selectedTeamId), [commonTeams, selectedTeamId]);
 

@@ -37,7 +37,7 @@ const TeamMenu = ({canJoinOtherTeams, hasMoreThanOneTeam, currentTeamId, current
                     leftIcon='account-multiple-plus-outline'
                     onPress={onJoinAnotherTeam}
                     testID='team_menu.join_another_team'
-                    text={intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'})}
+                    text={intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Community'})}
                 />
             )}
             {hasMoreThanOneTeam && (
@@ -46,7 +46,7 @@ const TeamMenu = ({canJoinOtherTeams, hasMoreThanOneTeam, currentTeamId, current
                     leftIcon='exit-to-app'
                     onPress={onLeaveTeam}
                     testID='team_menu.leave_team'
-                    text={intl.formatMessage({id: 'mobile.team_menu.leave_team', defaultMessage: 'Leave team'})}
+                    text={intl.formatMessage({id: 'mobile.team_menu.leave_team', defaultMessage: 'Leave community'})}
                 />
             )}
         </>

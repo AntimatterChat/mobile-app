@@ -4,6 +4,7 @@
 import {fetchGroupsForChannel, fetchGroupsForMember, fetchGroupsForTeam} from '@actions/remote/groups';
 import DatabaseManager from '@database/manager';
 import {deleteGroupChannelById, deleteGroupMembershipById, deleteGroupTeamById} from '@queries/servers/group';
+import {receivedCommunityGroup} from '@store/community_groups_store';
 import {generateGroupAssociationId} from '@utils/groups';
 import {logError} from '@utils/log';
 
@@ -48,6 +49,10 @@ export async function handleGroupReceivedEvent(serverUrl: string, msg: Websocket
         if (msg?.data?.group) {
             const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             group = JSON.parse(msg.data.group);
+            if (group.source === 'custom') {
+                // Antimatter's teams and roles: the server sends their members to everyone when they change.
+                receivedCommunityGroup(serverUrl, group);
+            }
             operator.handleGroups({groups: [group], prepareRecordsOnly: false});
         }
     } catch (e) {

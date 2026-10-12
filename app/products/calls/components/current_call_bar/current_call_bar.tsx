@@ -8,10 +8,12 @@ import Animated from 'react-native-reanimated';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import {leaveCallConfirmation} from '@calls/actions/calls';
+import {toggleDeafened} from '@calls/actions/voice_call';
 import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import {CallStatusText} from '@calls/components/call_status_text';
 import {CallStatusTimer} from '@calls/components/call_status_timer';
+import HeadphonesIcon from '@calls/components/headphones_icon';
 import MessageBar from '@calls/components/message_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {useCallingPulseAnimationStyle, usePermissionsChecker} from '@calls/hooks';
@@ -26,6 +28,7 @@ import {navigateToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {MyVoiceCall} from '@calls/state/voice_channels';
 import type {CallSession, CallsTheme, CurrentCall} from '@calls/types/calls';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -43,7 +46,10 @@ type Props = {
     isDMCalling: boolean;
     dmCallee?: UserModel;
     dmCalleeAnsweredAt: number;
+    myVoiceCall?: MyVoiceCall;
 }
+
+const NOT_VOICE_CALL: MyVoiceCall = {isVoiceChannel: false, deafened: false};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
     return {
@@ -113,6 +119,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
         muted: {
             backgroundColor: changeOpacity(theme.buttonColor, 0.08),
         },
+        deafenIconContainer: {
+            width: 40,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: changeOpacity(theme.buttonColor, 0.08),
+            borderRadius: 20,
+            marginLeft: 8,
+        },
+        deafened: {
+            backgroundColor: theme.dndIndicator,
+        },
         verticalLine: {
             height: 42,
             width: 1,
@@ -151,6 +169,7 @@ export const CurrentCallBar = ({
     isDMCalling,
     dmCallee,
     dmCalleeAnsweredAt,
+    myVoiceCall = NOT_VOICE_CALL,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -277,6 +296,20 @@ export const CurrentCallBar = ({
                                 style={style.micIcon}
                             />
                         </Pressable>
+                        {myVoiceCall.isVoiceChannel &&
+                            <Pressable
+                                testID='calls.current_call_bar.deafen'
+                                onPress={toggleDeafened}
+                                style={[style.pressable, style.deafenIconContainer, myVoiceCall.deafened && style.deafened, controlsDisabled && style.disabled]}
+                                disabled={controlsDisabled}
+                            >
+                                <HeadphonesIcon
+                                    deafened={myVoiceCall.deafened}
+                                    size={24}
+                                    color={changeOpacity(theme.buttonColor, 0.56)}
+                                />
+                            </Pressable>
+                        }
                         <View style={style.verticalLine}/>
                         <Pressable
                             testID='calls.current_call_bar.leave'

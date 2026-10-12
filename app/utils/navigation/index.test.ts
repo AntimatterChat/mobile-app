@@ -48,8 +48,8 @@ describe('Navigation utils', () => {
         it('should display alert when a user is removed from a team', () => {
             alertTeamRemove(displayName, intl);
             expect(Alert.alert).toHaveBeenCalledWith(
-                'Removed from team',
-                'You have been removed from team Test Display Name.',
+                'Removed from community',
+                'You have been removed from community Test Display Name.',
                 [{style: 'cancel', text: 'OK'}],
             );
         });
@@ -75,23 +75,23 @@ describe('Navigation utils', () => {
         it('should display alert for team add error with default message', () => {
             alertTeamAddError({}, intl);
             expect(Alert.alert).toHaveBeenCalledWith(
-                'Error joining a team',
-                'There has been an error joining the team',
+                'Error joining a community',
+                'There has been an error joining the community',
             );
         });
 
         it('should display alert for team add error with specific server error message', () => {
             alertTeamAddError(serverError, intl);
             expect(Alert.alert).toHaveBeenCalledWith(
-                'Error joining a team',
-                'You need to be a member of a linked group to join this team.',
+                'Error joining a community',
+                'You need to be a member of a linked group to join this community.',
             );
         });
 
         it('should display alert for team add error with generic error message', () => {
             alertTeamAddError(genericServerError, intl);
             expect(Alert.alert).toHaveBeenCalledWith(
-                'Error joining a team',
+                'Error joining a community',
                 'Generic error message',
             );
         });

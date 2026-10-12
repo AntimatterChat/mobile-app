@@ -6,10 +6,12 @@ import {CHANNELS_CATEGORY, DMS_CATEGORY, FAVORITES_CATEGORY} from '@constants/ca
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getServerCategories} from '@store/server_categories_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
-import {fetchCategories, toggleFavoriteChannel} from './category';
+import {fetchCategories, saveServerCategoryCollapsed, toggleFavoriteChannel} from './category';
+import {savePreference} from './preference';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -17,6 +19,7 @@ jest.mock('@managers/network_manager');
 jest.mock('@utils/log');
 jest.mock('@utils/errors');
 jest.mock('@actions/local/category');
+jest.mock('./preference');
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -78,6 +81,32 @@ describe('fetchCategories', () => {
         await fetchCategories(serverUrl, teamId, false, true);
 
         expect(mockClient.getManagedCategories).toHaveBeenCalledWith(teamId, undefined);
+    });
+
+    it('should lay out an Antimatter community\'s server categories as its person folded them', async () => {
+        await operator.handleConfigs({
+            configs: [{id: 'FeatureFlagManagedChannelCategories', value: 'true'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        await operator.handlePreferences({
+            preferences: [{user_id: 'me', category: 'fusion_server_collapsed', name: teamId, value: '["Voice"]'}],
+            prepareRecordsOnly: false,
+        });
+        const serverCategories = [{name: 'Info', sort_order: 0, locked: true}, {name: 'Voice', sort_order: 1, locked: true}];
+        const mockClient = {
+            getCategories: jest.fn().mockResolvedValue({categories: []}),
+            getManagedCategories: jest.fn().mockResolvedValue({ch1: 'Voice'}),
+            getServerCategories: jest.fn().mockResolvedValue(serverCategories),
+            getPropertyFields: jest.fn().mockResolvedValue([]),
+        };
+        (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
+
+        const {categories} = await fetchCategories(serverUrl, teamId, false, true);
+
+        expect(mockClient.getServerCategories).toHaveBeenCalledWith(teamId, undefined);
+        expect(getServerCategories(serverUrl, teamId)).toEqual(serverCategories);
+        expect(categories?.map((c) => [c.display_name, c.channel_ids, c.collapsed])).toEqual([['Info', [], false], ['Voice', ['ch1'], true]]);
     });
 
     it('should handle error during fetch categories', async () => {
@@ -254,5 +283,21 @@ describe('toggleFavoriteChannel', () => {
         expect(mockClient.updateChannelCategories).toHaveBeenCalled();
         expect(logDebug).toHaveBeenCalledWith('error on toggleFavoriteChannel', 'Full error message');
         expect(result).toEqual({error});
+    });
+});
+
+describe('saveServerCategoryCollapsed', () => {
+    it('should add and remove the category from the person\'s folded ones', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'me'}], prepareRecordsOnly: false});
+        await operator.handlePreferences({
+            preferences: [{user_id: 'me', category: 'fusion_server_collapsed', name: teamId, value: '["Info"]'}],
+            prepareRecordsOnly: false,
+        });
+
+        await saveServerCategoryCollapsed(serverUrl, teamId, 'Voice', true);
+        expect(savePreference).toHaveBeenLastCalledWith(serverUrl, [{user_id: 'me', category: 'fusion_server_collapsed', name: teamId, value: '["Info","Voice"]'}]);
+
+        await saveServerCategoryCollapsed(serverUrl, teamId, 'Info', false);
+        expect(savePreference).toHaveBeenLastCalledWith(serverUrl, [{user_id: 'me', category: 'fusion_server_collapsed', name: teamId, value: '[]'}]);
     });
 });
