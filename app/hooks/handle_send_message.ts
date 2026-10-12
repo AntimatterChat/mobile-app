@@ -11,6 +11,7 @@ import {createPost} from '@actions/remote/post';
 import {handleReactionToLatestPost} from '@actions/remote/reactions';
 import {createScheduledPost} from '@actions/remote/scheduled_post';
 import {setStatus} from '@actions/remote/user';
+import {handleAmPluginsSlashCommand} from '@am_plugins/actions/slash_commands';
 import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
@@ -213,6 +214,12 @@ export const useHandleSendMessage = ({
                 DraftUtils.alertSlashCommandFailed(intl, error);
                 return;
             }
+        }
+
+        if (handleAmPluginsSlashCommand(serverUrl, value, channelId, rootId)) {
+            setSendingMessage(false);
+            clearDraft();
+            return;
         }
 
         const status = DraftUtils.getStatusFromSlashCommand(value);

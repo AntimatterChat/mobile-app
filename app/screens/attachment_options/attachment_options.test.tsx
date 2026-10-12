@@ -65,6 +65,26 @@ describe('AttachmentOptions', () => {
         }));
     });
 
+    describe('plugin actions', () => {
+        it('should show the plugins\' items and run them once the sheet is closed', async () => {
+            const onPress = jest.fn();
+            const {getByTestId, getByText} = renderWithIntlAndTheme(
+                <AttachmentOptions
+                    {...baseProps}
+                    pluginActions={[{id: 'create_poll', icon: 'chart-bar', text: 'Create a poll', onPress}]}
+                />,
+            );
+
+            expect(getByText('Create a poll')).toBeTruthy();
+            fireEvent.press(getByTestId('file_attachment.plugin.create_poll'));
+
+            await waitFor(() => {
+                expect(mockDismissBottomSheet).toHaveBeenCalled();
+                expect(onPress).toHaveBeenCalled();
+            });
+        });
+    });
+
     describe('action handlers', () => {
         it('should call picker.attachFileFromPhotoGallery when photo library is selected', async () => {
             const {getByTestId} = renderWithIntlAndTheme(

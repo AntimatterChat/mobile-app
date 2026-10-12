@@ -11,6 +11,7 @@ import * as scheduledPost from '@actions/websocket/scheduled_post';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentConversationUpdated, handleAgentPostUpdate} from '@agents/actions/websocket';
 import {handleAgentsEvents} from '@agents/actions/websocket/events';
+import {handleAmPluginsEvents} from '@am_plugins/actions/websocket';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
@@ -380,4 +381,5 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
     }
     handlePlaybookEvents(serverUrl, msg);
     handleAgentsEvents(serverUrl, msg);
+    handleAmPluginsEvents(serverUrl, msg);
 }

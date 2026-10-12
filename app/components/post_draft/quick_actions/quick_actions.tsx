@@ -17,6 +17,8 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     testID?: string;
+    channelId?: string;
+    rootId?: string;
     canUploadFiles: boolean;
     fileCount: number;
     isAgentsEnabled: boolean;
@@ -53,6 +55,8 @@ const style = StyleSheet.create({
 
 export default function QuickActions({
     testID,
+    channelId,
+    rootId,
     canUploadFiles,
     value,
     fileCount,
@@ -92,6 +96,8 @@ export default function QuickActions({
         maxFilesReached: fileCount >= maxFileCount,
         onUploadFiles: addFiles,
         showAttachLogs,
+        channelId,
+        rootId,
     };
 
     return (

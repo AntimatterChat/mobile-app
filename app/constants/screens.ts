@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import AGENTS_SCREENS from '@agents/constants/screens';
+import AM_PLUGINS_SCREENS from '@am_plugins/constants/screens';
 import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 
 const ABOUT = 'about';
@@ -177,9 +178,11 @@ export default {
     SHOW_TRANSLATION,
     ...PLAYBOOKS_SCREENS,
     ...AGENTS_SCREENS,
+    ...AM_PLUGINS_SCREENS,
 } as const;
 
 export const MODAL_SCREENS = new Set<string>([
+    AM_PLUGINS_SCREENS.AM_CREATE_POLL,
     BROWSE_CHANNELS,
     CHANNEL_INFO,
     CHANNEL_ADD_MEMBERS,

@@ -20,6 +20,8 @@ import {logError} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {ComposerPluginAction} from '@am_plugins/hooks/composer_actions';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
         color: theme.centerChannelColor,
@@ -36,6 +38,7 @@ type Props = {
     canUploadFiles?: boolean;
     showAttachLogs?: boolean;
     testID?: string;
+    pluginActions?: ComposerPluginAction[];
 }
 
 const AttachmentOptions: React.FC<Props> = ({
@@ -46,6 +49,7 @@ const AttachmentOptions: React.FC<Props> = ({
     canUploadFiles = true,
     showAttachLogs = false,
     testID,
+    pluginActions,
 }) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -216,7 +220,29 @@ const AttachmentOptions: React.FC<Props> = ({
                     })}
                 />
             )}
+            {pluginActions?.map((action) => (
+                <PluginActionItem
+                    key={action.id}
+                    action={action}
+                />
+            ))}
         </View>
+    );
+};
+
+// PluginActionItem is an item a plugin adds to the composer's "+" menu, e.g. "Create a poll".
+const PluginActionItem = ({action}: {action: ComposerPluginAction}) => {
+    const onPress = async () => {
+        await dismissBottomSheet();
+        action.onPress();
+    };
+    return (
+        <SlideUpPanelItem
+            leftIcon={action.icon}
+            onPress={onPress}
+            testID={`file_attachment.plugin.${action.id}`}
+            text={action.text}
+        />
     );
 };
 

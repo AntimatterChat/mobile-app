@@ -21,6 +21,7 @@ import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentsReconnect} from '@agents/actions/websocket/reconnect';
+import {handleAmPluginsReconnect} from '@am_plugins/actions/websocket';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
@@ -103,6 +104,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         handlePlaybookReconnect(serverUrl);
         handleAgentsReconnect(serverUrl);
+        handleAmPluginsReconnect(serverUrl);
         refreshOnTopPosts(serverUrl);
 
         if (isSupportedServerCalls(config?.Version)) {

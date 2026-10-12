@@ -11,6 +11,7 @@ import CallbackStore from '@store/callback_store';
 import {isErrorWithMessage, isServerError} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 
+import type {ComposerPluginAction} from '@am_plugins/hooks/composer_actions';
 import type {UserProfileProps} from '@screens/user_profile';
 import type {GalleryItemType} from '@typings/screens/gallery';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -121,11 +122,12 @@ export function openAttachmentOptions(
         testID?: string;
         fileCount?: number;
         maxFileCount?: number;
+        pluginActions?: ComposerPluginAction[];
     }) {
 
     const TITLE_HEIGHT = 54;
     const renderContent = () => (<AttachmentOptions {...props}/>);
-    const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4 + (props.showAttachLogs ? 1 : 0), ITEM_HEIGHT);
+    const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4 + (props.showAttachLogs ? 1 : 0) + (props.pluginActions?.length ?? 0), ITEM_HEIGHT);
     bottomSheet(renderContent, [1, componentHeight]);
 }
 

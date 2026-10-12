@@ -304,6 +304,19 @@ describe('ClientTracking', () => {
         }
     });
 
+    it('should use the error of a plugin\'s non-ok response', async () => {
+        apiClientMock.get.mockResolvedValue({
+            ok: false,
+            data: {error: 'no such answer'},
+            code: 400,
+        });
+
+        await expect(client.doFetchWithTracking('https://example.com/plugins/x', {method: 'GET'})).rejects.toMatchObject({
+            message: 'no such answer',
+            status_code: 400,
+        });
+    });
+
     it('should handle non-ok response without error details', async () => {
         apiClientMock.get.mockResolvedValue({
             ok: false,

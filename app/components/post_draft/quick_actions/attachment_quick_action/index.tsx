@@ -3,6 +3,7 @@
 
 import React, {useCallback} from 'react';
 
+import {useComposerPluginActions} from '@am_plugins/hooks/composer_actions';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
@@ -40,10 +41,13 @@ export default function AttachmentQuickAction({
     maxFileCount,
     showAttachLogs,
     testID = '',
+    channelId,
+    rootId,
 }: QuickActionAttachmentProps) {
     const theme = useTheme();
     const {blurAndDismissKeyboard} = useKeyboardState();
     const style = getStyleSheet(theme);
+    const pluginActions = useComposerPluginActions(channelId, rootId);
     const iconColor = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
 
     const openFileAttachmentOptions = useCallback(async () => {
@@ -57,8 +61,9 @@ export default function AttachmentQuickAction({
             testID,
             fileCount,
             maxFileCount,
+            pluginActions,
         });
-    }, [blurAndDismissKeyboard, onUploadFiles, maxFilesReached, disabled, showAttachLogs, testID, fileCount, maxFileCount]);
+    }, [blurAndDismissKeyboard, onUploadFiles, maxFilesReached, disabled, showAttachLogs, testID, fileCount, maxFileCount, pluginActions]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
 

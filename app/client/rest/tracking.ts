@@ -437,8 +437,10 @@ export default class ClientTracking {
             return returnDataOnly ? (response.data || {}) : response;
         }
 
+        // Plugins often answer {error} rather than {message}
+        const pluginError = typeof response.data?.error === 'string' ? response.data.error : undefined;
         throw new ClientError(this.apiClient.baseUrl, {
-            message: response.data?.message as string || `Response with status code ${response.code}`,
+            message: response.data?.message as string || pluginError || `Response with status code ${response.code}`,
             server_error_id: response.data?.id as string,
             status_code: response.code,
             url,

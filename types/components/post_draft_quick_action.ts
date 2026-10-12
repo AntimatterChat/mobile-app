@@ -9,4 +9,6 @@ export interface QuickActionAttachmentProps {
     onUploadFiles: (files: ExtractedFileInfo[]) => void;
     showAttachLogs?: boolean;
     testID?: string;
+    channelId?: string;
+    rootId?: string;
 }

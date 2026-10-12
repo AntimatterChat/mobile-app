@@ -35,7 +35,8 @@ type PostType = PostTypesUserCreatable
     | 'custom_run_update'
     | 'custom_llmbot'
     | 'custom_llm_postback'
-    | 'custom_agent_mention_reminder';
+    | 'custom_agent_mention_reminder'
+    | 'custom_poll';
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph' | 'permalink';
 
