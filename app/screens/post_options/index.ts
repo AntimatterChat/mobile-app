@@ -213,7 +213,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
+    // Antimatter's timeouts, by team, keep from reacting.
+    const teamId = channel.pipe(switchMap((ch: ChannelModel) => of$(ch?.teamId || undefined)));
+
     return {
+        teamId,
         canMarkAsUnread,
         canAddReaction,
         canDelete,

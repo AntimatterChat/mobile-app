@@ -11,6 +11,7 @@ import CopyTextOption from '@components/copy_text_option';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reaction_picker';
+import {useMyTeamTimeout} from '@hooks/member_timeout';
 import BottomSheet from '@screens/bottom_sheet';
 import BORReadReceipts, {BOR_READ_RECEIPTS_HEIGHT} from '@screens/post_options/bor_read_receipts';
 import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
@@ -54,14 +55,19 @@ type PostOptionsProps = {
     showBoRReadReceipts?: boolean;
     borReceiptData?: BurnOnReadRecipientData;
     currentUser?: UserModel;
+    teamId?: string;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply, canReplyInline = false, canNameThread = false, canViewTranslation,
     combinedPost, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
-    isBoRPost, showBoRReadReceipts, borReceiptData, currentUser,
+    isBoRPost, showBoRReadReceipts, borReceiptData, currentUser, teamId,
 }: PostOptionsProps) => {
+    // Someone timed out of the team can't react until it ends.
+    const timedOut = Boolean(useMyTeamTimeout(serverUrl, teamId));
+    const canReact = canAddReaction && !timedOut;
+    const canQuote = canReplyInline && !timedOut;
     const managedConfig = useManagedConfig<ManagedConfig>();
     const {bottom} = useSafeAreaInsets();
     const isSystemPost = isSystemMessage(post);
@@ -82,7 +88,7 @@ const PostOptions = ({
         const items: Array<string | number> = [1];
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
-            canMarkAsUnread, canPin, canReply, canReplyInline, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler,
+            canMarkAsUnread, canPin, canReply, canQuote, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler,
             canNameThread,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
@@ -90,7 +96,7 @@ const PostOptions = ({
 
         items.push(
             bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT) +
-            (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0) +
+            (canReact ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0) +
             (shouldShowBORReadReceipts ? BOR_READ_RECEIPTS_HEIGHT : 0) + bottom,
         );
 
@@ -99,7 +105,7 @@ const PostOptions = ({
         }
 
         return items;
-    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canReplyInline, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler, canNameThread, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
+    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canQuote, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler, canNameThread, shouldShowBindings, canReact, shouldShowBORReadReceipts, bottom]);
 
     const renderContent = () => {
         return (
@@ -113,8 +119,8 @@ const PostOptions = ({
                         readReceipts={borReceiptData.revealedCount}
                     />
                 }
-                {canAddReaction && <ReactionBar postId={post.id}/>}
-                {canReplyInline &&
+                {canReact && <ReactionBar postId={post.id}/>}
+                {canQuote &&
                 <InlineReplyOption
                     post={post}
                     sourceScreen={sourceScreen}
@@ -123,7 +129,7 @@ const PostOptions = ({
                 {canReply &&
                 <ReplyOption
                     post={post}
-                    inThread={canReplyInline}
+                    inThread={canQuote}
                 />
                 }
                 {shouldRenderFollow && <FollowThreadOption thread={thread}/>}

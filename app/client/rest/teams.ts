@@ -29,6 +29,7 @@ export interface ClientTeamsMix {
     joinTeam: (inviteId: string) => Promise<TeamMembership>;
     removeFromTeam: (teamId: string, userId: string) => Promise<any>;
     getTeamStats: (teamId: string) => Promise<any>;
+    getTeamTimeouts: (teamId: string) => Promise<MemberTimeout[]>;
     getTeamIconUrl: (teamId: string, lastTeamIconUpdate: number) => string;
 }
 
@@ -180,6 +181,14 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     getTeamStats = async (teamId: string) => {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/stats`,
+            {method: 'get'},
+        );
+    };
+
+    // Antimatter: the team's timeouts that still hold, which any member may read.
+    getTeamTimeouts = async (teamId: string) => {
+        return this.doFetch(
+            `${this.getTeamRoute(teamId)}/timeouts`,
             {method: 'get'},
         );
     };

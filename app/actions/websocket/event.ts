@@ -21,6 +21,7 @@ import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
 import {handleManagedChannelCategoriesPropertyValuesUpdated} from './managed_categories';
+import {handleModerationEvents} from './moderation';
 import * as posts from './posts';
 import {handlePostTranslationUpdatedEvent} from './posts';
 import * as preferences from './preferences';
@@ -373,4 +374,5 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
     }
     handlePlaybookEvents(serverUrl, msg);
     handleAgentsEvents(serverUrl, msg);
+    handleModerationEvents(serverUrl, msg);
 }

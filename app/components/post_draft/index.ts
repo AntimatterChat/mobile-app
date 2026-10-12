@@ -75,8 +75,12 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
         }),
     );
 
+    // Antimatter's timeouts are by team.
+    const teamId = channel.pipe(switchMap((c) => of$(c?.teamId || undefined)));
+
     return {
         canPost,
+        teamId,
         channelIsArchived,
         channelIsReadOnly,
         deactivatedChannel,
