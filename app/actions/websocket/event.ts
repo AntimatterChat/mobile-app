@@ -11,6 +11,7 @@ import * as scheduledPost from '@actions/websocket/scheduled_post';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentConversationUpdated, handleAgentPostUpdate} from '@agents/actions/websocket';
 import {handleAgentsEvents} from '@agents/actions/websocket/events';
+import * as voice from '@calls/actions/voice';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
@@ -80,6 +81,7 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.USER_ADDED:
             channel.handleUserAddedToChannelEvent(serverUrl, msg);
+            voice.handleUserAddedToVoiceChannel(serverUrl, msg);
             break;
         case WebsocketEvents.USER_REMOVED:
             channel.handleUserRemovedFromChannelEvent(serverUrl, msg);
@@ -201,6 +203,7 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.CALLS_USER_LEFT:
             calls.handleCallUserLeft(serverUrl, msg);
+            voice.handleVoiceChannelSessionLeft(serverUrl, msg);
             break;
         case WebsocketEvents.CALLS_USER_MUTED:
             calls.handleCallUserMuted(serverUrl, msg);
@@ -210,9 +213,11 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.CALLS_USER_VOICE_ON:
             calls.handleCallUserVoiceOn(msg);
+            voice.handleVoiceChannelSpeaking(serverUrl, msg, true);
             break;
         case WebsocketEvents.CALLS_USER_VOICE_OFF:
             calls.handleCallUserVoiceOff(msg);
+            voice.handleVoiceChannelSpeaking(serverUrl, msg, false);
             break;
         case WebsocketEvents.CALLS_CALL_START:
             calls.handleCallStarted(serverUrl, msg);
@@ -258,6 +263,12 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.CALLS_CALL_STATE:
             calls.handleCallState(serverUrl, msg);
+            break;
+        case WebsocketEvents.VOICE_CHANNEL_UPDATED:
+            voice.handleVoiceChannelUpdated(serverUrl, msg);
+            break;
+        case WebsocketEvents.VOICE_SESSION_DEAFENED:
+            voice.handleSessionDeafened(serverUrl, msg);
             break;
         case WebsocketEvents.GROUP_RECEIVED:
             group.handleGroupReceivedEvent(serverUrl, msg);

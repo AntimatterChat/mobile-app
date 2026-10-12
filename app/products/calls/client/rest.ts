@@ -1,7 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Calls} from '@constants';
+
 import type {ApiResp} from '@calls/types/calls';
+import type {VoiceChannelResp, VoiceConfigResp} from '@calls/types/voice';
 import type {CallChannelState, CallJobState, CallsConfig, CallsVersionInfo} from '@mattermost/calls/lib/types';
 import type {RTCIceServer} from 'react-native-webrtc';
 
@@ -23,6 +26,10 @@ export interface ClientCallsMix {
     hostScreenOff: (callId: string, sessionId: string) => Promise<ApiResp>;
     hostLowerHand: (callId: string, sessionId: string) => Promise<ApiResp>;
     hostRemove: (callId: string, sessionId: string) => Promise<ApiResp>;
+    getVoiceConfig: (groupLabel?: RequestGroupLabel) => Promise<VoiceConfigResp>;
+    getVoiceChannels: (groupLabel?: RequestGroupLabel) => Promise<VoiceChannelResp[]>;
+    getVoiceChannel: (channelId: string) => Promise<VoiceChannelResp>;
+    setVoiceSessionDeafened: (channelId: string, sessionId: string, deafened: boolean) => Promise<ApiResp>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -168,6 +175,39 @@ const ClientCalls = (superclass: any) => class extends superclass {
             },
         );
     };
+
+    // Antimatter's voice channels plugin.
+    getVoiceConfig = async (groupLabel?: RequestGroupLabel) => {
+        return this.doFetch(
+            `${this.getVoiceChannelsRoute()}/config`,
+            {method: 'get', groupLabel},
+        );
+    };
+
+    getVoiceChannels = async (groupLabel?: RequestGroupLabel) => {
+        return this.doFetch(
+            `${this.getVoiceChannelsRoute()}/channels`,
+            {method: 'get', groupLabel},
+        );
+    };
+
+    getVoiceChannel = async (channelId: string) => {
+        return this.doFetch(
+            `${this.getVoiceChannelsRoute()}/channels/${channelId}`,
+            {method: 'get'},
+        );
+    };
+
+    setVoiceSessionDeafened = async (channelId: string, sessionId: string, deafened: boolean) => {
+        return this.doFetch(
+            `${this.getVoiceChannelsRoute()}/channels/${channelId}/sessions/${sessionId}/deafened`,
+            {method: 'put', body: {deafened}},
+        );
+    };
+
+    getVoiceChannelsRoute() {
+        return `${this.getPluginRoute(Calls.VoiceChannelsPluginId)}/api/v1`;
+    }
 };
 
 export default ClientCalls;

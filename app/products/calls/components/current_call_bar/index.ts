@@ -12,7 +12,7 @@ import {
     observeDMCallingState,
     observeEndCallDetails,
 } from '@calls/observers';
-import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
+import {observeCurrentCall, observeGlobalCallsState, observeMyVoiceCall} from '@calls/state';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
 import {CurrentCallBar} from './current_call_bar';
@@ -38,6 +38,7 @@ const enhanced = withObservables([], () => {
         sessionsDict: observeCurrentSessionsDict(),
         teammateNameDisplay,
         micPermissionsGranted,
+        myVoiceCall: observeMyVoiceCall(),
         ...observeEndCallDetails(),
         ...observeDMCallingState(),
     };

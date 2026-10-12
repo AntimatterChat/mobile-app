@@ -4,6 +4,7 @@
 import {of as of$, combineLatest, type Observable} from 'rxjs';
 import {switchMap, map, distinctUntilChanged} from 'rxjs/operators';
 
+import {observeLiveVoiceChannelIds} from '@calls/components/voice_participants/participants';
 import {Permissions, Preferences} from '@constants';
 import {DMS_CATEGORY, MANAGED_LOCAL_CATEGORY_PREFIX, UNREADS_CATEGORY} from '@constants/categories';
 import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
@@ -194,7 +195,7 @@ const observeFlattenedUnreads = (
     );
 };
 
-const processCategoriesData = (categoriesData: CategoryData[], unreadsOnTopValue: boolean, showEmptyManaged = false): FlattenedCategoriesData => {
+const processCategoriesData = (categoriesData: CategoryData[], unreadsOnTopValue: boolean, showEmptyManaged = false, liveVoiceIds?: Set<string>): FlattenedCategoriesData => {
     const filtered = filterEmptyManaged(filterManagedDuplicates(categoriesData), showEmptyManaged);
 
     const unreadChannelIds = new Set<string>();
@@ -212,7 +213,7 @@ const processCategoriesData = (categoriesData: CategoryData[], unreadsOnTopValue
         }));
     }
 
-    const items = flattenCategories(processed, unreadsOnTopValue);
+    const items = flattenCategories(processed, unreadsOnTopValue, liveVoiceIds);
     return {items, unreadChannelIds};
 };
 
@@ -258,6 +259,7 @@ const observeFlattenedCategoriesNormal = (
     locale: string,
     isTablet: boolean,
     showEmptyManaged: Observable<boolean>,
+    liveVoiceIds: Observable<Set<string>>,
 ): Observable<FlattenedCategoriesData> => {
     if (categories.length === 0) {
         return of$({items: [], unreadChannelIds: new Set<string>()});
@@ -273,8 +275,8 @@ const observeFlattenedCategoriesNormal = (
         observeCategoryData(category, database, currentUserId, locale, isTablet),
     );
 
-    return combineLatest([combineLatest(categoryDataObservables), unreadsOnTop, showEmptyManaged]).pipe(
-        map(([categoriesData, unreadsOnTopValue, showEmpty]) => processCategoriesData(categoriesData, unreadsOnTopValue, showEmpty)),
+    return combineLatest([combineLatest(categoryDataObservables), unreadsOnTop, showEmptyManaged, liveVoiceIds]).pipe(
+        map(([categoriesData, unreadsOnTopValue, showEmpty, liveIds]) => processCategoriesData(categoriesData, unreadsOnTopValue, showEmpty, liveIds)),
         distinctUntilChanged((prev, curr) => {
             if (prev.items.length !== curr.items.length) {
                 return false;
@@ -331,6 +333,7 @@ export const observeFlattenedCategories = (
     isTablet: boolean,
     onlyUnreads: boolean,
     currentTeamId: string,
+    serverUrl = '',
 ): Observable<FlattenedCategoriesData> => {
     if (onlyUnreads) {
         return observeFlattenedUnreads(database, currentTeamId, isTablet);
@@ -345,6 +348,6 @@ export const observeFlattenedCategories = (
     );
 
     return categories.pipe(
-        switchMap((cats) => observeFlattenedCategoriesNormal(sortCategories(cats), database, currentUserId, locale, isTablet, showEmptyManaged)),
+        switchMap((cats) => observeFlattenedCategoriesNormal(sortCategories(cats), database, currentUserId, locale, isTablet, showEmptyManaged, observeLiveVoiceChannelIds(serverUrl))),
     );
 };

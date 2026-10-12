@@ -22,6 +22,7 @@ import {RTCView} from 'react-native-webrtc';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import {leaveCallConfirmation, startCallRecording, stopCallRecording, switchToCallThread} from '@calls/actions/calls';
+import {toggleDeafened} from '@calls/actions/voice_call';
 import {
     recordingAlert,
     recordingWillBePostedAlert,
@@ -34,6 +35,7 @@ import {CallStatusTimer} from '@calls/components/call_status_timer';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
 import Captions from '@calls/components/captions';
 import EmojiList from '@calls/components/emoji_list';
+import HeadphonesIcon from '@calls/components/headphones_icon';
 import MessageBar from '@calls/components/message_bar';
 import ReactionBar from '@calls/components/reaction_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
@@ -62,6 +64,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
+import type {MyVoiceCall} from '@calls/state/voice_channels';
 import type UserModel from '@typings/database/models/servers/user';
 
 const MY_CARD_KEY = 'my-session';
@@ -72,6 +75,8 @@ export const avatarL = 96;
 export const avatarM = 72;
 export const usernameL = 110;
 export const usernameM = 92;
+
+const NOT_VOICE_CALL: MyVoiceCall = {isVoiceChannel: false, deafened: false};
 
 export type Props = {
     currentCall: CurrentCall | null;
@@ -89,6 +94,9 @@ export type Props = {
     currentUser?: UserModel;
     dmCallee?: UserModel;
     dmCalleeAnsweredAt: number;
+
+    // In a voice channel's call (Antimatter), people can deafen themselves.
+    myVoiceCall?: MyVoiceCall;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
@@ -222,6 +230,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     buttonLandscape: {
         flex: 0,
     },
+    muteRow: {
+        flexDirection: 'row',
+        alignSelf: 'stretch',
+    },
+    muteInRow: {
+        flex: 1,
+        marginRight: 0,
+    },
+    deafen: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 4,
+        paddingVertical: 24,
+        paddingHorizontal: 16,
+        backgroundColor: changeOpacity(theme.buttonColor, 0.12),
+        borderRadius: 20,
+        marginLeft: 12,
+        marginRight: 16,
+        marginTop: 20,
+        marginBottom: 20,
+    },
+    deafenOn: {
+        backgroundColor: theme.dndIndicator,
+    },
+    deafenPressed: {
+        opacity: 0.72,
+    },
     mute: {
         alignSelf: 'stretch',
         alignItems: 'center',
@@ -326,6 +361,7 @@ const CallScreen = ({
     currentUser,
     dmCallee,
     dmCalleeAnsweredAt,
+    myVoiceCall = NOT_VOICE_CALL,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -370,9 +406,7 @@ const CallScreen = ({
 
         const cardItems = [];
 
-        const sessions = isDM ?
-            sortDMSessions(intl.locale, teammateNameDisplay, currentCall.myUserId, sessionsDict, currentCall.screenOn) :
-            sortSessions(intl.locale, teammateNameDisplay, sessionsDict, currentCall.screenOn);
+        const sessions = isDM ?sortDMSessions(intl.locale, teammateNameDisplay, currentCall.myUserId, sessionsDict, currentCall.screenOn) :sortSessions(intl.locale, teammateNameDisplay, sessionsDict, currentCall.screenOn);
 
         if (!mySession) {
             cardItems.push({key: MY_CARD_KEY, session: pendingMySession, isRinging: false});
@@ -435,6 +469,14 @@ const CallScreen = ({
             muteMyself();
         }
     }, [displayMySession.muted]);
+
+    const deafenText = (
+        <FormattedText
+            id={myVoiceCall.deafened ? 'mobile.calls_undeafen' : 'mobile.calls_deafen'}
+            defaultMessage={myVoiceCall.deafened ? 'Undeafen' : 'Deafen'}
+            style={style.buttonText}
+        />
+    );
 
     const toggleReactions = useCallback(() => {
         setShowReactions((prev) => !prev);
@@ -805,20 +847,37 @@ const CallScreen = ({
                             <ReactionBar raisedHand={displayMySession.raisedHand}/>
                         }
                         {!isLandscape &&
-                            <Pressable
-                                testID='mute-unmute'
-                                style={[style.mute, displayMySession.muted && style.muteMuted, controlsDisabled && style.buttonDisabled]}
-                                onPress={muteUnmuteHandler}
-                                disabled={!micPermissionsGranted || controlsDisabled}
-                            >
-                                <UnavailableIconWrapper
-                                    name={displayMySession.muted ? 'microphone-off' : 'microphone'}
-                                    size={32}
-                                    unavailable={!micPermissionsGranted}
-                                    style={style.muteIcon}
-                                />
-                                {displayMySession.muted ? UnmuteText : MuteText}
-                            </Pressable>
+                            <View style={style.muteRow}>
+                                <Pressable
+                                    testID='mute-unmute'
+                                    style={[style.mute, myVoiceCall.isVoiceChannel && style.muteInRow, displayMySession.muted && style.muteMuted, controlsDisabled && style.buttonDisabled]}
+                                    onPress={muteUnmuteHandler}
+                                    disabled={!micPermissionsGranted || controlsDisabled}
+                                >
+                                    <UnavailableIconWrapper
+                                        name={displayMySession.muted ? 'microphone-off' : 'microphone'}
+                                        size={32}
+                                        unavailable={!micPermissionsGranted}
+                                        style={style.muteIcon}
+                                    />
+                                    {displayMySession.muted ? UnmuteText : MuteText}
+                                </Pressable>
+                                {myVoiceCall.isVoiceChannel &&
+                                    <Pressable
+                                        testID='deafen-undeafen'
+                                        style={({pressed}) => [style.deafen, myVoiceCall.deafened && style.deafenOn, controlsDisabled && style.buttonDisabled, pressed && style.deafenPressed]}
+                                        onPress={toggleDeafened}
+                                        disabled={controlsDisabled}
+                                    >
+                                        <HeadphonesIcon
+                                            deafened={myVoiceCall.deafened}
+                                            size={32}
+                                            color={theme.buttonColor}
+                                        />
+                                        {deafenText}
+                                    </Pressable>
+                                }
+                            </View>
                         }
                         <View style={[style.otherButtons, isLandscape && style.otherButtonsLandscape]}>
                             <Pressable
@@ -920,6 +979,23 @@ const CallScreen = ({
                                         errorContainerStyle={isLandscape && style.errorContainerLandscape}
                                     />
                                     {displayMySession.muted ? UnmuteText : MuteText}
+                                </Pressable>
+                            }
+                            {isLandscape && myVoiceCall.isVoiceChannel &&
+                                <Pressable
+                                    testID='deafen-undeafen'
+                                    style={[style.button, style.buttonLandscape, controlsDisabled && style.buttonDisabled]}
+                                    onPress={toggleDeafened}
+                                    disabled={controlsDisabled}
+                                >
+                                    <View style={[style.buttonIcon, style.buttonIconLandscape, myVoiceCall.deafened && style.deafenOn]}>
+                                        <HeadphonesIcon
+                                            deafened={myVoiceCall.deafened}
+                                            size={32}
+                                            color={theme.buttonColor}
+                                        />
+                                    </View>
+                                    {deafenText}
                                 </Pressable>
                             }
                             {(isLandscape || (!isHost && !ccAvailable)) &&

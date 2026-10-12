@@ -21,6 +21,9 @@ const HostControlsCallsVersion = {
 
 const PluginId = 'com.mattermost.calls';
 
+// Antimatter's voice channels: always-open calls, on top of the Calls plugin.
+const VoiceChannelsPluginId = 'com.antimatterchat.voice-channels';
+
 const REACTION_TIMEOUT = 10000;
 const REACTION_LIMIT = 20;
 const CALL_QUALITY_RESET_MS = toMilliseconds({minutes: 1});
@@ -55,6 +58,7 @@ export default {
     RequiredServer,
     HostControlsCallsVersion,
     PluginId,
+    VoiceChannelsPluginId,
     REACTION_TIMEOUT,
     REACTION_LIMIT,
     MessageBarType,

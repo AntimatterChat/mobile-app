@@ -4,6 +4,7 @@
 import * as bookmark from '@actions/local/channel_bookmark';
 import * as burnOnRead from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
+import * as voice from '@calls/actions/voice';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
@@ -34,6 +35,7 @@ jest.mock('./system');
 jest.mock('./users');
 jest.mock('./threads');
 jest.mock('@calls/connection/websocket_event_handlers');
+jest.mock('@calls/actions/voice');
 jest.mock('./group');
 jest.mock('@actions/local/channel_bookmark');
 jest.mock('@actions/websocket/scheduled_post');
@@ -448,6 +450,20 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.CALLS_CALL_STATE;
         await handleWebSocketEvent(serverUrl, msg);
         expect(calls.handleCallState).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle the voice channels events', async () => {
+        msg.event = WebsocketEvents.VOICE_CHANNEL_UPDATED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(voice.handleVoiceChannelUpdated).toHaveBeenCalledWith(serverUrl, msg);
+
+        msg.event = WebsocketEvents.VOICE_SESSION_DEAFENED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(voice.handleSessionDeafened).toHaveBeenCalledWith(serverUrl, msg);
+
+        msg.event = WebsocketEvents.CALLS_USER_VOICE_ON;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(voice.handleVoiceChannelSpeaking).toHaveBeenCalledWith(serverUrl, msg, true);
     });
 
     it('should handle GROUP_RECEIVED event', async () => {

@@ -187,6 +187,9 @@ export type CallsConnection = {
     initializeVoiceTrack: () => void;
     sendReaction: (emoji: EmojiData) => void;
     setUserSelectedAudioRoute: (route: AudioDeviceType) => void;
+
+    // Stops or resumes hearing the call (Antimatter voice channels).
+    setDeafened: (deafened: boolean) => void;
 }
 
 export type CallsConfigState = CallsConfig & {

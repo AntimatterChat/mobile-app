@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 
 import {enableChannelCalls} from '@calls/actions';
 import {useTryCallsFunction} from '@calls/hooks';
-import {getCallsConfig} from '@calls/state';
+import {getCallsConfig, isVoiceChannel} from '@calls/state';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
@@ -29,8 +29,9 @@ const ChannelInfoEnableCalls = ({channelId, enabled}: Props) => {
     const disableText = formatMessage({id: 'mobile.calls_disable', defaultMessage: 'Disable calls'});
     const enableText = formatMessage({id: 'mobile.calls_enable', defaultMessage: 'Enable calls'});
 
+    // A voice channel's calls are the voice channels plugin's: switching them off here would break the channel.
     const config = getCallsConfig(serverUrl);
-    if (!config.pluginEnabled) {
+    if (!config.pluginEnabled || isVoiceChannel(serverUrl, channelId)) {
         return null;
     }
 

@@ -19,6 +19,9 @@ type ChannelIconProps = {
     isOnCenterBg?: boolean;
     isUnread?: boolean;
     isMuted?: boolean;
+
+    // An Antimatter voice channel, whose call is always open.
+    isVoice?: boolean;
     membersCount?: number;
     name: string;
     shared: boolean;
@@ -89,7 +92,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const ChannelIcon = ({
     hasDraft = false, isActive = false, isArchived = false,
     isOnCenterBg = false, isUnread = false, isMuted = false,
-    membersCount = 0, name,
+    isVoice = false, membersCount = 0, name,
     shared, size = 12, style, testID, type,
 }: ChannelIconProps) => {
     const theme = useTheme();
@@ -159,6 +162,17 @@ const ChannelIcon = ({
                     {left: 2},
                 ]}
                 testID={`${testID}.draft`}
+            />
+        );
+    } else if (isVoice) {
+        icon = (
+            <CompassIcon
+                name='volume-high'
+                style={[
+                    commonIconStyles,
+                    {left: 1},
+                ]}
+                testID={`${testID}.voice`}
             />
         );
     } else if (shared) {

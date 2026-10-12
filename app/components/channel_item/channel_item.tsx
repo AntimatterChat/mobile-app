@@ -34,6 +34,7 @@ type Props = {
     teamDisplayName?: string;
     testID?: string;
     hasCall: boolean;
+    isVoice?: boolean;
     isOnCenterBg?: boolean;
     showChannelName?: boolean;
     isOnHome?: boolean;
@@ -122,6 +123,7 @@ const ChannelItem = ({
     teamDisplayName = '',
     testID,
     hasCall,
+    isVoice = false,
     isOnCenterBg = false,
     showChannelName = false,
     isOnHome = false,
@@ -195,6 +197,7 @@ const ChannelItem = ({
                     size={24}
                     type={channel.type}
                     isMuted={isMuted}
+                    isVoice={isVoice}
                     style={styles.icon}
                 />
                 <ChannelBody
@@ -218,7 +221,7 @@ const ChannelItem = ({
                         urgentMentionCount > 0 && styles.urgentBadge,
                     ]}
                 />
-                {hasCall &&
+                {hasCall && !isVoice &&
                 <CompassIcon
                     name='phone-in-talk'
                     size={16}

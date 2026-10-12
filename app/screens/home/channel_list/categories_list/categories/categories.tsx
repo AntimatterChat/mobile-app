@@ -3,10 +3,13 @@
 
 import {FlashList, type FlashListRef, type ListRenderItem, type ViewToken} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchDirectChannelsInfo, switchToChannelById} from '@actions/remote/channel';
+import {autoJoinVoiceChannel} from '@calls/actions/voice_call';
+import VoiceParticipants from '@calls/components/voice_participants';
 import ChannelItem from '@components/channel_item';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -68,6 +71,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
     const insets = useSafeAreaInsets();
     const listRef = useRef<FlashListRef<FlattenedItem> | null>(null);
     const serverUrl = useServerUrl();
+    const intl = useIntl();
     const listContentStyle = useMemo(() => {
         if (isTablet) {
             return undefined;
@@ -110,7 +114,10 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
         DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.CHANNEL);
         PerformanceMetricsManager.startMetric('mobile_channel_switch');
         switchToChannelById(serverUrl, c.id);
-    }, [serverUrl]);
+
+        // Opening a voice channel joins its call, as the voice channels plugin is set to.
+        autoJoinVoiceChannel(serverUrl, c.id, intl);
+    }, [serverUrl, intl]);
 
     const renderItem: ListRenderItem<FlattenedItem> = useCallback(({item}) => {
         if (item.type === 'unreads_header') {
@@ -130,14 +137,17 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
         // item.type === 'channel'
         const testIdSuffix = item.categoryType;
         return (
-            <ChannelItem
-                channel={item.channel}
-                onPress={onChannelSwitch}
-                testID={`channel_list.category.${testIdSuffix}.channel_item`}
-                shouldHighlightActive={isChannelScreenActive}
-                shouldHighlightState={true}
-                isOnHome={true}
-            />
+            <>
+                <ChannelItem
+                    channel={item.channel}
+                    onPress={onChannelSwitch}
+                    testID={`channel_list.category.${testIdSuffix}.channel_item`}
+                    shouldHighlightActive={isChannelScreenActive}
+                    shouldHighlightState={true}
+                    isOnHome={true}
+                />
+                <VoiceParticipants channelId={item.channelId}/>
+            </>
         );
     }, [styles, onChannelSwitch, isChannelScreenActive]);
 

@@ -85,6 +85,8 @@ const WebsocketEvents = {
     CALLS_HOST_LOWER_HAND: `custom_${Calls.PluginId}_host_lower_hand`,
     CALLS_HOST_REMOVED: `custom_${Calls.PluginId}_host_removed`,
     CALLS_CALL_STATE: `custom_${Calls.PluginId}_call_state`,
+    VOICE_CHANNEL_UPDATED: `custom_${Calls.VoiceChannelsPluginId}_voice_channel_updated`,
+    VOICE_SESSION_DEAFENED: `custom_${Calls.VoiceChannelsPluginId}_session_deafened`,
 
     GROUP_RECEIVED: 'received_group',
     GROUP_MEMBER_ADD: 'group_member_add',

@@ -13,7 +13,7 @@ import {
     observeEndCallDetails,
 } from '@calls/observers';
 import CallScreen from '@calls/screens/call_screen/call_screen';
-import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
+import {observeCurrentCall, observeGlobalCallsState, observeMyVoiceCall} from '@calls/state';
 import {General} from '@constants';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 import {isDMChannel} from '@utils/channel';
@@ -67,6 +67,7 @@ const enhanced = withObservables([], () => {
         isOwnDirectMessage,
         isDM,
         currentUser,
+        myVoiceCall: observeMyVoiceCall(),
         ...observeEndCallDetails(),
         ...observeDMCallingState(),
     };
