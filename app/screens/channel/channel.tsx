@@ -8,6 +8,7 @@ import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import FloatingCallContainer from '@calls/components/floating_call_container';
+import OnTopStrip from '@components/on_top_strip';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -145,6 +146,12 @@ const Channel = ({
                 shouldRenderBookmarks={shouldRender}
                 shouldRenderChannelBanner={includeChannelBanner}
             />
+            {shouldRender && (
+                <OnTopStrip
+                    channelId={channelId}
+                    isTopItem={!includeBookmarkBar && !includeChannelBanner}
+                />
+            )}
             {shouldRender && (
                 <ChannelContent
                     channelId={channelId}

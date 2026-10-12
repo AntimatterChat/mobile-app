@@ -15,6 +15,7 @@ import {
 } from '@actions/remote/entry/common';
 import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
 import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
+import {refreshOnTopPosts} from '@actions/remote/on_top';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
@@ -102,6 +103,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         handlePlaybookReconnect(serverUrl);
         handleAgentsReconnect(serverUrl);
+        refreshOnTopPosts(serverUrl);
 
         if (isSupportedServerCalls(config?.Version)) {
             loadConfigAndCalls(serverUrl, currentUserId, groupLabel);

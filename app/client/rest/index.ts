@@ -21,6 +21,7 @@ import ClientGeneral, {type ClientGeneralMix} from './general';
 import ClientGroups, {type ClientGroupsMix} from './groups';
 import ClientIntegrations, {type ClientIntegrationsMix} from './integrations';
 import ClientNPS, {type ClientNPSMix} from './nps';
+import ClientOnTop, {type ClientOnTopMix} from './on_top';
 import ClientPosts, {type ClientPostsMix} from './posts';
 import ClientPreferences, {type ClientPreferencesMix} from './preferences';
 import ClientProperties, {type ClientPropertiesMix} from './properties';
@@ -44,6 +45,7 @@ interface Client extends ClientBase,
     ClientGeneralMix,
     ClientGroupsMix,
     ClientIntegrationsMix,
+    ClientOnTopMix,
     ClientPostsMix,
     ClientPreferencesMix,
     ClientPropertiesMix,
@@ -74,6 +76,7 @@ class Client extends mix(ClientBase).with(
     ClientGeneral,
     ClientGroups,
     ClientIntegrations,
+    ClientOnTop,
     ClientPosts,
     ClientPreferences,
     ClientProperties,

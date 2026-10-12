@@ -10,6 +10,8 @@ const WebsocketEvents = {
     POST_EDITED: 'post_edited',
     POST_DELETED: 'post_deleted',
     POST_UNREAD: 'post_unread',
+    POST_PUT_ON_TOP: 'post_put_on_top',
+    POST_REMOVED_FROM_TOP: 'post_removed_from_top',
     CATEGORY_CREATED: 'sidebar_category_created',
     CATEGORY_UPDATED: 'sidebar_category_updated',
     CATEGORY_DELETED: 'sidebar_category_deleted',

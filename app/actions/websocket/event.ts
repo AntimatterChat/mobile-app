@@ -21,6 +21,7 @@ import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
 import {handleManagedChannelCategoriesPropertyValuesUpdated} from './managed_categories';
+import {handlePostPutOnTop, handlePostRemovedFromTop} from './on_top';
 import * as posts from './posts';
 import {handlePostTranslationUpdatedEvent} from './posts';
 import * as preferences from './preferences';
@@ -60,6 +61,12 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.POST_ACKNOWLEDGEMENT_REMOVED:
             posts.handlePostAcknowledgementRemoved(serverUrl, msg);
+            break;
+        case WebsocketEvents.POST_PUT_ON_TOP:
+            handlePostPutOnTop(serverUrl, msg);
+            break;
+        case WebsocketEvents.POST_REMOVED_FROM_TOP:
+            handlePostRemovedFromTop(serverUrl, msg);
             break;
 
         case WebsocketEvents.LEAVE_TEAM:

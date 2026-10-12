@@ -5,6 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
+import {observeCanChangeOnTop} from '@components/on_top_strip';
 import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
@@ -134,6 +135,10 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
     }));
 
+    // Antimatter: putting a message on top of its channel, where the server allows it (see the
+    // on-top strip), nor system or burn-on-read messages.
+    const canPutOnTop = borPost || isSystemMessage(post) ? of$(false) : observeCanChangeOnTop(database, post.channelId);
+
     const isSaved = observePostSaved(database, post.id, serverUrl);
 
     const canEdit = borPost ? of$(false) : combineLatest([postEditTimeLimit, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(
@@ -206,6 +211,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         canDelete,
         canReply,
         canPin,
+        canPutOnTop,
         combinedPost: of$(combinedPost),
         isSaved,
         canEdit,

@@ -21,6 +21,7 @@ import AppBindingsPostOptions from './options/app_bindings_post_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
+import OnTopOption from './options/on_top_option';
 import PinChannelOption from './options/pin_channel_option';
 import ReactionBar from './reaction_bar';
 
@@ -36,6 +37,7 @@ type PostOptionsProps = {
     canEdit: boolean;
     canMarkAsUnread: boolean;
     canPin: boolean;
+    canPutOnTop: boolean;
     canReply: boolean;
     canViewTranslation: boolean;
     combinedPost?: Post | PostModel;
@@ -52,7 +54,7 @@ type PostOptionsProps = {
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
-    canMarkAsUnread, canPin, canReply, canViewTranslation,
+    canMarkAsUnread, canPin, canPutOnTop, canReply, canViewTranslation,
     combinedPost, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
     isBoRPost, showBoRReadReceipts, borReceiptData, currentUser,
@@ -76,7 +78,7 @@ const PostOptions = ({
         const items: Array<string | number> = [1];
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
-            canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation,
+            canMarkAsUnread, canPin, canPutOnTop, canReply, canSavePost, shouldRenderFollow, canViewTranslation,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
@@ -92,7 +94,7 @@ const PostOptions = ({
         }
 
         return items;
-    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
+    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canPutOnTop, canReply, canSavePost, shouldRenderFollow, canViewTranslation, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
 
     const renderContent = () => {
         return (
@@ -139,6 +141,7 @@ const PostOptions = ({
                     postId={post.id}
                 />
                 }
+                {canPutOnTop && <OnTopOption post={post}/>}
                 {canEdit &&
                 <EditOption
                     post={post}
