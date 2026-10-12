@@ -777,7 +777,7 @@ class SecurityManagerSingleton {
 
         try {
             await Emm.authenticate({
-                reason: translations[messages.securedBy.id].replace('{vendor}', siteName || config?.siteName || 'Mattermost'),
+                reason: translations[messages.securedBy.id].replace('{vendor}', siteName || config?.siteName || 'Antimatter'),
                 fallback: true,
                 supressEnterPassword: false,
                 blurOnAuthenticate: this.shouldBlurOnAuthenticate(server),

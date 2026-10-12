@@ -92,7 +92,7 @@ export ADMIN_PASSWORD="..."
 export TEST_USER_EMAIL="testuser@example.com"
 export TEST_USER_PASSWORD="User1234!"
 export TEST_CHANNEL_NAME="town-square"
-export MAESTRO_APP_ID="com.mattermost.rnbeta"   # optional, defaults to rnbeta
+export MAESTRO_APP_ID="chat.antimatter.app"   # optional, defaults to rnbeta
 ```
 
 ### 4. Build and install the app
@@ -375,7 +375,7 @@ appId: ${MAESTRO_APP_ID}
 | `TEST_USER_EMAIL` | — | Test user email for login |
 | `TEST_USER_PASSWORD` | — | Test user password for login |
 | `TEST_CHANNEL_NAME` | — | Channel name to navigate to |
-| `MAESTRO_APP_ID` | `com.mattermost.rnbeta` | iOS bundle ID or Android package |
+| `MAESTRO_APP_ID` | `chat.antimatter.app` | iOS bundle ID or Android package |
 | `SYNC_TOKEN` | random 8-char string | Unique token for multi-device sync |
 | `DEVICE_A_UDID` | — | UDID of first device (multi-device only) |
 | `DEVICE_B_UDID` | — | UDID of second device (multi-device only) |

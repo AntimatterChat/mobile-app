@@ -3,7 +3,9 @@
 
 import React from 'react';
 import {View} from 'react-native';
+import tinycolor from 'tinycolor2';
 
+import AntimatterLogo from '@components/antimatter_logo';
 import FormattedText from '@components/formatted_text';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -65,6 +67,11 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
 
     return (
         <View style={styles.textContainer}>
+            <AntimatterLogo
+                size={56}
+                variant={tinycolor(theme.centerChannelBg).isDark() ? 'dark' : 'light'}
+                testID='server_header.logo'
+            />
             {title}
             <FormattedText
                 defaultMessage="A server is your team's communication hub accessed using a unique URL"

@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {Redirect, type Href} from 'expo-router';
-import {useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
+import LaunchLoader from '@components/antimatter_logo/launch_loader';
 import {determineInitialExpoRoute, type ExpoRouterLaunchResult} from '@init/launch';
 import {propsToParams} from '@screens/navigation';
 
@@ -20,7 +21,7 @@ export default function RootIndex() {
     }, []);
 
     if (!launchResult) {
-        return null; // Still determining initial route
+        return <LaunchLoader/>; // Still determining initial route
     }
 
     // Redirect to the determined route with params

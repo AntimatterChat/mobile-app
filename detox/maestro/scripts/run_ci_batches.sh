@@ -14,7 +14,7 @@
 #
 # Environment:
 #   MAESTRO_BIN          — default ~/.maestro/bin/maestro
-#   MAESTRO_APP_ID       — default com.mattermost.rnbeta
+#   MAESTRO_APP_ID       — default chat.antimatter.app
 #   FLOW_PATH            — optional; space-separated flow dirs (default: detox/maestro/flows/* categories)
 #   SITE_1_URL, TEST_*   — passed through to maestro --env
 #   ADMIN_TOKEN           — re-applies the server config baseline at startup and enables
@@ -41,7 +41,7 @@ ARTIFACTS_DIR="build/maestro-artifacts"
 # exactly once.
 MERGED_XML="$OUTPUT_DIR/maestro-batches-merged.xml"
 MAESTRO_BIN="${MAESTRO_BIN:-$HOME/.maestro/bin/maestro}"
-MAESTRO_APP_ID="${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
+MAESTRO_APP_ID="${MAESTRO_APP_ID:-chat.antimatter.app}"
 export MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
 
 usage() {

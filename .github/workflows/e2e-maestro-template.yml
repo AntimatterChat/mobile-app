@@ -235,7 +235,7 @@ jobs:
             echo "Fixture file not found at $FIXTURE — skipping document setup"
             exit 0
           fi
-          APP_DATA=$(xcrun simctl get_app_container "$SIMULATOR_ID" com.mattermost.rnbeta data 2>/dev/null || true)
+          APP_DATA=$(xcrun simctl get_app_container "$SIMULATOR_ID" chat.antimatter.app data 2>/dev/null || true)
           if [ -z "$APP_DATA" ]; then
             echo "App data container not found — app may not be installed yet; skipping"
             exit 0
@@ -310,7 +310,7 @@ jobs:
           for attempt in 1 2 3; do
             if "$HOME/.maestro/bin/maestro" --device "$SIMULATOR_ID" test \
                 --env "SITE_1_URL=$SITE_1_URL" \
-                --env "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}" \
+                --env "MAESTRO_APP_ID=${MAESTRO_APP_ID:-chat.antimatter.app}" \
                 detox/maestro/preflight/_connect_check.yml; then
               echo "==> Pre-flight connect OK (attempt $attempt)"
               exit 0
@@ -434,7 +434,7 @@ jobs:
             --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
             --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
-            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            --env MAESTRO_APP_ID="chat.antimatter.app" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
 
       - name: Run MM-T3261_1 with ReportAProblemType=link (iOS)
@@ -496,7 +496,7 @@ jobs:
             --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
             --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
-            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            --env MAESTRO_APP_ID="chat.antimatter.app" \
             detox/maestro/flows/account/report_problem_link_mode.yml
 
       - name: Restore AllowDownloadLogs baseline (self-healing)
@@ -1058,7 +1058,7 @@ jobs:
             --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
             --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
-            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            --env MAESTRO_APP_ID="chat.antimatter.app" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
 
       - name: Restore AllowDownloadLogs baseline (self-healing)
@@ -1144,7 +1144,7 @@ jobs:
             --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
             --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
-            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            --env MAESTRO_APP_ID="chat.antimatter.app" \
             detox/maestro/flows/account/report_problem_mail_mode.yml
 
       - name: Run MM-T3261_1 with ReportAProblemType=link (Android)
@@ -1206,7 +1206,7 @@ jobs:
             --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
             --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
-            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            --env MAESTRO_APP_ID="chat.antimatter.app" \
             detox/maestro/flows/account/report_problem_link_mode.yml
 
       - name: Stop Android logcat capture

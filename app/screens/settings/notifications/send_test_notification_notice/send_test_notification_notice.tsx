@@ -52,7 +52,7 @@ const SendTestNotificationNotice = ({
         userId,
         isCloud,
         telemetryId,
-    }, 'https://mattermost.com/pl/troubleshoot-notifications');
+    }, 'https://antimatter.chat/help.html');
 
     const onGoToNotificationDocumentation = useCallback(() => {
         tryOpenURL(href);

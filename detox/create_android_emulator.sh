@@ -162,11 +162,11 @@ install_app() {
         # both the main APK and the test APK are already present on the device).
         adb install -r ../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
     fi
-    adb shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed." || echo "App is not installed."
+    adb shell pm list packages | grep "chat.antimatter.app" && echo "App is installed." || echo "App is not installed."
 }
 
 grant_android_runtime_permissions() {
-    local bundle_id="com.mattermost.rnbeta"
+    local bundle_id="chat.antimatter.app"
     adb shell pm grant "$bundle_id" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
     adb shell pm grant "$bundle_id" android.permission.RECORD_AUDIO 2>/dev/null || true
     adb shell pm grant "$bundle_id" android.permission.CAMERA 2>/dev/null || true
@@ -337,11 +337,11 @@ run_detox_tests() {
 emulator_is_ready() {
     adb devices 2>/dev/null | grep -qE '^emulator-[0-9]+\s+device' || return 1
     [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]] || return 1
-    adb shell pm list packages 2>/dev/null | grep -q 'com.mattermost.rnbeta' || return 1
+    adb shell pm list packages 2>/dev/null | grep -q 'chat.antimatter.app' || return 1
 }
 
 reset_app_for_retry() {
-    local bundle_id="com.mattermost.rnbeta"
+    local bundle_id="chat.antimatter.app"
     echo "Resetting app state for failed-spec retry..."
     adb shell input keyevent KEYCODE_HOME 2>/dev/null || true
     adb shell am force-stop "$bundle_id" 2>/dev/null || true

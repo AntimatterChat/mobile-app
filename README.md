@@ -1,72 +1,61 @@
-# Mattermost Mobile v2
+# Antimatter Mobile
 
-- **Minimum Server versions:** Current ESR version (11.7.0+)
+The iOS and Android app of [Antimatter](https://antimatter.chat), the free, open-source team chat you host
+yourself. It is based on [Mattermost Mobile v2](https://github.com/mattermost/mattermost-mobile) and works with
+Antimatter servers.
+
 - **Supported iOS versions:** 18.0+
 - **Supported Android versions:** 11.0+
 
-Mattermost is an open source Slack-alternative used by thousands of companies around the world in 21 languages. Learn more at [https://mattermost.com](https://mattermost.com).
+Every feature is available: there is no licence, no edition and nothing to upgrade to.
 
-You can download our apps from the [App Store](https://mattermost.com/mattermost-ios-app/) or [Google Play Store](https://mattermost.com/mattermost-android-app/), or [build them yourself](https://developers.mattermost.com/contribute/mobile/build-your-own/). 
+## Building
 
-We plan on releasing monthly updates with new features - check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what features are currently supported! 
+See [CLAUDE.md](CLAUDE.md) for the commands (`npm run tsc`, `npm test`, `npm run ios`, `npm run android`) and the
+architecture. The store builds go through fastlane (`fastlane/`), with the identifiers of `fastlane/.env.*`:
 
-**Important:** If you self-compile the Mattermost Mobile apps you also need to deploy your own [Mattermost Push Notification Service](https://github.com/mattermost/mattermost-push-proxy/releases). 
+| | Android applicationId / iOS bundle id | App group (iOS) |
+|---|---|---|
+| Release | `chat.antimatter.app` (extensions: `.Share`, `.NotificationService`) | `group.chat.antimatter.app` |
+| Beta | `chat.antimatter.app.beta` | `group.chat.antimatter.app.beta` |
 
-# How to Contribute
+The Kotlin/Java packages (`com.mattermost.*`) and the Swift modules keep their upstream names.
 
-### Testing
+To build your own copy you need, besides the toolchains:
 
-To help with testing app updates before they're released, you can:
+- your own signing keys (Android keystore, Apple certificates and provisioning profiles for the three iOS targets);
+- a Firebase project for Android push notifications: replace `android/app/google-services.json`, which is a
+  placeholder;
+- an APNs key for iOS push notifications;
+- a push proxy that holds those credentials ([AntimatterChat/push-proxy](https://github.com/AntimatterChat/push-proxy)),
+  set as the push notification server of your Antimatter server.
 
-1. Sign up to be a beta tester
-   - [Android](https://play.google.com/apps/testing/com.mattermost.rnbeta)
-   - [iOS](https://testflight.apple.com/join/Q7Rx7K9P) - Open this link from your iOS device
-2. Install the `Mattermost Beta` app. New updates in the Beta app are released periodically. You will receive a notification when the new updates are available.
-3. File any bugs you find by filing a [GitHub issue](https://github.com/mattermost/mattermost-mobile/issues) with:
-   - Device information
-   - Repro steps
-   - Observed behavior (including screenshot / video when possible)
-   - Expected behavior
-4. (Optional) [Sign up for our team site](https://community.mattermost.com/signup_user_complete/?id=codoy5s743rq5mk18i7u5ksz7e&md=link&sbr=su)
-   - Join the [Native Mobile Apps channel](https://community.mattermost.com/core/channels/native-mobile-apps) to see what's new and discuss feedback with other contributors and the core team
-   
-You can leave the Beta testing program at any time:
-- On Android, [click this link](https://play.google.com/apps/testing/com.mattermost.rnbeta) while logged in with your Google Play email address used to opt-in for the Beta program, then click **Leave the program**. 
-- On iOS, access the `Mattermost Beta` app page in TestFlight and click **Stop Testing**.
+The app icons and the launch screen are rendered from `assets/brand/*.svg` with
+`python3 scripts/generate-brand-assets.py` (needs `rsvg-convert` and ImageMagick).
 
-### Contribute Code 
+Deep links use the `antimatter://` scheme; `mattermost://` links keep working.
 
-1. Look in [GitHub issues](https://mattermost.com/pl/help-wanted-mattermost-mobile) for issues marked as [Help Wanted]
-2. Comment to let people know you’re working on it
-3. Follow [these instructions](https://developers.mattermost.com/contribute/mobile/developer-setup/) to set up your developer environment
-4. Join the [Native Mobile Apps channel](https://community.mattermost.com/core/channels/native-mobile-apps) on our team site to ask questions
+## Reporting problems
 
+See [antimatter.chat/help.html](https://antimatter.chat/help.html), or open an issue on
+[GitHub](https://github.com/AntimatterChat/mobile-app/issues) with the device, the steps to reproduce, what you
+saw and what you expected.
 
+## Troubleshooting
 
-# Frequently Asked Questions
+### "Cannot connect to the server. Please check your server URL and internet connection."
 
-### How is data handled on mobile devices after a user account is deactivated?
+This usually comes from the SSL certificate configuration. Check the certificate with a site such as
+https://www.ssllabs.com/ssltest/index.html: if it reports a missing chain or certificate path, an intermediate
+certificate is missing. The apps cannot connect to servers with self-signed certificates; use
+[Let's Encrypt](https://letsencrypt.org) instead.
 
-App data is wiped from the device when a user logs out of the app. If the user is logged in when the account is deactivated, then within one minute the system logs the user out, and as a result all app data is wiped from the device.
+### A "Connecting…" bar that does not go away
 
-### I need the code for the v1 version
+If the server is behind NGINX or another reverse proxy, the proxy must let the websocket connection of
+`/api/v4/websocket` through (the `Upgrade` and `Connection` headers).
 
-You can still access it! We have moved the code from master to the [v1 branch](https://github.com/mattermost/mattermost-mobile/tree/v1). Be aware that we will not be providing any more v1 versions or updates in the public stores.
+## Licence
 
-# Troubleshooting
-
-### I keep getting a message "Cannot connect to the server. Please check your server URL and internet connection."
-
-This sometimes appears when there is an issue with the SSL certificate configuration. 
-
-To check that your SSL certificate is set up correctly, test the SSL certificate by visiting a site such as https://www.ssllabs.com/ssltest/index.html. If there’s an error about the missing chain or certificate path, there is likely an intermediate certificate missing that needs to be included.
-
-Please note that the apps cannot connect to servers with self-signed certificates, consider using [Let's Encrypt](https://docs.mattermost.com/install/config-ssl-http2-nginx.html) instead. 
-
-### I see a “Connecting…” bar that does not go away
-
-If your app is working properly, you should see a grey “Connecting…” bar that clears or says “Connected” after the app reconnects. 
-
-If you are seeing this message all the time, and your internet connection seems fine: 
-
-Ask your server administrator if the server uses NGINX or another webserver as a reverse proxy. If so, they should check that it is configured correctly for [supporting the websocket connection for APIv4 endpoints](https://docs.mattermost.com/install/install-ubuntu-1604.html#configuring-nginx-as-a-proxy-for-mattermost-server). 
+Apache 2.0, see [LICENSE.txt](LICENSE.txt) and [NOTICE.txt](NOTICE.txt). Mattermost Mobile is copyright
+Mattermost, Inc.

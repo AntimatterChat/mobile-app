@@ -91,7 +91,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const TermsOfService = ({
-    siteName = 'Mattermost',
+    siteName = 'Antimatter',
     showToS,
 }: TermsOfServiceProps) => {
     const theme = useTheme();

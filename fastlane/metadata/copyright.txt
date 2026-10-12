@@ -1,1 +1,1 @@
-Copyright 2017 Mattermost, Inc. All Rights Reserved
+Copyright 2015-present Mattermost, Inc. and Antimatter contributors

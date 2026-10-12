@@ -391,7 +391,7 @@ private struct CallInfo {
         let key = "mobile.ios.calls.incoming_call_placeholder"
         let appName = (Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String)
             ?? (Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String)
-            ?? "Mattermost"
+            ?? "Antimatter"
         let template = NSLocalizedString(key, bundle: .main, value: "\(appName) call", comment: "")
         return template.replacingOccurrences(of: "{applicationName}", with: appName)
     }

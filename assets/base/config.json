@@ -6,9 +6,9 @@
     "TestServerUrl": "http://localhost:8065",
     "AutoSelectServerUrl": false,
 
-    "WebsiteURL": "https://mattermost.com",
-    "ServerNoticeURL": "https://github.com/mattermost/mattermost-server/blob/master/NOTICE.txt",
-    "MobileNoticeURL": "https://github.com/mattermost/mattermost-mobile/blob/master/NOTICE.txt",
+    "WebsiteURL": "https://antimatter.chat",
+    "ServerNoticeURL": "https://github.com/AntimatterChat/antimatter/blob/main/NOTICE.txt",
+    "MobileNoticeURL": "https://github.com/AntimatterChat/mobile-app/blob/main/NOTICE.txt",
 
     "RudderApiKey": "",
 

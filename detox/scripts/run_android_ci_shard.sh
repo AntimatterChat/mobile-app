@@ -60,7 +60,7 @@ trap write_missing_results_stub EXIT
 emulator_healthy() {
     adb devices 2>/dev/null | grep -qE '^emulator-[0-9]+\s+device' || return 1
     [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]] || return 1
-    adb shell pm list packages 2>/dev/null | grep -q 'com.mattermost.rnbeta' || return 1
+    adb shell pm list packages 2>/dev/null | grep -q 'chat.antimatter.app' || return 1
 }
 
 kill_emulator() {

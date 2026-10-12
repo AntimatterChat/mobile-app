@@ -9,8 +9,8 @@ import {Text, View} from 'react-native';
 
 import {getLicenseLoadMetric} from '@actions/remote/license';
 import Config from '@assets/config.json';
+import AntimatterLogo from '@components/antimatter_logo';
 import Button from '@components/button';
-import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SettingContainer from '@components/settings/container';
 import {Screens} from '@constants';
@@ -33,7 +33,7 @@ import Subtitle from './subtitle';
 import Title from './title';
 import TosPrivacyContainer from './tos_privacy';
 
-const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
+const ANTIMATTER_BUNDLE_IDS = ['chat.antimatter.app', 'chat.antimatter.app.beta'];
 
 const TABLET_EXTRA_PADDING = 20;
 
@@ -209,9 +209,7 @@ const About = ({config, license}: AboutProps) => {
         <SettingContainer testID='about'>
             <View style={isTablet ? styles.tabletContentWrapper : undefined}>
                 <View style={styles.logoContainer}>
-                    <CompassIcon
-                        color={theme.centerChannelColor}
-                        name='mattermost'
+                    <AntimatterLogo
                         size={80}
                         testID='about.logo'
                     />
@@ -326,9 +324,9 @@ const About = ({config, license}: AboutProps) => {
                         license={license}
                         onPress={handleAboutTeam}
                     />
-                    {!MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
+                    {!ANTIMATTER_BUNDLE_IDS.includes(applicationId || '') &&
                     <FormattedText
-                        defaultMessage='{site} is powered by Mattermost'
+                        defaultMessage='{site} is powered by Antimatter'
                         id={'settings.about.powered_by'}
                         style={styles.footerText}
                         testID='about.powered_by'
@@ -339,7 +337,7 @@ const About = ({config, license}: AboutProps) => {
                         style={styles.thinLine}
                     />
                     <FormattedText
-                        defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
+                        defaultMessage='Based on Mattermost. Copyright 2015-{currentYear} Mattermost, Inc. and the Antimatter contributors.'
                         id={'settings.about.copyright'}
                         style={[styles.footerText, styles.copyrightText]}
                         testID='about.copyright'
@@ -355,7 +353,7 @@ const About = ({config, license}: AboutProps) => {
                     <View style={styles.noticeContainer}>
                         <FormattedText
                             id={'settings.notice_text'}
-                            defaultMessage='Mattermost is made possible by the open source software used in our {platform} and {mobile}.'
+                            defaultMessage='Antimatter is made possible by the open source software used in our {platform} and {mobile}.'
                             style={styles.footerText}
                             values={{
                                 platform: (

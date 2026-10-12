@@ -49,14 +49,6 @@ after_all do |lane|
   if ENV['CI'] != 'true'
     if ENV['RESET_GIT_BRANCH'] == 'true'
       branch = ENV['BRANCH_TO_BUILD'] || 'main'
-      package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
-      beta_dir = '../android/app/src/main/java/com/mattermost/rnbeta'
-      release_dir = "../android/app/src/main/java/#{package_id.gsub '.', '/'}"
-
-      if beta_dir != release_dir
-        sh "rm -rf #{release_dir}"
-      end
-
       reset_git_repo(
           force: true,
           skip_clean: true
@@ -355,7 +347,7 @@ lane :upload_file_to_s3 do |options|
                         })
     end
 
-    if options[:file]&.start_with?('Mattermost-simulator-') && options[:file]&.end_with?('.app.zip')
+    if options[:file]&.start_with?('Antimatter-simulator-') && options[:file]&.end_with?('.app.zip')
       pretext = '#### New iOS build for VM/Simulator'
       msg = "Download link: #{links.first}"
       send_message_to_mattermost({
@@ -382,22 +374,15 @@ lane :github do
     version = android_get_version_name(gradle_file: './android/app/build.gradle')
     build = android_get_version_code(gradle_file: './android/app/build.gradle')
     changelog = File.read("metadata/changelog")
-    android = [
-      "    * [Mattermost arm64-v8a](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-arm64-v8a.apk)",
-      "    * [Mattermost armeabi-v7a](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-armeabi-v7a.apk)",
-      "    * [Mattermost x86](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-x86.apk)",
-      "    * [Mattermost x86_64](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-x86_64.apk)",
-    ]
-    changelog.concat("* Android\n#{android.join("\n")}\n")
-    changelog.concat("* iOS\n    * [Mattermost](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.ipa)")
+    changelog.concat("\nThe unsigned builds are attached to this release: Antimatter-unsigned.apk and Antimatter-unsigned.ipa.")
 
     github_release = set_github_release(
-      repository_name: "mattermost/mattermost-mobile",
+      repository_name: "AntimatterChat/mobile-app",
       api_token: ENV["GITHUB_TOKEN"],
       name: "Mobile Version #{version}",
       tag_name: tag,
       description: changelog,
-      upload_assets: ["./Mattermost-unsigned.ipa", "./Mattermost-unsigned.apk"],
+      upload_assets: ["./Antimatter-unsigned.ipa", "./Antimatter-unsigned.apk"],
       is_draft: true
     )
   end
@@ -436,10 +421,10 @@ platform :ios do
   lane :unsigned do
     UI.success('Building unsigned iOS app')
 
-    ENV['APP_NAME'] = 'Mattermost'
+    ENV['APP_NAME'] = 'Antimatter'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
-    ENV['APP_SCHEME'] = 'mattermost'
+    ENV['APP_SCHEME'] = 'antimatter'
 
     update_settings
     replace_assets
@@ -447,7 +432,7 @@ platform :ios do
     build_ios_unsigned_or_simulator(
       more_xc_args: "-sdk iphoneos CODE_SIGNING_ALLOWED=NO",
       rel_build_dir: "Release-iphoneos",
-      output_file: "Mattermost-unsigned.ipa",
+      output_file: "Antimatter-unsigned.ipa",
     )
   end
 
@@ -460,10 +445,10 @@ platform :ios do
     # Use arm64 for Apple Silicon (arm64), x86_64 for Intel
     if host_arch == "arm64"
       build_arch = "arm64"
-      output_file = "Mattermost-simulator-arm64.app.zip"
+      output_file = "Antimatter-simulator-arm64.app.zip"
     else
       build_arch = "x86_64"
-      output_file = "Mattermost-simulator-x86_64.app.zip"
+      output_file = "Antimatter-simulator-x86_64.app.zip"
     end
 
     UI.message("Building for #{build_arch} architecture on #{host_arch} host")
@@ -501,11 +486,11 @@ platform :ios do
 
   lane :update_settings do
     # Configure Main app settings
-    app_name = ENV['APP_NAME'] || 'Mattermost Beta'
-    app_bundle_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
-    app_group_id = ENV['IOS_APP_GROUP'] || 'group.com.mattermost.rnbeta'
-    icloud_container = ENV['IOS_ICLOUD_CONTAINER'] || 'iCloud.com.mattermost.rnbeta'
-    app_scheme = ENV['APP_SCHEME'] || 'mattermost'
+    app_name = ENV['APP_NAME'] || 'Antimatter'
+    app_bundle_id = ENV['MAIN_APP_IDENTIFIER'] || 'chat.antimatter.app'
+    app_group_id = ENV['IOS_APP_GROUP'] || 'group.chat.antimatter.app'
+    icloud_container = ENV['IOS_ICLOUD_CONTAINER'] || 'iCloud.chat.antimatter.app'
+    app_scheme = ENV['APP_SCHEME'] || 'antimatter'
     app_auth_scheme = get_auth_scheme
     keychain_group = "$(AppIdentifierPrefix)#{ENV["IOS_KEYCHAIN_GROUP"] || app_bundle_id}"
     
@@ -521,7 +506,7 @@ platform :ios do
 
     find_replace_string(
         path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
-        old_string: 'com.mattermost.rnbeta',
+        old_string: 'chat.antimatter.app',
         new_string: app_bundle_id
     )
 
@@ -537,7 +522,7 @@ platform :ios do
 
     update_url_schemes(
       path: './ios/Mattermost/Info.plist',
-      url_schemes: [app_scheme, app_auth_scheme]
+      url_schemes: [app_scheme, 'mattermost', app_auth_scheme].uniq
     )
 
     update_keychain_access_groups(
@@ -546,7 +531,7 @@ platform :ios do
     )
 
     # Configure Share extension settings
-    extension_bundle_id = ENV['EXTENSION_APP_IDENTIFIER'] || 'com.mattermost.rnbeta.MattermostShare'
+    extension_bundle_id = ENV['EXTENSION_APP_IDENTIFIER'] || 'chat.antimatter.app.Share'
     
     update_info_plist(
       xcodeproj: './ios/Mattermost.xcodeproj',
@@ -560,7 +545,7 @@ platform :ios do
 
     find_replace_string(
         path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
-        old_string: 'com.mattermost.rnbeta.MattermostShare',
+        old_string: 'chat.antimatter.app.Share',
         new_string: extension_bundle_id
     )
 
@@ -570,7 +555,7 @@ platform :ios do
     )
 
     # Configure Notification Service settings
-    notification_bundle_id = ENV['NOTIFICATION_SERVICE_IDENTIFIER'] || 'com.mattermost.rnbeta.NotificationService'
+    notification_bundle_id = ENV['NOTIFICATION_SERVICE_IDENTIFIER'] || 'chat.antimatter.app.NotificationService'
     update_info_plist(
       xcodeproj: './ios/Mattermost.xcodeproj',
       plist_path: 'NotificationService/Info.plist',
@@ -588,7 +573,7 @@ platform :ios do
 
     find_replace_string(
         path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
-        old_string: 'com.mattermost.rnbeta.NotificationService',
+        old_string: 'chat.antimatter.app.NotificationService',
         new_string: notification_bundle_id
     )
 
@@ -620,6 +605,7 @@ platform :ios do
             urlScheme = plist["CFBundleURLTypes"].find{|scheme| scheme["CFBundleURLName"] == "com.mattermost"}
             urlScheme[:CFBundleURLSchemes] = [
               app_scheme,
+              'mattermost',
               app_auth_scheme,
               "msauth.#{app_bundle_id}",
               "#{app_scheme}-intunemam",
@@ -629,7 +615,7 @@ platform :ios do
             ]
 
             plist["IntuneMAMSettings"] = {
-              "AppGroupIdentifiers" => [ENV['IOS_APP_GROUP'] || 'group.com.mattermost.rnbeta'],
+              "AppGroupIdentifiers" => [ENV['IOS_APP_GROUP'] || 'group.chat.antimatter.app'],
               "MAMTelemetryDisabled" => true,
               "MultiIdentity" => true,
               "ADALLogOverrideDisabled" => true,
@@ -682,7 +668,7 @@ platform :ios do
       sh 'cp -R ../dist/assets/release/splash_screen/ios/SplashIcon.imageset ../ios/Mattermost/Images.xcassets/'
     end
 
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'Antimatter'
     localization_base_path = '../dist/assets/i18n/'
     Dir.glob('*.json', base: localization_base_path) do |item|
       localization_file = File.read(localization_base_path + item)
@@ -746,7 +732,7 @@ platform :ios do
       target = 'Mattermost'
       if id.include? 'NotificationService'
         target = 'NotificationService'
-      elsif id.include? 'MattermostShare'
+      elsif id.end_with? '.Share'
         target = 'MattermostShare'
       end
 
@@ -764,7 +750,7 @@ platform :ios do
   end
 
   def build_ios
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'Antimatter'
     app_name_sub = app_name.gsub(" ", "_")
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
     method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
@@ -795,10 +781,10 @@ platform :ios do
     root_dir = Dir[File.expand_path('..')].first
     ios_build_dir = "#{root_dir}/ios/Build/Products"
 
-    ENV['APP_NAME'] = 'Mattermost'
+    ENV['APP_NAME'] = 'Antimatter'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
-    ENV['APP_SCHEME'] = 'mattermost'
+    ENV['APP_SCHEME'] = 'antimatter'
 
     update_settings
     replace_assets
@@ -833,10 +819,10 @@ platform :android do
   lane :unsigned do
     UI.success('Building unsigned Android app')
 
-    ENV['APP_NAME'] = 'Mattermost'
+    ENV['APP_NAME'] = 'Antimatter'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
-    ENV['APP_SCHEME'] = 'mattermost'
+    ENV['APP_SCHEME'] = 'antimatter'
 
     update_identifiers
     replace_assets
@@ -847,7 +833,7 @@ platform :android do
         project_dir: 'android/'
     )
 
-    sh "mv #{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]} #{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/Mattermost-unsigned.apk"
+    sh "mv #{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]} #{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/Antimatter-unsigned.apk"
   end
 
   desc 'Upload artifacts to S3'
@@ -863,84 +849,33 @@ platform :android do
 
   lane :update_identifiers do
     # Set the name for the app
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'Antimatter'
     sh "echo '#{app_name}' > ../fastlane/metadata/android/en-US/title.txt"
     android_change_string_app_name(
         newName: app_name,
         stringsFile: './android/app/src/main/res/values/strings.xml'
     )
 
-    package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
-    android_change_package_identifier(newIdentifier: package_id, manifest: './android/app/src/main/AndroidManifest.xml')
+    # Only the applicationId changes: the namespace and the Kotlin/Java packages stay com.mattermost.*
+    package_id = ENV['MAIN_APP_IDENTIFIER'] || 'chat.antimatter.app'
     android_update_application_id(app_folder_name: 'android/app', application_id: package_id)
-    android_update_namespace(app_folder_name: 'android/app', namespace: package_id)
 
-    app_scheme = ENV['APP_SCHEME'] || 'mattermost'
-    find_replace_string(
-      path_to_file: "./android/app/src/main/AndroidManifest.xml",
-      old_string: 'scheme="mattermost"',
-      new_string: "scheme=\'#{app_scheme}\'"
-    )
+    app_scheme = ENV['APP_SCHEME'] || 'antimatter'
+    unless app_scheme == 'antimatter' || app_scheme == 'mattermost'
+      find_replace_string(
+        path_to_file: "./android/app/src/main/AndroidManifest.xml",
+        old_string: 'android:scheme="antimatter"',
+        new_string: "android:scheme=\"#{app_scheme}\""
+      )
+    end
 
-    
     app_auth_scheme = get_auth_scheme
 
     find_replace_string(
         path_to_file: "./android/app/src/main/AndroidManifest.xml",
-        old_string: 'scheme="mmauthbeta"',
-        new_string: "scheme=\"#{app_auth_scheme}\"",
+        old_string: 'android:scheme="mmauth"',
+        new_string: "android:scheme=\"#{app_auth_scheme}\"",
     )
-
-    helpers_dir = './android/app/src/main/java/com/mattermost/helpers/'
-    beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
-    release_dir = "./android/app/src/main/java/#{package_id.gsub '.', '/'}/"
-    if release_dir != beta_dir
-      unless Dir.exist?(".#{release_dir}")
-        FileUtils.mkdir_p ".#{release_dir}"
-      end
-
-      sh "mv .#{beta_dir}* .#{release_dir}"
-
-      Dir.glob(".#{release_dir}*.java") do |item|
-        find_replace_string(
-            path_to_file: item[1..-1],
-            old_string: 'package com.mattermost.rnbeta;',
-            new_string: "package #{package_id};"
-        )
-      end
-
-      Dir.glob(".#{release_dir}*.kt") do |item|
-        find_replace_string(
-            path_to_file: item[1..-1],
-            old_string: 'package com.mattermost.rnbeta',
-            new_string: "package #{package_id}"
-        )
-      end
-
-      Dir.glob('../android/app/src/main/java/com/mattermost/share/*.java') do |item|
-        find_replace_string(
-            path_to_file: item[1..-1],
-            old_string: 'import com.mattermost.rnbeta.MainApplication;',
-            new_string: "import #{package_id}.MainApplication;"
-        )
-      end
-
-      Dir.glob('../android/app/src/main/java/com/mattermost/helpers/*.java') do |item|
-        find_replace_string(
-            path_to_file: item[1..-1],
-            old_string: 'import com.mattermost.rnbeta.*;',
-            new_string: "import #{package_id}.*;"
-        )
-      end
-
-      Dir.glob('../android/app/src/main/java/com/mattermost/helpers/*.kt') do |item|
-        find_replace_string(
-            path_to_file: item[1..-1],
-            old_string: 'import com.mattermost.rnbeta.*',
-            new_string: "import #{package_id}.*"
-        )
-      end
-    end
   end
 
   lane :replace_assets do
@@ -1011,7 +946,7 @@ platform :android do
   end
 
   def move_android_to_root
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'Antimatter'
     app_name_sub = app_name.gsub(" ", "_")
     build_task = ENV['ANDROID_BUILD_TASK'].nil? || ENV['ANDROID_BUILD_TASK'].empty? ? 'assemble' : ENV['ANDROID_BUILD_TASK']
     build_task = build_task.split(",")
@@ -1160,7 +1095,7 @@ def submit_to_testflight(ipa_path)
   public_link = "https://#{ENV['AWS_BUCKET_DNS_NAME']}/#{s3_folder}/#{filename}"
 
 
-  # Send a build message to Mattermost
+  # Send a build message to the team's chat (an incoming webhook)
   pretext = '#### New iOS released ready to be published'
   msg = "Release has been cut and is on TestFlight ready to be published.\nDownload link: #{public_link}"
 
@@ -1219,13 +1154,13 @@ def submit_to_google_play(file_path)
   public_path = "https://#{ENV['AWS_BUCKET_DNS_NAME']}/#{s3_folder}"
   links = (filenames.map { |f| "* #{public_path}/#{f}"}).join("\n")
 
-  # Send a build message to Mattermost
+  # Send a build message to the team's chat (an incoming webhook)
   pretext = '#### New Android released ready to be published'
   msg = "Release has been cut and is on the Beta track ready to be published.\nDownload links:\n#{links}"
 
   if ENV['BETA_BUILD'] == 'true'
     pretext = '#### New Android beta published to Google Play'
-    msg = "Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta).\nDownload links:\n#{links}"
+    msg = "Sign up as a beta tester [here](https://play.google.com/apps/testing/chat.antimatter.app.beta).\nDownload links:\n#{links}"
   end
 
   send_message_to_mattermost({
@@ -1249,10 +1184,10 @@ def qa_build_message(options)
     os_type = options[:os_type]
 
     if os_type == 'android'
-      msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [Android APK Link](#{install_url})"
+      msg = "QA build [#{abbreviated_commit_hash}](https://github.com/AntimatterChat/mobile-app/commit/#{abbreviated_commit_hash}) — [Android APK Link](#{install_url})"
       mattermost(message: msg, username: 'Fastlane', icon_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300')
     elsif os_type == 'ios'
-      msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [iOS pList Link](#{install_url})"
+      msg = "QA build [#{abbreviated_commit_hash}](https://github.com/AntimatterChat/mobile-app/commit/#{abbreviated_commit_hash}) — [iOS pList Link](#{install_url})"
       mattermost(message: msg, username: 'Fastlane', icon_url: 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png')
     end
   else

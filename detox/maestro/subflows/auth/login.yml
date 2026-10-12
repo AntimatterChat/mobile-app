@@ -1,7 +1,7 @@
 # Sub-flow: Login to Mattermost
 # Usage: - runFlow: ../../subflows/auth/login.yml
 # Requires: SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD env vars
-# Optional: MAESTRO_APP_ID (defaults to com.mattermost.rnbeta)
+# Optional: MAESTRO_APP_ID (defaults to chat.antimatter.app)
 #
 # iOS: clearState:true is used here. It simulates a fresh install and triggers
 # the native "Allow Notifications?" dialog — handled below with an optional tap.

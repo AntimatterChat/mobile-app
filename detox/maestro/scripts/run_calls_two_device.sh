@@ -10,7 +10,7 @@
 #     ./detox/maestro/scripts/run_calls_two_device.sh
 #
 # Optional:
-#   MAESTRO_APP_ID — app bundle/package ID (default: com.mattermost.rnbeta)
+#   MAESTRO_APP_ID — app bundle/package ID (default: chat.antimatter.app)
 
 set -e
 
@@ -19,7 +19,7 @@ DEVICE_B_UDID="${DEVICE_B_UDID:?Error: DEVICE_B_UDID is required}"
 SITE_1_URL="${SITE_1_URL:?Error: SITE_1_URL is required}"
 ADMIN_EMAIL="${ADMIN_EMAIL:?Error: ADMIN_EMAIL is required}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:?Error: ADMIN_PASSWORD is required}"
-MAESTRO_APP_ID="${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
+MAESTRO_APP_ID="${MAESTRO_APP_ID:-chat.antimatter.app}"
 
 # A unique token posted to the channel so Device B knows the call is active
 SYNC_TOKEN="${SYNC_TOKEN:-$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 8)}"

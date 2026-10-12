@@ -27,11 +27,11 @@ export const messages = defineMessages({
     },
     not_secured_ios: {
         id: 'mobile.managed.not_secured.ios',
-        defaultMessage: 'This device must be secured with biometrics or passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode.',
+        defaultMessage: 'This device must be secured with biometrics or passcode to use Antimatter.\n\nGo to Settings > Face ID & Passcode.',
     },
     not_secured_android: {
         id: 'mobile.managed.not_secured.android',
-        defaultMessage: 'This device must be secured with a screen lock to use Mattermost.',
+        defaultMessage: 'This device must be secured with a screen lock to use Antimatter.',
     },
     blocked_by: {
         id: 'mobile.managed.blocked_by',
@@ -274,7 +274,7 @@ export const showDeviceNotTrustedAlert = async (server: string, siteName: string
 
     const resolvedLocale = locale || DEFAULT_LOCALE;
     const buttons = await buildSecurityAlertOptions(server, resolvedLocale);
-    const securedBy = siteName || serverSiteName || 'Mattermost';
+    const securedBy = siteName || serverSiteName || 'Antimatter';
 
     Alert.alert(
         getLocalizedMessage(resolvedLocale, messages.blocked_by.id, messages.blocked_by.defaultMessage).replace('{vendor}', securedBy),
@@ -301,7 +301,7 @@ export const showNotSecuredAlert = async (server: string, siteName: string | und
     }
 
     const resolvedLocale = locale || DEFAULT_LOCALE;
-    const securedBy = siteName || serverSiteName || 'Mattermost';
+    const securedBy = siteName || serverSiteName || 'Antimatter';
 
     let dismiss: () => void;
     const dismissed = new Promise<void>((resolve) => {
@@ -376,7 +376,7 @@ export const showBiometricFailureAlert = async (server: string, blurOnAuthentica
         }
         dismiss();
     }, retryCallback);
-    const securedBy = siteName || serverSiteName || 'Mattermost';
+    const securedBy = siteName || serverSiteName || 'Antimatter';
 
     Alert.alert(
         getLocalizedMessage(resolvedLocale, messages.blocked_by.id, messages.blocked_by.defaultMessage).replace('{vendor}', securedBy),
@@ -403,7 +403,7 @@ export const showBiometricFailureAlertForOrganization = async (server: string, l
  */
 export const showAuthenticationInterruptedAlert = async (server: string, siteName: string | undefined, locale?: string): Promise<'retry' | 'dismiss'> => {
     const resolvedLocale = locale || DEFAULT_LOCALE;
-    const securedBy = siteName || 'Mattermost';
+    const securedBy = siteName || 'Antimatter';
 
     const allServers = await queryAllActiveServers()?.fetch();
     const otherServers = allServers?.filter((s) => s.url !== server).map((s) => s.url) || [];

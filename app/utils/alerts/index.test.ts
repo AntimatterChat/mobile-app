@@ -271,14 +271,14 @@ describe('showDeviceNotTrustedAlert', () => {
         );
     });
 
-    it('should show alert with Mattermost as default when no site name available', async () => {
+    it('should show alert with Antimatter as default when no site name available', async () => {
         jest.mocked(getConfigValue).mockResolvedValue(undefined);
 
         await showDeviceNotTrustedAlert(serverUrl, undefined, 'en');
 
         expect(Alert.alert).toHaveBeenCalledWith(
-            'Blocked by Mattermost',
-            'Jailbroken or rooted devices are not trusted by Mattermost.',
+            'Blocked by Antimatter',
+            'Jailbroken or rooted devices are not trusted by Antimatter.',
             expect.any(Array),
             {cancelable: false},
         );
@@ -384,8 +384,8 @@ describe('showNotSecuredAlert', () => {
         await untilShown();
 
         expect(Alert.alert).toHaveBeenCalledWith(
-            'Blocked by Mattermost',
-            expect.stringContaining('Mattermost'),
+            'Blocked by Antimatter',
+            expect.stringContaining('Antimatter'),
             expect.any(Array),
             {cancelable: false},
         );
@@ -399,8 +399,8 @@ describe('showNotSecuredAlert', () => {
         await untilShown();
 
         expect(Alert.alert).toHaveBeenCalledWith(
-            'Blocked by Mattermost',
-            expect.stringContaining('Mattermost'),
+            'Blocked by Antimatter',
+            expect.stringContaining('Antimatter'),
             expect.any(Array),
             {cancelable: false},
         );
@@ -560,14 +560,14 @@ describe('showBiometricFailureAlert', () => {
         );
     });
 
-    it('should use Mattermost as default when no site name available', async () => {
+    it('should use Antimatter as default when no site name available', async () => {
         jest.mocked(getConfigValue).mockResolvedValue(undefined);
 
         showBiometricFailureAlert(serverUrl, false, undefined, 'en');
         await untilShown();
 
         expect(Alert.alert).toHaveBeenCalledWith(
-            'Blocked by Mattermost',
+            'Blocked by Antimatter',
             'Biometric or Passcode authentication failed.',
             expect.any(Array),
             {cancelable: false},

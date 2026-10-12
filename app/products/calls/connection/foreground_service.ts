@@ -11,7 +11,7 @@ import {Platform} from 'react-native';
 const messages = defineMessages({
     channelName: {
         id: 'mobile.calls.foreground_service.channel_name',
-        defaultMessage: 'Mattermost Calls',
+        defaultMessage: 'Antimatter Calls',
     },
     channelDescription: {
         id: 'mobile.calls.foreground_service.channel_description',
@@ -19,7 +19,7 @@ const messages = defineMessages({
     },
     title: {
         id: 'mobile.calls.foreground_service.title',
-        defaultMessage: 'Mattermost',
+        defaultMessage: 'Antimatter',
     },
     text: {
         id: 'mobile.calls.foreground_service.text',

@@ -72,7 +72,7 @@ struct ContentView: View {
       } else {
         ErrorLabelView(
           error: NSLocalizedString("share_extension.channel_error",
-            value: "You are not a member of a team on the selected server. Select another server or open Mattermost to join a team.",
+            value: "You are not a member of a team on the selected server. Select another server or open Antimatter to join a team.",
             comment: ""
           )
         )

@@ -1,13 +1,13 @@
-Mattermost is workplace messaging from behind your firewall.
+Antimatter is a free, open-source team chat you host yourself: channels and threads, voice rooms and calls, notes, boards and AI, all on your own server.
 
-- Discuss topics in private groups, one-to-one or team-wide
-- Find what you're looking for with full text search, filters and #hashtags
-- Easily share images, video, audio and files 
-- Personalize your experience with custom colors, formatting and fonts
-- Connect in-house systems with webhooks and Slack-compatible integrations
+- Talk in channels, threads, group and direct messages
+- Find anything with full-text search, filters and #hashtags
+- Share images, video, audio and files
+- Join calls and voice rooms from your phone
+- Connect your own systems with webhooks, slash commands and integrations
 
-To use this app, you need a "Server URL" from a Mattermost server. To host your own server go to https://about.mattermost.com/download
+To use this app, you need the address of an Antimatter server. To host your own, see https://antimatter.chat/install.html
 
-Find the Terms of Service for this app here: http://www.mattermost.com/terms/
+Terms of use: https://antimatter.chat/terms.html
 
-This is a reference implementation of an open source Mattermost app available at: https://github.com/mattermost/mattermost-mobile
+Antimatter is based on Mattermost. The source of this app is at https://github.com/AntimatterChat/mobile-app

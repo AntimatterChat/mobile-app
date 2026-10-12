@@ -43,7 +43,7 @@ class ManagedAppSingleton {
     performingAuthentication = false;
     previousAppState?: AppStateStatus;
     processConfigTimeout?: NodeJS.Timeout;
-    vendor = 'Mattermost';
+    vendor = 'Antimatter';
     cacheConfig?: ManagedConfig = undefined;
     private emmListener: EventSubscription | undefined;
     private appStateChangeListener: NativeEventSubscription | undefined;

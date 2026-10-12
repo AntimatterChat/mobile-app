@@ -15,7 +15,7 @@ cd "${DETOX_DIR}"
 DEVICE_A_UDID="${DEVICE_A_UDID:?Error: DEVICE_A_UDID is required}"
 DEVICE_B_UDID="${DEVICE_B_UDID:?Error: DEVICE_B_UDID is required}"
 SITE_1_URL="${SITE_1_URL:?Error: SITE_1_URL is required}"
-MAESTRO_APP_ID="${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
+MAESTRO_APP_ID="${MAESTRO_APP_ID:-chat.antimatter.app}"
 # Lowercase alphanumeric only: doubles as the channel display name AND URL name,
 # so Device B can query for it without predicting Mattermost's slug transformation.
 SYNC_TOKEN="${SYNC_TOKEN:-$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 8)}"

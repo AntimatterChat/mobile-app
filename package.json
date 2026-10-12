@@ -1,10 +1,10 @@
 {
-  "name": "mattermost-mobile",
+  "name": "antimatter-mobile",
   "version": "2.45.0",
-  "description": "Mattermost Mobile with React Native",
+  "description": "Antimatter mobile app, based on Mattermost Mobile",
   "main": "index.tsx",
-  "repository": "git@github.com:mattermost/mattermost-mobile.git",
-  "author": "Mattermost, Inc.",
+  "repository": "git@github.com:AntimatterChat/mobile-app.git",
+  "author": "Mattermost, Inc. and the Antimatter contributors",
   "license": "Apache 2.0",
   "private": true,
   "engines": {

@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import tinycolor from 'tinycolor2';
 
-import CompassIcon from '@components/compass_icon';
+import AntimatterLogo from '@components/antimatter_logo';
 import {View as ViewConstants} from '@constants';
 
 type Props = {
@@ -12,10 +13,9 @@ type Props = {
 
 const SystemAvatar = ({theme}: Props) => {
     return (
-        <CompassIcon
-            name='mattermost'
-            color={theme.centerChannelColor}
+        <AntimatterLogo
             size={ViewConstants.PROFILE_PICTURE_SIZE}
+            variant={tinycolor(theme.centerChannelBg).isDark() ? 'dark' : 'light'}
         />
     );
 };

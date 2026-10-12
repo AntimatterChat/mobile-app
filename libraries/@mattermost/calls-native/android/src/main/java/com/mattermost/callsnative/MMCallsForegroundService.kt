@@ -36,9 +36,9 @@ class MMCallsForegroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val channelId = intent?.getStringExtra(EXTRA_CHANNEL_ID) ?: "calls_channel"
-        val channelName = intent?.getStringExtra(EXTRA_CHANNEL_NAME) ?: "Mattermost"
+        val channelName = intent?.getStringExtra(EXTRA_CHANNEL_NAME) ?: "Antimatter"
         val channelDescription = intent?.getStringExtra(EXTRA_CHANNEL_DESCRIPTION) ?: ""
-        val title = intent?.getStringExtra(EXTRA_TITLE) ?: "Mattermost"
+        val title = intent?.getStringExtra(EXTRA_TITLE) ?: "Antimatter"
         val text = intent?.getStringExtra(EXTRA_TEXT) ?: ""
 
         ensureChannel(channelId, channelName, channelDescription)

@@ -188,7 +188,7 @@ Never hardcode server URLs, credentials, or channel names:
 
 | Variable | Description |
 |----------|-------------|
-| `${MAESTRO_APP_ID}` | App bundle ID (e.g. `com.mattermost.rnbeta`) |
+| `${MAESTRO_APP_ID}` | App bundle ID (e.g. `chat.antimatter.app`) |
 | `${SITE_1_URL}` | Primary test server URL |
 | `${TEST_USER_EMAIL}` | Test user email |
 | `${TEST_USER_PASSWORD}` | Test user password |

@@ -59,7 +59,10 @@ export default defineConfig([
       "header/header": [
           2,
           "line",
-          " Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.\n See LICENSE.txt for license information."
+          [
+              {pattern: "^ Copyright \\(c\\) (2015-present Mattermost, Inc\\.|20\\d\\d-present Antimatter contributors\\.) All Rights Reserved\\.$", template: " Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved."},
+              " See LICENSE.txt for license information.",
+          ],
       ],
       "id-blacklist": 0,
       "indent": [2, 4, { SwitchCase: 0 }],

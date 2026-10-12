@@ -20,7 +20,7 @@
 
 set -euo pipefail
 
-readonly BUNDLE_ID="com.mattermost.rnbeta"
+readonly BUNDLE_ID="chat.antimatter.app"
 readonly AUTOFILL_MARKER="mattermost-ci-autofill-v1"
 readonly PREWARM_SECS="${PREBOOT_PREWARM_SECS:-15}"
 readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

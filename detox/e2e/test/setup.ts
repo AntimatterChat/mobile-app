@@ -11,7 +11,7 @@ import {safeEnableSynchronization} from '@support/utils';
 
 import {logError, logWarn} from '../../provision/log';
 
-const BUNDLE_ID = 'com.mattermost.rnbeta';
+const BUNDLE_ID = 'chat.antimatter.app';
 
 function getSimulatorId(): string {
     try {
@@ -77,7 +77,7 @@ function clearIOSAppData(): void {
     }
 
     if (!cachedAppGroupContainer) {
-        cachedAppGroupContainer = resolveContainerPath(simId, 'group.com.mattermost.rnbeta');
+        cachedAppGroupContainer = resolveContainerPath(simId, 'group.chat.antimatter.app');
     }
     if (cachedAppGroupContainer) {
         if (existsSync(cachedAppGroupContainer)) {

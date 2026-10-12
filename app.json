@@ -1,8 +1,8 @@
 {
-  "name": "Mattermost",
-  "displayName": "Mattermost",
+  "name": "Antimatter",
+  "displayName": "Antimatter",
   "expo": {
-    "scheme": "mattermost",
+    "scheme": ["antimatter", "mattermost"],
     "plugins": [
       "expo-router"
     ]

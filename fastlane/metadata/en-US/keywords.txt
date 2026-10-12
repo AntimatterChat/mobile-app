@@ -1,3 +1,4 @@
-Mattermost
-Team Communication
+Antimatter
+Team Chat
 Messaging
+Self-hosted

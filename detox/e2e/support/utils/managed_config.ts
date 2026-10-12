@@ -34,7 +34,7 @@ export type ManagedConfigInput = Partial<Record<
 
 // The Detox iOS app id. `.detoxrc.json` only carries the binary path; Maestro's
 // MAESTRO_APP_ID is the same value.
-const IOS_BUNDLE_ID = process.env.MM_E2E_IOS_BUNDLE_ID || 'com.mattermost.rnbeta';
+const IOS_BUNDLE_ID = process.env.MM_E2E_IOS_BUNDLE_ID || 'chat.antimatter.app';
 
 const simctlDefaults = (args: string[]): string => {
     return execFileSync('xcrun', ['simctl', 'spawn', device.id, 'defaults', ...args], {stdio: 'pipe'}).toString();
