@@ -22,6 +22,7 @@ import {
     updateDraftPriority,
     updateDraftBoRConfig,
     updateDraftMarkdownImageMetadata,
+    updateDraftSpoiler,
 } from './draft';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -475,5 +476,36 @@ describe('updateDraftBoRConfig', () => {
         expect(result.draft).toBeDefined();
         expect(result.draft.metadata?.borConfig?.enabled).toBe(false);
         expect(result.draft.type).toBe('');
+    });
+});
+
+describe('updateDraftSpoiler', () => {
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should fail without a database', async () => {
+        const result = await updateDraftSpoiler('foo', channelId, '', true) as {error: unknown};
+        expect(result.error).toBeTruthy();
+    });
+
+    it('should make a draft to be sent as a spoiler', async () => {
+        const models = await updateDraftSpoiler(serverUrl, channelId, '', true) as DraftModel[];
+        expect(models.length).toBe(1);
+        expect(models[0].metadata?.spoiler).toBe(true);
+    });
+
+    it('should turn the spoiler off, keeping the rest of the draft', async () => {
+        await operator?.handleDraft({drafts: [{...draft, metadata: {spoiler: true, priority: {priority: 'urgent'} as PostPriority}}], prepareRecordsOnly: false});
+
+        const result = await updateDraftSpoiler(serverUrl, channelId, '', false) as {draft: DraftModel};
+        expect(result.draft.metadata?.spoiler).toBe(false);
+        expect(result.draft.metadata?.priority?.priority).toBe('urgent');
+        expect(result.draft.message).toBe('test');
     });
 });

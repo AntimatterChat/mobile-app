@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 
-import {updateDraftBoRConfig, updateDraftPriority} from '@actions/local/draft';
+import {updateDraftBoRConfig, updateDraftPriority, updateDraftSpoiler} from '@actions/local/draft';
 import SendDraft from '@components/draft_scheduled_post/draft_scheduled_post_actions/send_draft';
 import DraftInput from '@components/post_draft/draft_input/';
 import {PostPriorityType} from '@constants/post';
@@ -46,6 +46,7 @@ type Props = {
     persistentNotificationMaxRecipients: number;
     postPriority: PostPriority;
     postBoRConfig?: PostBoRConfig;
+    isSpoiler?: boolean;
 
     draftType?: DraftType;
     postId?: string;
@@ -96,6 +97,7 @@ export default function SendHandler({
     postId,
     onPostCreated,
     postBoRConfig,
+    isSpoiler = false,
     location,
 }: Props) {
     const serverUrl = useServerUrl();
@@ -107,6 +109,13 @@ export default function SendHandler({
     const handlePostBoRStatus = useCallback((config: PostBoRConfig) => {
         updateDraftBoRConfig(serverUrl, channelId, rootId, config);
     }, [channelId, rootId, serverUrl]);
+
+    const handleSpoiler = useCallback((spoiler: boolean) => {
+        updateDraftSpoiler(serverUrl, channelId, rootId, spoiler);
+    }, [serverUrl, channelId, rootId]);
+
+    // The Antimatter props the draft is sent with.
+    const postProps = useMemo(() => (isSpoiler ? {spoiler: true} : undefined), [isSpoiler]);
 
     const {handleSendMessage, canSend} = useHandleSendMessage({
         value,
@@ -125,6 +134,7 @@ export default function SendHandler({
         clearDraft,
         onPostCreated,
         postBoRConfig,
+        postProps,
     });
 
     if (isFromDraftView) {
@@ -150,6 +160,7 @@ export default function SendHandler({
                 draftReceiverUserName={draftReceiverUserName}
                 draftType={draftType}
                 postId={postId}
+                postProps={postProps}
             />
         );
     }
@@ -178,6 +189,8 @@ export default function SendHandler({
             postBoRConfig={postBoRConfig}
             updatePostPriority={handlePostPriority}
             updatePostBoRStatus={handlePostBoRStatus}
+            isSpoiler={isSpoiler}
+            updateSpoiler={handleSpoiler}
             persistentNotificationInterval={persistentNotificationInterval}
             persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}

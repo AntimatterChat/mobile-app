@@ -10,7 +10,7 @@ import {PostTypes} from '@constants/post';
 import NetworkManager from '@managers/network_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getPostById} from '@queries/servers/post';
-import {renderWithEverything, waitFor} from '@test/intl-test-helper';
+import {fireEvent, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import Avatar from './avatar';
@@ -191,5 +191,66 @@ describe('ephemeral post header', () => {
         });
         expect(Header).not.toHaveBeenCalled();
         expect(Avatar).not.toHaveBeenCalled();
+    });
+});
+
+describe('spoilers', () => {
+    let database: Database;
+    const serverUrl = 'http://www.someserverurl.com';
+
+    function getProps(post: PostModel): ComponentProps<typeof Post> {
+        return {
+            appsEnabled: false,
+            mmBlocksEnabled: false,
+            canDelete: false,
+            customEmojiNames: [],
+            filesInfo: [],
+            hasReactions: false,
+            hasReplies: false,
+            highlightReplyBar: false,
+            isEphemeral: false,
+            isPostAddChannelMember: false,
+            commentCount: 0,
+            location: Screens.THREAD,
+            post,
+            isLastPost: false,
+            isChannelAutotranslated: false,
+            testID: 'post',
+        };
+    }
+
+    beforeEach(async () => {
+        const client = await NetworkManager.createClient(serverUrl);
+        expect(client).toBeTruthy();
+        database = (await TestHelper.setupServerDatabase(serverUrl)).database;
+        jest.clearAllMocks();
+    });
+
+    afterEach(async () => {
+        await TestHelper.tearDown();
+        NetworkManager.invalidateClient(serverUrl);
+    });
+
+    it('should hide a spoiler until the post is tapped', async () => {
+        const post = TestHelper.fakePostModel({id: 'spoiler-post', props: {spoiler: true}});
+        const {getByTestId} = renderWithEverything(<Post {...getProps(post)}/>, {database, serverUrl});
+
+        await waitFor(() => {
+            expect(jest.mocked(Body).mock.lastCall?.[0]).toMatchObject({spoilerHidden: true});
+        });
+
+        fireEvent.press(getByTestId('post.spoiler-post'));
+        await waitFor(() => {
+            expect(jest.mocked(Body).mock.lastCall?.[0]).toMatchObject({spoilerHidden: false});
+        });
+    });
+
+    it('should not hide other posts', async () => {
+        const post = TestHelper.fakePostModel({id: 'plain-post'});
+        renderWithEverything(<Post {...getProps(post)}/>, {database, serverUrl});
+
+        await waitFor(() => {
+            expect(jest.mocked(Body).mock.lastCall?.[0]).toMatchObject({spoilerHidden: false});
+        });
     });
 });

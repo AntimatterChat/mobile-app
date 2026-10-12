@@ -15,9 +15,11 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useSpoilerShown} from '@hooks/spoiler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateToScreen} from '@screens/navigation';
 import {getPostTranslatedMessage, getPostTranslation} from '@utils/post';
+import {isSpoilerPost} from '@utils/spoiler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
@@ -102,6 +104,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
         },
+        spoiler: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+        },
+        spoilerText: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 200),
+            fontStyle: 'italic',
+        },
         unreadDot: {
             width: 8,
             height: 8,
@@ -132,6 +144,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
     const serverUrl = useServerUrl();
 
     const [isChannelNamePressed, setIsChannelNamePressed] = useState<Boolean>(false);
+    const [spoilerShown] = useSpoilerShown(thread.id);
 
     const channelNameStyle = useMemo(() => (
         [styles.channelName, isChannelNamePressed ? {color: theme.buttonBg} : null]
@@ -213,7 +226,26 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                 {threadStarterName}
             </Text>
         );
-        if (message) {
+        if (isSpoilerPost(post) && !spoilerShown) {
+            // A spoiler's text stays hidden until its reader shows it in the thread.
+            postBody = (
+                <View
+                    style={styles.spoiler}
+                    testID={`${threadItemTestId}.spoiler`}
+                >
+                    <CompassIcon
+                        name='eye-off-outline'
+                        size={16}
+                        color={styles.spoilerText.color}
+                    />
+                    <FormattedText
+                        id='spoiler.title'
+                        defaultMessage='Spoiler'
+                        style={styles.spoilerText}
+                    />
+                </View>
+            );
+        } else if (message) {
             postBody = (
                 <RemoveMarkdown
                     enableCodeSpan={true}

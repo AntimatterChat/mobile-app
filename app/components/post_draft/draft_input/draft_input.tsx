@@ -46,6 +46,8 @@ export type Props = {
     postBoRConfig?: PostBoRConfig;
     updatePostPriority: (postPriority: PostPriority) => void;
     updatePostBoRStatus: (config: PostBoRConfig) => void;
+    isSpoiler?: boolean;
+    updateSpoiler?: (spoiler: boolean) => void;
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
 
@@ -143,6 +145,8 @@ function DraftInput({
     setIsFocused,
     scheduledPostsEnabled,
     postBoRConfig,
+    isSpoiler = false,
+    updateSpoiler,
     location,
 }: Props) {
     const intl = useIntl();
@@ -250,6 +254,7 @@ function DraftInput({
                         noMentionsError={noMentionsError}
                         postPriority={postPriority}
                         postBoRConfig={postBoRConfig}
+                        isSpoiler={isSpoiler}
                     />
                     <PostInput
                         testID={postInputTestID}
@@ -283,6 +288,8 @@ function DraftInput({
                             canShowPostPriority={canShowPostPriority}
                             postBoRConfig={postBoRConfig}
                             updatePostBoRStatus={updatePostBoRStatus}
+                            isSpoiler={isSpoiler}
+                            updateSpoiler={updateSpoiler}
                             focus={focus}
                             location={location}
                         />

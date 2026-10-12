@@ -106,6 +106,9 @@ type PostMetadata = {
     priority?: PostPriority;
     expire_at?: number;
     borConfig?: PostBoRConfig;
+
+    // Drafts only: the draft is to be sent as a spoiler (the spoiler prop).
+    spoiler?: boolean;
     recipients?: string[];
     translations?: Record<string, PostTranslation>;
 };

@@ -24,6 +24,7 @@ import {usePostConfig} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
+import {useSpoilerShown} from '@hooks/spoiler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
@@ -31,6 +32,7 @@ import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {dismissKeyboard} from '@utils/keyboard';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
+import {isSpoilerPost} from '@utils/spoiler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Avatar from './avatar';
@@ -185,6 +187,10 @@ const Post = ({
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const showEphemeralAuthor = isEphemeral && Boolean(post.userId);
+
+    // A spoiler's text and files stay hidden until its reader taps the post.
+    const [spoilerShown, setSpoilerShown] = useSpoilerShown(post.id);
+    const spoilerHidden = isSpoilerPost(post) && !hasBeenDeleted && !borPost && !spoilerShown;
     const [layoutWidth, setLayoutWidth] = useState(0);
     const shimmerAnimationProps = useShimmerAnimation(post, isChannelAutotranslated, intl.locale, layoutWidth, theme);
     const hasSameRoot = useMemo(() => {
@@ -232,6 +238,11 @@ const Post = ({
     }, [location, isAutoResponder, isSystemPost, isEphemeral, hasBeenDeleted, isPendingOrFailed, serverUrl, post, borPost, blurAndDismissKeyboard]);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
+        if (spoilerHidden) {
+            setSpoilerShown(true);
+            return;
+        }
+
         if (isBoRPost(post)) {
             return;
         }
@@ -243,7 +254,7 @@ const Post = ({
         if (post) {
             setTimeout(handlePostPress, 300);
         }
-    }, [handlePostPress, post]));
+    }, [handlePostPress, post, spoilerHidden, setSpoilerShown]));
 
     const showPostOptions = useCallback(async () => {
         if (!post) {
@@ -428,6 +439,7 @@ const Post = ({
                 post={post}
                 searchPatterns={searchPatterns}
                 showAddReaction={showAddReaction}
+                spoilerHidden={spoilerHidden}
                 theme={theme}
                 isChannelAutotranslated={isChannelAutotranslated}
             />

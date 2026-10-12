@@ -16,12 +16,14 @@ import BORReadReceipts, {BOR_READ_RECEIPTS_HEIGHT} from '@screens/post_options/b
 import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
+import {isSpoilerPost} from '@utils/spoiler';
 
 import AppBindingsPostOptions from './options/app_bindings_post_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
 import PinChannelOption from './options/pin_channel_option';
+import SpoilerOption from './options/spoiler_option';
 import ReactionBar from './reaction_bar';
 
 import type {BurnOnReadRecipientData} from '@typings/components/post_options';
@@ -69,6 +71,7 @@ const PostOptions = ({
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
     const shouldShowBindings = bindings.length > 0 && !isSystemPost;
+    const canToggleSpoiler = isSpoilerPost(post) && !post.deleteAt;
 
     const shouldShowBORReadReceipts = showBoRReadReceipts && borReceiptData;
 
@@ -76,7 +79,7 @@ const PostOptions = ({
         const items: Array<string | number> = [1];
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
-            canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation,
+            canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
@@ -92,7 +95,7 @@ const PostOptions = ({
         }
 
         return items;
-    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
+    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
 
     const renderContent = () => {
         return (
@@ -122,6 +125,7 @@ const PostOptions = ({
                 />
                 }
                 {canViewTranslation && <ShowTranslationOption postId={post.id}/>}
+                {canToggleSpoiler && <SpoilerOption postId={post.id}/>}
                 {canSavePost &&
                 <SaveOption
                     isSaved={isSaved}

@@ -499,6 +499,28 @@ describe('useHandleSendMessage', () => {
         );
     });
 
+    it('should send the post props given, such as a spoiler', async () => {
+        const props = {
+            ...defaultProps,
+            postProps: {spoiler: true},
+        };
+
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        await act(async () => {
+            await result.current.handleSendMessage();
+        });
+
+        expect(createPost).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.objectContaining({
+                message: 'test message',
+                props: {spoiler: true},
+            }),
+            [],
+        );
+    });
+
     describe('message length validation', () => {
         it('should not allow empty messages', () => {
             const props = {

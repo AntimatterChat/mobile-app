@@ -9,6 +9,7 @@ import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
 import ErrorBoundary from '@components/markdown/error_boundary';
+import SpoilerVeil from '@components/spoiler_veil';
 import {Screens} from '@constants';
 import StatusUpdatePost from '@playbooks/components/status_update_post';
 import {PLAYBOOKS_UPDATE_STATUS_POST_TYPE} from '@playbooks/constants/plugin';
@@ -45,6 +46,7 @@ type BodyProps = {
     post: PostModel;
     searchPatterns?: SearchPattern[];
     showAddReaction?: boolean;
+    spoilerHidden?: boolean;
     theme: Theme;
     isChannelAutotranslated: boolean;
 };
@@ -63,6 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         messageContainer: {width: '100%'},
+        spoilerContent: {gap: 10},
         replyBar: {
             backgroundColor: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.1),
             marginLeft: 1,
@@ -107,6 +110,7 @@ const Body = ({
     post,
     searchPatterns,
     showAddReaction,
+    spoilerHidden = false,
     theme,
     isChannelAutotranslated,
 }: BodyProps) => {
@@ -211,8 +215,8 @@ const Body = ({
     const reactionsVisible = hasReactions && showAddReaction;
 
     if (!hasBeenDeleted) {
-        body = (
-            <View style={style.messageBody}>
+        let main = (
+            <>
                 {message}
                 {hasContent &&
                 <Content
@@ -235,6 +239,26 @@ const Body = ({
                     isReplyPost={isReplyPost}
                 />
                 }
+            </>
+        );
+
+        // A spoiler's text, embeds and files stay under a cover until its reader taps the post.
+        if (spoilerHidden) {
+            main = (
+                <SpoilerVeil
+                    hidden={true}
+                    testID={`post_body.${post.id}.spoiler`}
+                >
+                    <View style={style.spoilerContent}>
+                        {main}
+                    </View>
+                </SpoilerVeil>
+            );
+        }
+
+        body = (
+            <View style={style.messageBody}>
+                {main}
                 {(acknowledgementsVisible || reactionsVisible) && (
                     <View style={style.ackAndReactionsContainer}>
                         {acknowledgementsVisible && (

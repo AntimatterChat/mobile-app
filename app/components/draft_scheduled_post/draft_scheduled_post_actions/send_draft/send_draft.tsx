@@ -51,6 +51,7 @@ type Props = {
     channelIsArchived?: boolean;
     channelIsReadOnly?: boolean;
     deactivatedChannel?: boolean;
+    postProps?: Record<string, unknown>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -95,6 +96,7 @@ const SendDraft: React.FC<Props> = ({
     channelIsArchived,
     channelIsReadOnly,
     deactivatedChannel,
+    postProps,
 }) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -156,6 +158,7 @@ const SendDraft: React.FC<Props> = ({
         channelIsReadOnly,
         deactivatedChannel,
         clearDraft,
+        postProps,
     });
 
     const draftSendHandler = async () => {
