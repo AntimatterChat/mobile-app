@@ -101,6 +101,25 @@ type PostTranslation = {
     source_lang?: string;
 };
 
+// PostReplyTo is the Antimatter server's description of the message a post replies to inline (its reply_to prop).
+type PostReplyTo = {
+    post_id: string;
+    user_id?: string;
+
+    // The start of the quoted message's text, empty for a spoiler.
+    message?: string;
+    type?: string;
+    create_at?: number;
+    edit_at?: number;
+    file_count?: number;
+    image_count?: number;
+    spoiler?: boolean;
+    override_username?: string;
+
+    // Set when the quoted message was deleted or can't be shown with the reply.
+    deleted?: boolean;
+};
+
 type PostMetadata = {
     acknowledgements?: PostAcknowledgement[];
     embeds?: PostEmbed[];
@@ -111,8 +130,12 @@ type PostMetadata = {
     priority?: PostPriority;
     expire_at?: number;
     borConfig?: PostBoRConfig;
+
+    // Drafts only: the draft is to be sent as a spoiler (the spoiler prop).
+    spoiler?: boolean;
     recipients?: string[];
     translations?: Record<string, PostTranslation>;
+    reply_to?: PostReplyTo;
 };
 
 type Post = {

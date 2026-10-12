@@ -33,6 +33,30 @@ jest.mock('./markdown_link', () => {
     };
 });
 
+jest.mock('./dynamic_timestamp', () => {
+    const MockReact = require('react');
+    const {Text} = require('react-native');
+
+    return {
+        __esModule: true,
+        default: ({seconds, timestampStyle}: {seconds: number; timestampStyle: string}) => (
+            MockReact.createElement(Text, {testID: 'markdown_timestamp'}, `${seconds}:${timestampStyle}`)
+        ),
+    };
+});
+
+jest.mock('./walltime', () => {
+    const MockReact = require('react');
+    const {Text} = require('react-native');
+
+    return {
+        __esModule: true,
+        default: ({literal, zone}: {literal: string; zone: string}) => (
+            MockReact.createElement(Text, {testID: 'markdown_walltime'}, `${literal}@${zone}`)
+        ),
+    };
+});
+
 describe('Markdown', () => {
     const baseProps: React.ComponentProps<typeof Markdown> = {
         baseTextStyle: {},
@@ -307,6 +331,33 @@ describe('Markdown', () => {
 
             expect(screen.queryAllByTestId('markdown_link')).toHaveLength(0);
             expect(screen.getByText('Call 555-123-4567')).toBeVisible();
+        });
+    });
+
+    describe('Antimatter syntax', () => {
+        it('should show subtext small and muted', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value={'Shipped\n-# beta only'}
+                />,
+            );
+
+            const subtext = StyleSheet.flatten(screen.getByText('beta only').props.style);
+            expect(subtext.fontSize).toBe(typography('Body', 75).fontSize);
+        });
+
+        it('should show dynamic timestamps, and walltimes when asked', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value='Freeze <t:1791216000:F>, call at 3pm CET'
+                    walltime={{postedAt: Date.UTC(2026, 9, 9)}}
+                />,
+            );
+
+            expect(screen.getByTestId('markdown_timestamp')).toHaveTextContent('1791216000:F');
+            expect(screen.getByTestId('markdown_walltime')).toHaveTextContent('3pm CET@Europe/Paris');
         });
     });
 });

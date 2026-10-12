@@ -11,6 +11,7 @@ import {Events, Launch, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useAppState} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
+import {useTimedMuteExpiry} from '@hooks/timed_mute';
 import SecurityManager from '@managers/security_manager';
 import {getAllServers} from '@queries/app/servers';
 import {navigateToScreen, navigateToRoot} from '@screens/navigation';
@@ -39,6 +40,9 @@ export function useHomeScreenEffects(props: LaunchProps) {
     const intl = useIntl();
     const appState = useAppState();
     const serverUrl = useServerUrl();
+
+    // Antimatter's timed mutes end on the client.
+    useTimedMuteExpiry(serverUrl, appState);
 
     useDidMount(() => {
         SecurityManager.start();

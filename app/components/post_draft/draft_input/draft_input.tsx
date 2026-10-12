@@ -9,6 +9,7 @@ import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area
 import {scheduleOnRN} from 'react-native-worklets';
 
 import RewritingIndicator from '@agents/components/rewriting_indicator';
+import InlineReplyBar from '@components/inline_reply/reply_bar';
 import {Screens} from '@constants';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
@@ -46,6 +47,8 @@ export type Props = {
     postBoRConfig?: PostBoRConfig;
     updatePostPriority: (postPriority: PostPriority) => void;
     updatePostBoRStatus: (config: PostBoRConfig) => void;
+    isSpoiler?: boolean;
+    updateSpoiler?: (spoiler: boolean) => void;
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
 
@@ -143,6 +146,8 @@ function DraftInput({
     setIsFocused,
     scheduledPostsEnabled,
     postBoRConfig,
+    isSpoiler = false,
+    updateSpoiler,
     location,
 }: Props) {
     const intl = useIntl();
@@ -246,10 +251,16 @@ function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
+                    <InlineReplyBar
+                        channelId={channelId}
+                        rootId={rootId}
+                        focus={focus}
+                    />
                     <Header
                         noMentionsError={noMentionsError}
                         postPriority={postPriority}
                         postBoRConfig={postBoRConfig}
+                        isSpoiler={isSpoiler}
                     />
                     <PostInput
                         testID={postInputTestID}
@@ -285,6 +296,8 @@ function DraftInput({
                             canShowPostPriority={canShowPostPriority}
                             postBoRConfig={postBoRConfig}
                             updatePostBoRStatus={updatePostBoRStatus}
+                            isSpoiler={isSpoiler}
+                            updateSpoiler={updateSpoiler}
                             focus={focus}
                             location={location}
                         />

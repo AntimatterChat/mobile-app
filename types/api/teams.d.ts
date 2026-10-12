@@ -1,6 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Antimatter: someone timed out of a team, who can read its channels but not post or react in them until then.
+type MemberTimeout = {
+    team_id: string;
+    user_id: string;
+    until: number;
+    reason: string;
+    created_by: string;
+    create_at: number;
+};
+
 type TeamMembership = {
     id?: string;
     mention_count: number;

@@ -23,6 +23,7 @@ import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
 import {handleManagedChannelCategoriesPropertyValuesUpdated, handleServerCategoriesUpdated} from './managed_categories';
+import {handleModerationEvents} from './moderation';
 import {handlePostPutOnTop, handlePostRemovedFromTop} from './on_top';
 import * as posts from './posts';
 import {handlePostTranslationUpdatedEvent} from './posts';
@@ -397,4 +398,5 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
     handlePlaybookEvents(serverUrl, msg);
     handleAgentsEvents(serverUrl, msg);
     handleAmPluginsEvents(serverUrl, msg);
+    handleModerationEvents(serverUrl, msg);
 }

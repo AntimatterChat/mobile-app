@@ -6,23 +6,27 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption, ShowTranslationOption} from '@components/common_post_options';
+import {CopyPermalinkOption, FollowThreadOption, InlineReplyOption, ReplyOption, SaveOption, ShowTranslationOption} from '@components/common_post_options';
 import CopyTextOption from '@components/copy_text_option';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reaction_picker';
+import {useMyTeamTimeout} from '@hooks/member_timeout';
 import BottomSheet from '@screens/bottom_sheet';
 import BORReadReceipts, {BOR_READ_RECEIPTS_HEIGHT} from '@screens/post_options/bor_read_receipts';
 import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
+import {isSpoilerPost} from '@utils/spoiler';
 
 import AppBindingsPostOptions from './options/app_bindings_post_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
+import NameThreadOption from './options/name_thread_option';
 import OnTopOption from './options/on_top_option';
 import PinChannelOption from './options/pin_channel_option';
+import SpoilerOption from './options/spoiler_option';
 import ReactionBar from './reaction_bar';
 
 import type {BurnOnReadRecipientData} from '@typings/components/post_options';
@@ -39,6 +43,8 @@ type PostOptionsProps = {
     canPin: boolean;
     canPutOnTop: boolean;
     canReply: boolean;
+    canReplyInline?: boolean;
+    canNameThread?: boolean;
     canViewTranslation: boolean;
     combinedPost?: Post | PostModel;
     isSaved: boolean;
@@ -51,14 +57,19 @@ type PostOptionsProps = {
     showBoRReadReceipts?: boolean;
     borReceiptData?: BurnOnReadRecipientData;
     currentUser?: UserModel;
+    teamId?: string;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
-    canMarkAsUnread, canPin, canPutOnTop, canReply, canViewTranslation,
+    canMarkAsUnread, canPin, canPutOnTop, canReply, canReplyInline = false, canNameThread = false, canViewTranslation,
     combinedPost, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
-    isBoRPost, showBoRReadReceipts, borReceiptData, currentUser,
+    isBoRPost, showBoRReadReceipts, borReceiptData, currentUser, teamId,
 }: PostOptionsProps) => {
+    // Someone timed out of the team can't react until it ends.
+    const timedOut = Boolean(useMyTeamTimeout(serverUrl, teamId));
+    const canReact = canAddReaction && !timedOut;
+    const canQuote = canReplyInline && !timedOut;
     const managedConfig = useManagedConfig<ManagedConfig>();
     const {bottom} = useSafeAreaInsets();
     const isSystemPost = isSystemMessage(post);
@@ -71,6 +82,7 @@ const PostOptions = ({
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
     const shouldShowBindings = bindings.length > 0 && !isSystemPost;
+    const canToggleSpoiler = isSpoilerPost(post) && !post.deleteAt;
 
     const shouldShowBORReadReceipts = showBoRReadReceipts && borReceiptData;
 
@@ -78,14 +90,15 @@ const PostOptions = ({
         const items: Array<string | number> = [1];
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
-            canMarkAsUnread, canPin, canPutOnTop, canReply, canSavePost, shouldRenderFollow, canViewTranslation,
+            canMarkAsUnread, canPin, canPutOnTop, canReply, canQuote, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler,
+            canNameThread,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
 
         items.push(
             bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT) +
-            (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0) +
+            (canReact ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0) +
             (shouldShowBORReadReceipts ? BOR_READ_RECEIPTS_HEIGHT : 0) + bottom,
         );
 
@@ -94,7 +107,7 @@ const PostOptions = ({
         }
 
         return items;
-    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canPutOnTop, canReply, canSavePost, shouldRenderFollow, canViewTranslation, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
+    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canPutOnTop, canReply, canQuote, canSavePost, shouldRenderFollow, canViewTranslation, canToggleSpoiler, canNameThread, shouldShowBindings, canReact, shouldShowBORReadReceipts, bottom]);
 
     const renderContent = () => {
         return (
@@ -108,8 +121,19 @@ const PostOptions = ({
                         readReceipts={borReceiptData.revealedCount}
                     />
                 }
-                {canAddReaction && <ReactionBar postId={post.id}/>}
-                {canReply && <ReplyOption post={post}/>}
+                {canReact && <ReactionBar postId={post.id}/>}
+                {canQuote &&
+                <InlineReplyOption
+                    post={post}
+                    sourceScreen={sourceScreen}
+                />
+                }
+                {canReply &&
+                <ReplyOption
+                    post={post}
+                    inThread={canQuote}
+                />
+                }
                 {shouldRenderFollow && <FollowThreadOption thread={thread}/>}
                 {canMarkAsUnread && !isSystemPost &&
                 <MarkAsUnreadOption
@@ -124,6 +148,7 @@ const PostOptions = ({
                 />
                 }
                 {canViewTranslation && <ShowTranslationOption postId={post.id}/>}
+                {canToggleSpoiler && <SpoilerOption postId={post.id}/>}
                 {canSavePost &&
                 <SaveOption
                     isSaved={isSaved}
@@ -142,6 +167,7 @@ const PostOptions = ({
                 />
                 }
                 {canPutOnTop && <OnTopOption post={post}/>}
+                {canNameThread && <NameThreadOption post={post}/>}
                 {canEdit &&
                 <EditOption
                     post={post}

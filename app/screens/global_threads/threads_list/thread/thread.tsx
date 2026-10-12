@@ -11,14 +11,19 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
 import RemoveMarkdown from '@components/remove_markdown';
+import ThreadName from '@components/thread_name';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useSpoilerShown} from '@hooks/spoiler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateToScreen} from '@screens/navigation';
+import {formatTimestampsInText} from '@utils/dynamic_timestamp';
 import {getPostTranslatedMessage, getPostTranslation} from '@utils/post';
+import {isSpoilerPost} from '@utils/spoiler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getThreadTitle} from '@utils/thread_title';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
@@ -102,6 +107,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
         },
+        threadName: {marginBottom: 4},
+        spoiler: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+        },
+        spoilerText: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 200),
+            fontStyle: 'italic',
+        },
         unreadDot: {
             width: 8,
             height: 8,
@@ -132,6 +148,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
     const serverUrl = useServerUrl();
 
     const [isChannelNamePressed, setIsChannelNamePressed] = useState<Boolean>(false);
+    const [spoilerShown] = useSpoilerShown(thread.id);
 
     const channelNameStyle = useMemo(() => (
         [styles.channelName, isChannelNamePressed ? {color: theme.buttonBg} : null]
@@ -166,7 +183,11 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
         message = getPostTranslatedMessage(message, translation);
     }
 
+    // Antimatter's dynamic timestamps and subtext marks, which the excerpt doesn't render.
+    message = formatTimestampsInText(message, {locale: intl.locale}).replace(/^-# /gm, '');
+
     const threadStarterName = displayUsername(author, intl.locale, teammateNameDisplay);
+    const threadTitle = post.deleteAt ? '' : getThreadTitle(post);
     const threadItemTestId = `${testID}.thread_item.${thread.id}`;
 
     const needBadge = thread.unreadMentions || thread.unreadReplies;
@@ -213,7 +234,26 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                 {threadStarterName}
             </Text>
         );
-        if (message) {
+        if (isSpoilerPost(post) && !spoilerShown) {
+            // A spoiler's text stays hidden until its reader shows it in the thread.
+            postBody = (
+                <View
+                    style={styles.spoiler}
+                    testID={`${threadItemTestId}.spoiler`}
+                >
+                    <CompassIcon
+                        name='eye-off-outline'
+                        size={16}
+                        color={styles.spoilerText.color}
+                    />
+                    <FormattedText
+                        id='spoiler.title'
+                        defaultMessage='Spoiler'
+                        style={styles.spoilerText}
+                    />
+                </View>
+            );
+        } else if (message) {
             postBody = (
                 <RemoveMarkdown
                     enableCodeSpan={true}
@@ -277,6 +317,13 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                             style={styles.date}
                         />
                     </View>
+                    {Boolean(threadTitle) && (
+                        <ThreadName
+                            title={threadTitle}
+                            style={styles.threadName}
+                            testID={`${threadItemTestId}.thread_name`}
+                        />
+                    )}
                     {postBody}
                     {Boolean(post && thread) &&
                     <ThreadFooter

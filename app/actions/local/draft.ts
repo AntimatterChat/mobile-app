@@ -313,6 +313,39 @@ export async function updateDraftBoRConfig(serverUrl: string, channelId: string,
     }
 }
 
+// updateDraftSpoiler sets whether a draft is to be sent as a spoiler, whose text and files its readers see only once
+// they tap it.
+export async function updateDraftSpoiler(serverUrl: string, channelId: string, rootId: string, spoiler: boolean) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const draft = await getDraft(database, channelId, rootId);
+        if (!draft) {
+            const newDraft: Draft = {
+                channel_id: channelId,
+                root_id: rootId,
+                metadata: {spoiler},
+                update_at: Date.now(),
+            };
+
+            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly: false});
+        }
+
+        draft.prepareUpdate((d) => {
+            d.metadata = {
+                ...d.metadata,
+                spoiler,
+            };
+            d.updateAt = Date.now();
+        });
+        await operator.batchRecords([draft], 'updateDraftSpoiler');
+
+        return {draft};
+    } catch (error) {
+        logError('Failed updateDraftSpoiler', error);
+        return {error};
+    }
+}
+
 export async function updateDraftMarkdownImageMetadata({
     serverUrl,
     channelId,

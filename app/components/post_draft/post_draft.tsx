@@ -8,10 +8,12 @@ import Autocomplete from '@components/autocomplete';
 import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useMyTeamTimeout} from '@hooks/member_timeout';
 
 import Archived from './archived';
 import DraftHandler from './draft_handler';
 import ReadOnly from './read_only';
+import TimedOut from './timed_out';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -33,6 +35,7 @@ type Props = {
     location: AvailableScreens;
     onPostCreated?: (postId: string) => void;
     portalName?: string;
+    teamId?: string;
 }
 
 function PostDraft({
@@ -52,6 +55,7 @@ function PostDraft({
     location,
     onPostCreated,
     portalName,
+    teamId,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
@@ -60,6 +64,7 @@ function PostDraft({
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
     const {bottom} = useSafeAreaInsets();
+    const timedOutUntil = useMyTeamTimeout(serverUrl, teamId);
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
@@ -83,6 +88,15 @@ function PostDraft({
                 testID={archivedTestID}
                 deactivated={deactivatedChannel}
                 location={location}
+            />
+        );
+    }
+
+    if (timedOutUntil) {
+        return (
+            <TimedOut
+                testID={`${testID}.timed_out`}
+                until={timedOutUntil}
             />
         );
     }

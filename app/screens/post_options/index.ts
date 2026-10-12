@@ -13,6 +13,7 @@ import {withServerUrl} from '@context/server';
 import {DEFAULT_LOCALE} from '@i18n';
 import AppsManager from '@managers/apps_manager';
 import {observeChannel, observeIsReadOnlyChannel, observeIsChannelAutotranslated, observeChannelInfo} from '@queries/servers/channel';
+import {observeInlineRepliesEnabled} from '@queries/servers/inline_reply';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
@@ -22,6 +23,7 @@ import {observeCurrentUser} from '@queries/servers/user';
 import {isBoRPost, isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
+import {canReplyInline as canQuote} from '@utils/inline_reply';
 import {getPostTranslation, isFromWebhook, isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
@@ -131,6 +133,12 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         return of$(!isArchived && !isReadOnly && sourceScreen !== Screens.THREAD && !isSystemMessage(post) && canPost);
     }));
 
+    // Inline replies go to the composer of the channel or the thread the message is shown in.
+    const quotable = canQuote(post) && ([Screens.CHANNEL, Screens.THREAD] as AvailableScreens[]).includes(sourceScreen);
+    const canReplyInline = quotable ? combineLatest([observeInlineRepliesEnabled(database), channelIsArchived, channelIsReadOnly, canPostPermission]).pipe(
+        switchMap(([enabled, isArchived, isReadOnly, canPost]) => of$(enabled && !isArchived && !isReadOnly && canPost)),
+    ) : of$(false);
+
     const canPin = borPost ? of$(false) : combineLatest([channelIsArchived, channelIsReadOnly]).pipe(switchMap(([isArchived, isReadOnly]) => {
         return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
     }));
@@ -151,6 +159,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
                 switchMap((canEditPost) => of$(canEditPost && !isArchived && !isReadOnly && timeNotReached && canPost)),
             );
         }),
+    );
+
+    // Whoever can edit a thread's first message can name the thread, when threads are collapsed (Fusion's rule).
+    const canNameThread = (post.rootId || isSystemMessage(post)) ? of$(false) : combineLatest([canEdit, observeIsCRTEnabled(database)]).pipe(
+        switchMap(([edit, crt]) => of$(edit && crt)),
     );
 
     const canMarkAsUnread = combineLatest([currentUser, channelIsArchived]).pipe(
@@ -205,11 +218,17 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
+    // Antimatter's timeouts, by team, keep from reacting.
+    const teamId = channel.pipe(switchMap((ch: ChannelModel) => of$(ch?.teamId || undefined)));
+
     return {
+        teamId,
         canMarkAsUnread,
         canAddReaction,
         canDelete,
         canReply,
+        canReplyInline,
+        canNameThread,
         canPin,
         canPutOnTop,
         combinedPost: of$(combinedPost),

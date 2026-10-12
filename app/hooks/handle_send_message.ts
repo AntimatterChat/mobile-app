@@ -56,6 +56,9 @@ type Props = {
     deactivatedChannel?: boolean;
     onPostCreated?: (postId: string) => void;
     postBoRConfig?: PostBoRConfig;
+
+    // Props the post is sent with, such as Antimatter's spoiler and inline reply.
+    postProps?: Record<string, unknown>;
 }
 
 export const useHandleSendMessage = ({
@@ -80,6 +83,7 @@ export const useHandleSendMessage = ({
     clearDraft,
     onPostCreated,
     postBoRConfig,
+    postProps,
 }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -134,6 +138,10 @@ export const useHandleSendMessage = ({
             post.type = 'burn_on_read';
         }
 
+        if (postProps) {
+            post.props = {...postProps};
+        }
+
         let response: CreateResponse;
         if (schedulingInfo) {
             response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles));
@@ -186,7 +194,7 @@ export const useHandleSendMessage = ({
 
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
-    }, [files, currentUserId, channelId, rootId, value, postPriority, postBoRConfig?.enabled, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft, onPostCreated]);
+    }, [files, currentUserId, channelId, rootId, value, postPriority, postBoRConfig?.enabled, postProps, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft, onPostCreated]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);

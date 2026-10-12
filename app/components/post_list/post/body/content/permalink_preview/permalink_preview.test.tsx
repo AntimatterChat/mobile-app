@@ -140,6 +140,26 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         expect(getByText('Originally posted in ~Test Channel')).toBeTruthy();
     });
 
+    it('should cover a spoiler until its cover is tapped, without opening it', () => {
+        const props = {
+            ...baseProps,
+            embedData: {
+                ...baseProps.embedData,
+                post_id: 'spoiler-123',
+                post: TestHelper.fakePost({...baseProps.embedData.post, id: 'spoiler-123', props: {spoiler: true}}),
+            },
+        };
+        const {getByTestId, getByText, queryByTestId} = renderPermalinkPreview(props);
+
+        expect(getByTestId('permalink_preview.spoiler.cover')).toBeTruthy();
+        expect(getByText('This is a test message', {includeHiddenElements: true})).not.toBeVisible();
+
+        fireEvent.press(getByTestId('permalink_preview.spoiler.cover'));
+        expect(queryByTestId('permalink_preview.spoiler.cover')).toBeNull();
+        expect(getByText('This is a test message')).toBeVisible();
+        expect(showPermalink).not.toHaveBeenCalled();
+    });
+
     it('should not render when origin post is deleted', () => {
         const props = {...baseProps, isOriginPostDeleted: true};
         const {queryByText} = renderPermalinkPreview(props);

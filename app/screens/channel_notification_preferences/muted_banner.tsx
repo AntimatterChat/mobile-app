@@ -6,12 +6,13 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import Animated, {FlipOutXUp} from 'react-native-reanimated';
 
-import {toggleMuteChannel} from '@actions/remote/channel';
+import {unmuteChannel} from '@actions/remote/timed_mute';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useMuteEnd} from '@hooks/timed_mute';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -21,6 +22,9 @@ type Props = {
 }
 
 export const MUTED_BANNER_HEIGHT = 200;
+
+// As Fusion says when a timed mute ends: "Fri 3:00 PM".
+const MUTE_END_FORMAT = {weekday: 'short', hour: 'numeric', minute: '2-digit'} as const;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     button: {width: '55%'},
@@ -51,13 +55,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const MutedBanner = ({channelId}: Props) => {
-    const {formatMessage} = useIntl();
+    const {formatMessage, formatDate} = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    // A timed mute says when it ends.
+    const muteEnd = useMuteEnd(channelId);
+
     const onPress = usePreventDoubleTap(useCallback(() => {
-        toggleMuteChannel(serverUrl, channelId, false);
+        unmuteChannel(serverUrl, channelId);
     }, [channelId, serverUrl]));
 
     return (
@@ -71,11 +78,21 @@ const MutedBanner = ({channelId}: Props) => {
                     size={24}
                     color={theme.linkColor}
                 />
-                <FormattedText
-                    id='channel_notification_preferences.muted_title'
-                    defaultMessage='This channel is muted'
-                    style={styles.title}
-                />
+                {muteEnd ? (
+                    <FormattedText
+                        id='channel_notification_preferences.muted_until_title'
+                        defaultMessage='Muted until {time}'
+                        values={{time: formatDate(muteEnd, MUTE_END_FORMAT)}}
+                        style={styles.title}
+                        testID='channel_notification_preferences.muted_until'
+                    />
+                ) : (
+                    <FormattedText
+                        id='channel_notification_preferences.muted_title'
+                        defaultMessage='This channel is muted'
+                        style={styles.title}
+                    />
+                )}
             </View>
             <FormattedText
                 id='channel_notification_preferences.muted_content'

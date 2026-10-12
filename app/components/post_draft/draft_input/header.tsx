@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {defineMessage} from 'react-intl';
 import {Platform, View} from 'react-native';
 
 import BoRLabel from '@components/burn_on_read_label';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
+import Tag from '@components/tag';
 import {PostPriorityColors} from '@constants/post';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -16,7 +18,10 @@ type Props = {
     postPriority: PostPriority;
     noMentionsError: boolean;
     postBoRConfig?: PostBoRConfig;
+    isSpoiler?: boolean;
 }
+
+const spoilerMessage = defineMessage({id: 'post_draft.spoiler_label', defaultMessage: 'Spoiler'});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -41,6 +46,7 @@ export default function DraftInputHeader({
     postPriority,
     noMentionsError,
     postBoRConfig,
+    isSpoiler = false,
 }: Props) {
     const theme = useTheme();
     const hasLabels = postPriority.priority !== '' || postPriority.requested_ack;
@@ -48,7 +54,7 @@ export default function DraftInputHeader({
     const style = getStyleSheet(theme);
 
     return (
-        <View style={[style.container, (hasLabels || hasBoR) ? style.paddingTopStyle : undefined]}>
+        <View style={[style.container, (hasLabels || hasBoR || isSpoiler) ? style.paddingTopStyle : undefined]}>
             {postPriority.priority && (
                 <PostPriorityLabel label={postPriority.priority}/>
             )}
@@ -91,6 +97,15 @@ export default function DraftInputHeader({
             {hasBoR &&
                 <BoRLabel
                     durationSeconds={postBoRConfig.borDurationSeconds}
+                />
+            }
+            {isSpoiler &&
+                <Tag
+                    message={spoilerMessage}
+                    icon='eye-off-outline'
+                    type='general'
+                    size='xs'
+                    testID='draft_input.spoiler_label'
                 />
             }
         </View>

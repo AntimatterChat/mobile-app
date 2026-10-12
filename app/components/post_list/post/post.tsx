@@ -13,9 +13,11 @@ import AgentPost from '@agents/components/agent_post';
 import {isAgentMentionReminderPost, isAgentPost} from '@agents/utils';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
 import {isCallsCustomMessage} from '@calls/utils';
+import InlineReplyRef from '@components/inline_reply/quoted_ref';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
+import ThreadName from '@components/thread_name';
 import {Screens} from '@constants';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import {PROFILE_PICTURE_SIZE} from '@constants/view';
@@ -24,14 +26,18 @@ import {usePostConfig} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
+import {useSpoilerShown} from '@hooks/spoiler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
+import {replyToId} from '@utils/inline_reply';
 import {dismissKeyboard} from '@utils/keyboard';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
+import {isSpoilerPost} from '@utils/spoiler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getThreadTitle} from '@utils/thread_title';
 
 import Avatar from './avatar';
 import Body from './body';
@@ -123,6 +129,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
+        threadName: {marginTop: 4},
     };
 });
 
@@ -185,6 +192,13 @@ const Post = ({
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const showEphemeralAuthor = isEphemeral && Boolean(post.userId);
+
+    // A spoiler's text and files stay hidden until its reader taps the post.
+    const [spoilerShown, setSpoilerShown] = useSpoilerShown(post.id);
+    const spoilerHidden = isSpoilerPost(post) && !hasBeenDeleted && !borPost && !spoilerShown;
+
+    // An inline reply quotes the message it answers above it.
+    const isInlineReply = Boolean(replyToId(post)) && !isEphemeral && !hasBeenDeleted && !isSystemPost;
     const [layoutWidth, setLayoutWidth] = useState(0);
     const shimmerAnimationProps = useShimmerAnimation(post, isChannelAutotranslated, intl.locale, layoutWidth, theme);
     const hasSameRoot = useMemo(() => {
@@ -232,6 +246,11 @@ const Post = ({
     }, [location, isAutoResponder, isSystemPost, isEphemeral, hasBeenDeleted, isPendingOrFailed, serverUrl, post, borPost, blurAndDismissKeyboard]);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
+        if (spoilerHidden) {
+            setSpoilerShown(true);
+            return;
+        }
+
         if (isBoRPost(post)) {
             return;
         }
@@ -243,7 +262,7 @@ const Post = ({
         if (post) {
             setTimeout(handlePostPress, 300);
         }
-    }, [handlePostPress, post]));
+    }, [handlePostPress, post, spoilerHidden, setSpoilerShown]));
 
     const showPostOptions = useCallback(async () => {
         if (!post) {
@@ -428,11 +447,15 @@ const Post = ({
                 post={post}
                 searchPatterns={searchPatterns}
                 showAddReaction={showAddReaction}
+                spoilerHidden={spoilerHidden}
                 theme={theme}
                 isChannelAutotranslated={isChannelAutotranslated}
             />
         );
     }
+
+    // A named thread shows its name under its first message, but in the thread itself, whose header shows it.
+    const threadTitle = !post.rootId && location !== Screens.THREAD && !hasBeenDeleted ? getThreadTitle(post) : '';
 
     let unreadDot;
     let footer;
@@ -475,11 +498,19 @@ const Post = ({
                         skipSavedHeader={skipSavedHeader}
                         skipPinnedHeader={skipPinnedHeader}
                     />
+                    {isInlineReply && <InlineReplyRef post={post}/>}
                     <View style={[styles.container, consecutiveStyle]}>
                         {postAvatar}
                         <View style={rightColumnStyle}>
                             {header}
                             {body}
+                            {Boolean(threadTitle) && (
+                                <ThreadName
+                                    title={threadTitle}
+                                    style={styles.threadName}
+                                    testID={`${itemTestID}.thread_name`}
+                                />
+                            )}
                             {footer}
                         </View>
                         {unreadDot}

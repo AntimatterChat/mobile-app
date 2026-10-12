@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet} from 'react-native';
 
 import AIRewriteAction from '@agents/components/ai_rewrite_action';
 import BoRQuickAction from '@components/post_draft/quick_actions/bor_quick_action';
@@ -12,6 +12,7 @@ import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
+import SpoilerQuickAction from './spoiler_quick_action';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -39,12 +40,18 @@ type Props = {
     updatePostPriority: (postPriority: PostPriority) => void;
     postBoRConfig?: PostBoRConfig;
     updatePostBoRStatus?: (config: PostBoRConfig) => void;
+    isSpoiler?: boolean;
+    updateSpoiler?: (spoiler: boolean) => void;
     focus: () => void;
 }
 
 export const QUICK_ACTIONS_HEIGHT = 44;
 
 const style = StyleSheet.create({
+    quickActionsScroll: {
+        flexGrow: 0,
+        flexShrink: 1,
+    },
     quickActionsContainer: {
         display: 'flex',
         flexDirection: 'row',
@@ -75,6 +82,8 @@ export default function QuickActions({
     focus,
     updatePostBoRStatus,
     postBoRConfig,
+    isSpoiler = false,
+    updateSpoiler,
     location,
 }: Props) {
     const atDisabled = value.endsWith('@');
@@ -88,6 +97,7 @@ export default function QuickActions({
     const aiRewriteActionTestID = `${testID}.ai_rewrite_action`;
     const postPriorityActionTestID = `${testID}.post_priority_action`;
     const borPriorityActionTestID = `${testID}.bor_action`;
+    const spoilerActionTestID = `${testID}.spoiler_action`;
 
     const uploadProps = {
         disabled: !canUploadFiles,
@@ -101,9 +111,13 @@ export default function QuickActions({
     };
 
     return (
-        <View
+        <ScrollView
             testID={testID}
-            style={style.quickActionsContainer}
+            horizontal={true}
+            style={style.quickActionsScroll}
+            contentContainerStyle={style.quickActionsContainer}
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps='always'
         >
             <AttachmentAction
                 testID={attachmentActionTestID}
@@ -151,6 +165,13 @@ export default function QuickActions({
                     updatePostBoRStatus={updatePostBoRStatus}
                 />
             }
-        </View>
+            {updateSpoiler &&
+                <SpoilerQuickAction
+                    testID={spoilerActionTestID}
+                    isSpoiler={isSpoiler}
+                    updateSpoiler={updateSpoiler}
+                />
+            }
+        </ScrollView>
     );
 }

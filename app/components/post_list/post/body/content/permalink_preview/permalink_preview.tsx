@@ -13,13 +13,16 @@ import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
 import TranslateIcon from '@components/post_list/post/header/translate_icon';
 import ProfilePicture from '@components/profile_picture';
+import SpoilerVeil from '@components/spoiler_veil';
 import {View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useUserLocale} from '@context/user_locale';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
+import {useSpoilerShown} from '@hooks/spoiler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {getPostTranslatedMessage, getPostTranslation} from '@utils/post';
+import {isSpoilerPost} from '@utils/spoiler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserTimezone} from '@utils/user';
@@ -140,6 +143,8 @@ const PermalinkPreview = ({
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
     const [showGradient, setShowGradient] = useState(false);
+    const [spoilerShown, setSpoilerShown] = useSpoilerShown(embedData.post_id);
+    const showSpoiler = useCallback(() => setSpoilerShown(true), [setSpoilerShown]);
 
     const maxWidth = useMemo(() => {
         if (!isTablet) {
@@ -274,46 +279,52 @@ const PermalinkPreview = ({
                         </View>
                     </View>
 
-                    <View style={styles.messageContainer}>
-                        <Markdown
-                            baseTextStyle={styles.messageText}
-                            channelId={embedData.channel_id}
-                            location={location}
-                            theme={theme}
-                            value={truncatedMessage}
-                            mentionKeys={mentionKeys}
-                        />
-                        {isEdited ? (
-                            <EditedIndicator
+                    <SpoilerVeil
+                        hidden={isSpoilerPost(embedPost) && !spoilerShown}
+                        onShow={showSpoiler}
+                        testID='permalink_preview.spoiler'
+                    >
+                        <View style={styles.messageContainer}>
+                            <Markdown
                                 baseTextStyle={styles.messageText}
+                                channelId={embedData.channel_id}
+                                location={location}
                                 theme={theme}
-                                context={EDITED_INDICATOR_CONTEXT}
-                                iconSize={12}
-                                testID='permalink_preview.edited_indicator_separate'
+                                value={truncatedMessage}
+                                mentionKeys={mentionKeys}
                             />
-                        ) : null}
-                    </View>
+                            {isEdited ? (
+                                <EditedIndicator
+                                    baseTextStyle={styles.messageText}
+                                    theme={theme}
+                                    context={EDITED_INDICATOR_CONTEXT}
+                                    iconSize={12}
+                                    testID='permalink_preview.edited_indicator_separate'
+                                />
+                            ) : null}
+                        </View>
 
-                    <Opengraph
-                        isReplyPost={false}
-                        removeLinkPreview={false}
-                        location={location}
-                        metadata={embedData?.post?.metadata || null}
-                        postId={embedData?.post?.id || ''}
-                        theme={theme}
-                        isEmbedded={true}
-                    />
-
-                    {hasFiles && post && (
-                        <PermalinkFiles
-                            post={post}
-                            location='permalink_preview'
+                        <Opengraph
                             isReplyPost={false}
-                            parentLocation={parentLocation}
-                            parentPostId={parentPostId}
-                            filesInfo={filesInfo}
+                            removeLinkPreview={false}
+                            location={location}
+                            metadata={embedData?.post?.metadata || null}
+                            postId={embedData?.post?.id || ''}
+                            theme={theme}
+                            isEmbedded={true}
                         />
-                    )}
+
+                        {hasFiles && post && (
+                            <PermalinkFiles
+                                post={post}
+                                location='permalink_preview'
+                                isReplyPost={false}
+                                parentLocation={parentLocation}
+                                parentPostId={parentPostId}
+                                filesInfo={filesInfo}
+                            />
+                        )}
+                    </SpoilerVeil>
                 </View>
 
                 {showGradient && (

@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 
-import {updateDraftBoRConfig, updateDraftPriority} from '@actions/local/draft';
+import {updateDraftBoRConfig, updateDraftPriority, updateDraftSpoiler} from '@actions/local/draft';
 import SendDraft from '@components/draft_scheduled_post/draft_scheduled_post_actions/send_draft';
 import DraftInput from '@components/post_draft/draft_input/';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
+import {useInlineReply} from '@hooks/inline_reply';
+import {inlineReplyProps} from '@utils/inline_reply';
 
 import type {DraftType} from '@constants/draft';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
@@ -46,6 +48,8 @@ type Props = {
     persistentNotificationMaxRecipients: number;
     postPriority: PostPriority;
     postBoRConfig?: PostBoRConfig;
+    isSpoiler?: boolean;
+    mentionQuotedAuthor?: boolean;
 
     draftType?: DraftType;
     postId?: string;
@@ -96,6 +100,8 @@ export default function SendHandler({
     postId,
     onPostCreated,
     postBoRConfig,
+    isSpoiler = false,
+    mentionQuotedAuthor = true,
     location,
 }: Props) {
     const serverUrl = useServerUrl();
@@ -107,6 +113,33 @@ export default function SendHandler({
     const handlePostBoRStatus = useCallback((config: PostBoRConfig) => {
         updateDraftBoRConfig(serverUrl, channelId, rootId, config);
     }, [channelId, rootId, serverUrl]);
+
+    const handleSpoiler = useCallback((spoiler: boolean) => {
+        updateDraftSpoiler(serverUrl, channelId, rootId, spoiler);
+    }, [serverUrl, channelId, rootId]);
+
+    // The message the draft replies to inline, if any.
+    const [replyTo, setReplyTo] = useInlineReply(serverUrl, channelId, rootId);
+
+    // The Antimatter props the draft is sent with.
+    const postProps = useMemo(() => {
+        if (!isSpoiler && !replyTo) {
+            return undefined;
+        }
+        return {
+            ...(isSpoiler ? {spoiler: true} : {}),
+            ...(replyTo ? inlineReplyProps(replyTo, mentionQuotedAuthor) : {}),
+        };
+    }, [isSpoiler, replyTo, mentionQuotedAuthor]);
+
+    // The drafts screen shows no reply bar: its drafts are sent as they show.
+    const draftViewProps = useMemo(() => (isSpoiler ? {spoiler: true} : undefined), [isSpoiler]);
+
+    // Once sent, the draft replies to nothing anymore.
+    const clearDraftAndReply = useCallback(() => {
+        clearDraft();
+        setReplyTo('');
+    }, [clearDraft, setReplyTo]);
 
     const {handleSendMessage, canSend} = useHandleSendMessage({
         value,
@@ -122,9 +155,10 @@ export default function SendHandler({
         currentUserId,
         channelType,
         postPriority,
-        clearDraft,
+        clearDraft: clearDraftAndReply,
         onPostCreated,
         postBoRConfig,
+        postProps,
     });
 
     if (isFromDraftView) {
@@ -150,6 +184,7 @@ export default function SendHandler({
                 draftReceiverUserName={draftReceiverUserName}
                 draftType={draftType}
                 postId={postId}
+                postProps={draftViewProps}
             />
         );
     }
@@ -178,6 +213,8 @@ export default function SendHandler({
             postBoRConfig={postBoRConfig}
             updatePostPriority={handlePostPriority}
             updatePostBoRStatus={handlePostBoRStatus}
+            isSpoiler={isSpoiler}
+            updateSpoiler={handleSpoiler}
             persistentNotificationInterval={persistentNotificationInterval}
             persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}
