@@ -35,11 +35,17 @@ The app icons and the launch screen are rendered from `assets/brand/*.svg` with
 
 Deep links use the `antimatter://` scheme; `mattermost://` links keep working.
 
-## Reporting problems
+## Feedback and support
 
-See [antimatter.chat/help.html](https://antimatter.chat/help.html), or open an issue on
-[GitHub](https://github.com/AntimatterChat/mobile-app/issues) with the device, the steps to reproduce, what you
-saw and what you expected.
+Found a bug in the mobile app, or missing a feature? Please [open an
+issue](https://github.com/AntimatterChat/community/issues/new/choose) in the [Antimatter community
+repository](https://github.com/AntimatterChat/community), where the feedback for every part of
+Antimatter is gathered. Questions and ideas are welcome in its
+[Discussions](https://github.com/AntimatterChat/community/discussions). When you report a problem,
+please mention your device, the app version, the steps to reproduce, what you saw and what you
+expected. More help is on [antimatter.chat/help.html](https://antimatter.chat/help.html). Please
+report security problems privately, as explained in the [security
+policy](https://github.com/AntimatterChat/.github/blob/main/SECURITY.md).
 
 ## Troubleshooting
 
