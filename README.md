@@ -35,6 +35,11 @@ The app icons and the launch screen are rendered from `assets/brand/*.svg` with
 
 Deep links use the `antimatter://` scheme; `mattermost://` links keep working.
 
+## Documentation
+
+The user guide covers [the desktop and mobile apps](https://antimatter.chat/docs/users/index.html#apps) on
+[antimatter.chat/docs](https://antimatter.chat/docs/).
+
 ## Feedback and support
 
 Found a bug in the mobile app, or missing a feature? Please [open an
