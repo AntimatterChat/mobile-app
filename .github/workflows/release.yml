@@ -1,0 +1,340 @@
+# Builds the Antimatter mobile app for Android and iOS on GitHub's hosted runners.
+#
+# - A pushed tag v<version> (e.g. v2.46.0, v2.46.0-rc.1) builds the apps and publishes them on the GitHub release of the
+#   tag, with SHA256SUMS. Tags with a "-" are marked as prereleases.
+# - Run by hand (workflow_dispatch), it builds everything and keeps the files as workflow artifacts; tick
+#   "draft-prerelease" to also save them as a draft prerelease.
+#
+# Nothing is uploaded to the App Store or Google Play, and no Mattermost, Firebase or Sentry secret is needed:
+# - Android: an unsigned release APK and AAB, plus an installable APK, signed with the key in the ANTIMATTER_ANDROID_*
+#   secrets when they're set, otherwise with the debug key of the repository (with a warning).
+# - iOS: an unsigned .ipa (CODE_SIGNING_ALLOWED=NO) to re-sign or sideload, and a build for the iOS simulator.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (default: the version in package.json with -dev.<run number>)"
+        required: false
+        type: string
+      draft-prerelease:
+        description: "Also save the builds as a draft prerelease"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TERM: xterm
+  # No Intune: its library is a private Mattermost repository
+  INTUNE_ENABLED: "false"
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Work out the version
+        id: version
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          elif [[ -n "${INPUT_VERSION}" ]]; then
+            VERSION="${INPUT_VERSION#v}"
+          else
+            BASE="$(node -p "require('./package.json').version.split('-')[0]")"
+            VERSION="${BASE}-dev.${GITHUB_RUN_NUMBER}"
+          fi
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::'${VERSION}' is not a version like 1.2.3 or 1.2.3-rc.1"
+            exit 1
+          fi
+          PRERELEASE=false
+          [[ "${VERSION}" == *-* ]] && PRERELEASE=true
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "prerelease=${PRERELEASE}" >> "${GITHUB_OUTPUT}"
+          echo "Building Antimatter Mobile ${VERSION} (prerelease: ${PRERELEASE})"
+
+  test:
+    name: Lint, type check and i18n check
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test
+        uses: ./.github/actions/test
+
+  android:
+    name: Android (APK, AAB)
+    needs: version
+    runs-on: ubuntu-24.04
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js, Ruby, fastlane and Java
+        uses: ./.github/actions/prepare-android-build
+        with:
+          sign: "false"
+      - name: Use the Firebase configuration, if there is one
+        shell: bash
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.ANTIMATTER_GOOGLE_SERVICES_JSON }}
+        run: |
+          if [[ -n "${GOOGLE_SERVICES_JSON}" ]]; then
+            printf '%s' "${GOOGLE_SERVICES_JSON}" > android/app/google-services.json
+            echo "Using the google-services.json of the ANTIMATTER_GOOGLE_SERVICES_JSON secret"
+          else
+            echo "::notice::No ANTIMATTER_GOOGLE_SERVICES_JSON secret: the app is built with the placeholder" \
+              "google-services.json, so Android push notifications won't work"
+          fi
+      - name: Set the version
+        shell: bash
+        run: |
+          sed -i -E "s/^( *versionName )\"[^\"]*\"/\1\"${VERSION}\"/" android/app/build.gradle
+          grep -E '^ *version(Name|Code) ' android/app/build.gradle
+      - name: Build the unsigned APK
+        working-directory: ./fastlane
+        run: bundle exec fastlane android unsigned
+      - name: Build the unsigned AAB
+        working-directory: ./android
+        # The environment fastlane gives the APK build (fastlane/.env.default), so the JavaScript bundle is reused
+        env:
+          NODE_ENV: production
+          BABEL_ENV: production
+          NODE_OPTIONS: --max_old_space_size=12000
+        run: ./gradlew app:bundleUnsigned
+      - name: Sign the APK and the AAB
+        shell: bash
+        env:
+          KEYSTORE: ${{ secrets.ANTIMATTER_ANDROID_KEYSTORE }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANTIMATTER_ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANTIMATTER_ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANTIMATTER_ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          BUILD_TOOLS="$(find "${ANDROID_HOME}/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          echo "Signing with the tools of ${BUILD_TOOLS}"
+          mkdir -p upload
+          UNSIGNED_APK="upload/Antimatter-${VERSION}-unsigned.apk"
+          mv Antimatter-unsigned.apk "${UNSIGNED_APK}"
+          AAB="android/app/build/outputs/bundle/unsigned/app-unsigned.aab"
+
+          # apksigner needs an aligned APK, with the native libraries on 16 KB pages for Android 15's 16 KB devices;
+          # the Gradle output normally is
+          ALIGNED_APK="${RUNNER_TEMP}/aligned.apk"
+          if "${BUILD_TOOLS}/zipalign" -c -P 16 4 "${UNSIGNED_APK}"; then
+            cp "${UNSIGNED_APK}" "${ALIGNED_APK}"
+          else
+            "${BUILD_TOOLS}/zipalign" -P 16 -f 4 "${UNSIGNED_APK}" "${ALIGNED_APK}"
+          fi
+
+          if [[ -n "${KEYSTORE}" && -n "${KEYSTORE_PASSWORD}" && -n "${KEY_ALIAS}" ]]; then
+            export KEYSTORE_PASSWORD
+            export KEY_PASSWORD="${KEY_PASSWORD:-${KEYSTORE_PASSWORD}}"
+            KEYSTORE_FILE="${RUNNER_TEMP}/antimatter-release.keystore"
+            printf '%s' "${KEYSTORE}" | base64 --decode > "${KEYSTORE_FILE}"
+            SIGNED_APK="upload/Antimatter-${VERSION}.apk"
+            "${BUILD_TOOLS}/apksigner" sign --ks "${KEYSTORE_FILE}" --ks-pass env:KEYSTORE_PASSWORD \
+              --ks-key-alias "${KEY_ALIAS}" --key-pass env:KEY_PASSWORD --out "${SIGNED_APK}" "${ALIGNED_APK}"
+            jarsigner -keystore "${KEYSTORE_FILE}" -storepass:env KEYSTORE_PASSWORD -keypass:env KEY_PASSWORD \
+              -signedjar "upload/Antimatter-${VERSION}.aab" "${AAB}" "${KEY_ALIAS}"
+            rm -f "${KEYSTORE_FILE}"
+          else
+            echo "::warning::The ANTIMATTER_ANDROID_KEYSTORE, ANTIMATTER_ANDROID_KEYSTORE_PASSWORD and" \
+              "ANTIMATTER_ANDROID_KEY_ALIAS secrets aren't set: the installable APK is signed with the public" \
+              "debug key (Antimatter-${VERSION}-debug-signed.apk), and the AAB is left unsigned. Android only" \
+              "updates an app with an APK signed by the same key, so people must uninstall it to switch to builds" \
+              "signed differently."
+            SIGNED_APK="upload/Antimatter-${VERSION}-debug-signed.apk"
+            "${BUILD_TOOLS}/apksigner" sign --ks android/app/debug.keystore --ks-pass pass:android \
+              --ks-key-alias androiddebugkey --key-pass pass:android --out "${SIGNED_APK}" "${ALIGNED_APK}"
+            cp "${AAB}" "upload/Antimatter-${VERSION}-unsigned.aab"
+          fi
+          rm -f "${ALIGNED_APK}" "${SIGNED_APK}.idsig"
+          "${BUILD_TOOLS}/apksigner" verify --print-certs "${SIGNED_APK}" | grep -E 'Signer #1 certificate (DN|SHA-256)'
+          ls -l upload
+      - name: Upload the packages
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mobile-android
+          path: upload/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  ios:
+    name: iOS (unsigned ipa)
+    needs: version
+    runs-on: macos-26
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Xcode, Node.js, Ruby, fastlane and CocoaPods
+        uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
+      - name: Set the version
+        working-directory: ./fastlane
+        shell: bash
+        # iOS takes numbers only (CFBundleShortVersionString): 1.2.0-rc.1 becomes 1.2.0
+        run: VERSION_NUMBER="${VERSION%%-*}" bundle exec fastlane set_app_version
+      - name: Build the unsigned ipa
+        working-directory: ./fastlane
+        run: bundle exec fastlane ios unsigned
+      - name: Collect the ipa
+        shell: bash
+        run: |
+          mkdir -p upload
+          mv Antimatter-unsigned.ipa "upload/Antimatter-${VERSION}-unsigned.ipa"
+          unzip -l "upload/Antimatter-${VERSION}-unsigned.ipa" | grep -m1 'Payload/Mattermost.app/'
+          ls -l upload
+      - name: Upload the ipa
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mobile-ios
+          path: upload/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  ios-simulator:
+    name: iOS simulator (optional)
+    needs: version
+    runs-on: macos-26
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Xcode, Node.js, Ruby, fastlane and CocoaPods
+        uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
+      - name: Set the version
+        working-directory: ./fastlane
+        shell: bash
+        run: VERSION_NUMBER="${VERSION%%-*}" bundle exec fastlane set_app_version
+      - name: Build the app for the simulator
+        working-directory: ./fastlane
+        run: bundle exec fastlane ios simulator
+      - name: Collect the app
+        shell: bash
+        run: |
+          mkdir -p upload
+          for f in Antimatter-simulator-*.app.zip; do
+            mv "${f}" "upload/${f/Antimatter-simulator-/Antimatter-${VERSION}-simulator-}"
+          done
+          ls -l upload
+      - name: Upload the app
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mobile-ios-simulator
+          path: upload/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  release:
+    name: GitHub release
+    needs: [version, test, android, ios, ios-simulator]
+    # The simulator build is a bonus: the release goes ahead without it
+    if: >-
+      !cancelled()
+      && (github.ref_type == 'tag' || inputs.draft-prerelease)
+      && needs.version.result == 'success'
+      && needs.test.result == 'success'
+      && needs.android.result == 'success'
+      && needs.ios.result == 'success'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      PRERELEASE: ${{ needs.version.outputs.prerelease }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Download the packages
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: dist
+          pattern: mobile-*
+          merge-multiple: true
+      - name: Write SHA256SUMS
+        shell: bash
+        run: |
+          (cd dist && sha256sum -- * > SHA256SUMS)
+          cat dist/SHA256SUMS
+      - name: Write the release notes
+        shell: bash
+        run: |
+          if [[ -f "dist/Antimatter-${VERSION}.apk" ]]; then
+            APK="Antimatter-${VERSION}.apk (signed with the Antimatter release key)"
+          else
+            APK="Antimatter-${VERSION}-debug-signed.apk (signed with a public debug key: not for everyday use)"
+          fi
+          cat > release-notes.md <<EOF
+          ### Antimatter Mobile ${VERSION}
+
+          These builds are **not published on the App Store or Google Play**, and the iOS one is **not signed**.
+          Check the downloads against \`SHA256SUMS\`.
+
+          - **Android**: install ${APK}. Android only updates the app from an APK signed with the same key: to switch
+            between builds signed differently (e.g. from a store build or a debug-signed one), uninstall the app first.
+            The \`-unsigned.apk\` and the \`.aab\` are for signing with your own key.
+          - **iOS**: \`Antimatter-${VERSION}-unsigned.ipa\` must be signed before it installs on a device (with your own
+            Apple certificate and provisioning profiles, or a sideloading tool).
+            \`Antimatter-${VERSION}-simulator-arm64.app.zip\` (when present) runs in the iOS simulator of an Apple
+            silicon Mac: unzip it and drag the app onto a simulator.
+          EOF
+          cat release-notes.md
+      - name: Publish the release
+        shell: bash
+        run: |
+          TAG="v${VERSION}"
+          ARGS=(--title "Antimatter Mobile ${VERSION}" --notes-file release-notes.md --generate-notes)
+          [[ "${PRERELEASE}" == "true" ]] && ARGS+=(--prerelease --latest=false)
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            if gh release view "${TAG}" > /dev/null 2>&1; then
+              # A re-run: replace the files of the existing release
+              gh release upload "${TAG}" dist/* --clobber
+            else
+              gh release create "${TAG}" --verify-tag "${ARGS[@]}" dist/*
+            fi
+          else
+            # Run by hand: a draft prerelease, which only creates the tag when someone publishes it
+            gh release create "${TAG}" --draft --prerelease --target "${GITHUB_SHA}" \
+              --title "Antimatter Mobile ${VERSION}" --notes-file release-notes.md --generate-notes dist/*
+          fi

@@ -35,6 +35,28 @@ The app icons and the launch screen are rendered from `assets/brand/*.svg` with
 
 Deep links use the `antimatter://` scheme; `mattermost://` links keep working.
 
+## Releases
+
+The [release workflow](.github/workflows/release.yml) builds the apps on GitHub's runners: pushing a tag
+`v<version>` (e.g. `v2.46.0`, or `v2.46.0-rc.1` for a prerelease) publishes them on the GitHub release of that tag,
+with a `SHA256SUMS` file. Run by hand from the Actions tab, it keeps the files as workflow artifacts (and, if asked,
+saves them as a draft prerelease). Nothing goes to the App Store or Google Play.
+
+- **Android**: `Antimatter-<version>.apk` to install, signed with the release key of the repository secrets
+  `ANTIMATTER_ANDROID_KEYSTORE` (the keystore, base64), `ANTIMATTER_ANDROID_KEYSTORE_PASSWORD`,
+  `ANTIMATTER_ANDROID_KEY_ALIAS` and `ANTIMATTER_ANDROID_KEY_PASSWORD` (the keystore password when unset), with the
+  signed `Antimatter-<version>.aab`. Without those secrets the installable APK is
+  `Antimatter-<version>-debug-signed.apk`, signed with the public debug key, and the AAB is unsigned.
+  `Antimatter-<version>-unsigned.apk` is for signing with your own key. Android only updates an app from an APK signed
+  with the same key: to switch between builds signed differently (a debug-signed build, a release-signed one, your
+  own), uninstall the app first, which deletes its data.
+- **iOS**: `Antimatter-<version>-unsigned.ipa`, built without code signing: sign it with your own certificate and
+  provisioning profiles (or a sideloading tool) to install it, and `Antimatter-<version>-simulator-arm64.app.zip` for
+  the iOS simulator.
+- Android push notifications need your Firebase project: put its `google-services.json` in the
+  `ANTIMATTER_GOOGLE_SERVICES_JSON` secret (otherwise the placeholder is used and push doesn't work). The version code
+  and build number come from `android/app/build.gradle` and the Xcode project: raise them with the version.
+
 ## Documentation
 
 The user guide covers [the desktop and mobile apps](https://antimatter.chat/docs/users/index.html#apps) on
