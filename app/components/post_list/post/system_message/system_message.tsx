@@ -357,7 +357,27 @@ const moveThreadMessages = defineMessages({
         id: 'mobile.system_message.move_thread.multiple_messages',
         defaultMessage: 'A thread with {count} messages has been moved: {link}',
     },
+    movedTo: {
+        id: 'mobile.system_message.move_thread.moved_to',
+        defaultMessage: '{count, plural, one {A message has been moved to {channel}} other {A thread with {count} messages has been moved to {channel}}}',
+    },
+    movedFrom: {
+        id: 'mobile.system_message.move_thread.moved_from',
+        defaultMessage: 'This thread was moved from {channel}',
+    },
+    anotherChannel: {
+        id: 'mobile.system_message.move_thread.another_channel',
+        defaultMessage: 'another channel',
+    },
 });
+
+// Antimatter's pointers and notes name the channel (MovedThreadChannel… / MovedFromChannel… props, without the name of
+// a private channel): it's written as a Markdown link to the moved thread, or to the pointer left where it was, never
+// as a bare address. The # is escaped so the name isn't read as a hashtag.
+const movedChannelLink = (intl: IntlShape, displayName: string, link: string) => {
+    const label = displayName ? '\\#' + displayName.replace(/([[\]\\])/g, '\\$1') : intl.formatMessage(moveThreadMessages.anotherChannel);
+    return `[${label}](${link})`;
+};
 
 const renderPostMessage = ({post, location, styles, theme}: RenderersProps) => (
     <Markdown
@@ -374,6 +394,18 @@ const renderMoveThreadMessage = (props: RenderersProps) => {
     const {post, location, styles, intl, theme} = props;
     const translationId = ensureString(post.props?.TranslationID);
     const link = ensureString(post.props?.MovedThreadPermalink);
+
+    if (ensureString(post.props?.MovedThreadChannelId) && link) {
+        const count = Number(post.props?.NumMessages) || 1;
+        const channel = movedChannelLink(intl, ensureString(post.props?.MovedThreadChannelDisplayName), link);
+        return renderMessage({post, styles, intl, location, localeHolder: moveThreadMessages.movedTo, values: {count, channel}, theme});
+    }
+    const fromLink = ensureString(post.props?.MovedFromPermalink);
+    if (ensureString(post.props?.MovedFromChannelId) && fromLink) {
+        const channel = movedChannelLink(intl, ensureString(post.props?.MovedFromChannelDisplayName), fromLink);
+        return renderMessage({post, styles, intl, location, localeHolder: moveThreadMessages.movedFrom, values: {channel}, theme});
+    }
+
     switch (translationId) {
         case 'app.post.move_thread.from_another_channel':
             return renderMessage({post, styles, intl, location, localeHolder: moveThreadMessages.fromAnotherChannel, values: {}, theme});
