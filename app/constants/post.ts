@@ -30,6 +30,9 @@ export const PostTypes = {
 
     COMBINED_USER_ACTIVITY: 'system_combined_user_activity',
     SHARED_CHANNEL_STATE: 'system_shared_chan_state',
+
+    // Posted when a thread moves to another channel: a pointer in the old place, a note in the new one.
+    WRANGLER: 'system_wrangler',
     ME: 'me',
     ADD_BOT_TEAMS_CHANNELS: 'add_bot_teams_channels',
 

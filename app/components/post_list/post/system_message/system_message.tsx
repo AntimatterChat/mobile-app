@@ -341,6 +341,57 @@ const renderGuestJoinChannelMessage = ({post, styles, location, intl, theme}: Re
     return renderMessage({post, styles, intl, location, localeHolder, values, theme});
 };
 
+// A moved thread leaves a pointer to its new place in the old one (with the permalink and the number of messages
+// moved), and a note in the new one. The server words them in its own language: they're shown in the reader's, from
+// their TranslationID, as Fusion does.
+const moveThreadMessages = defineMessages({
+    fromAnotherChannel: {
+        id: 'mobile.system_message.move_thread.from_another_channel',
+        defaultMessage: 'This thread was moved from another channel',
+    },
+    oneMessage: {
+        id: 'mobile.system_message.move_thread.one_message',
+        defaultMessage: 'A message has been moved: {link}',
+    },
+    multipleMessages: {
+        id: 'mobile.system_message.move_thread.multiple_messages',
+        defaultMessage: 'A thread with {count} messages has been moved: {link}',
+    },
+});
+
+const renderPostMessage = ({post, location, styles, theme}: RenderersProps) => (
+    <Markdown
+        baseTextStyle={styles.messageStyle}
+        channelId={post.channelId}
+        location={location}
+        disableGallery={true}
+        value={post.message}
+        theme={theme}
+    />
+);
+
+const renderMoveThreadMessage = (props: RenderersProps) => {
+    const {post, location, styles, intl, theme} = props;
+    const translationId = ensureString(post.props?.TranslationID);
+    const link = ensureString(post.props?.MovedThreadPermalink);
+    switch (translationId) {
+        case 'app.post.move_thread.from_another_channel':
+            return renderMessage({post, styles, intl, location, localeHolder: moveThreadMessages.fromAnotherChannel, values: {}, theme});
+        case 'app.post.move_thread_command.channel.one_message':
+            if (link) {
+                return renderMessage({post, styles, intl, location, localeHolder: moveThreadMessages.oneMessage, values: {link}, theme});
+            }
+            break;
+        case 'app.post.move_thread_command.channel.multiple_messages':
+            if (link) {
+                const count = Number(post.props?.NumMessages) || 0;
+                return renderMessage({post, styles, intl, location, localeHolder: moveThreadMessages.multipleMessages, values: {count, link}, theme});
+            }
+            break;
+    }
+    return renderPostMessage(props);
+};
+
 const systemMessageRenderers = {
     [Post.POST_TYPES.HEADER_CHANGE]: renderHeaderChangeMessage,
     [Post.POST_TYPES.DISPLAYNAME_CHANGE]: renderDisplayNameChangeMessage,
@@ -348,6 +399,7 @@ const systemMessageRenderers = {
     [Post.POST_TYPES.CHANNEL_DELETED]: renderArchivedMessage,
     [Post.POST_TYPES.CHANNEL_UNARCHIVED]: renderUnarchivedMessage,
     [Post.POST_TYPES.SHARED_CHANNEL_STATE]: renderSharedChannelStateMessage,
+    [Post.POST_TYPES.WRANGLER]: renderMoveThreadMessage,
 };
 
 export const SystemMessage = ({post, location, author, hideGuestTags}: SystemMessageProps & { hideGuestTags: boolean}) => {
@@ -365,16 +417,7 @@ export const SystemMessage = ({post, location, author, hideGuestTags}: SystemMes
 
     const renderer = secureGetFromRecord(systemMessageRenderers, post.type);
     if (!renderer) {
-        return (
-            <Markdown
-                baseTextStyle={styles.messageStyle}
-                channelId={post.channelId}
-                location={location}
-                disableGallery={true}
-                value={post.message}
-                theme={theme}
-            />
-        );
+        return renderPostMessage({post, author, location, styles, intl, theme});
     }
 
     return renderer({post, author, location, styles, intl, theme});
