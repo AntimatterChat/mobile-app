@@ -1,0 +1,48 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {searchChannels} from '@actions/remote/channel';
+import TestHelper from '@test/test_helper';
+
+import {getChannelSuggestions, inTextMentionSuggestions} from './mentions';
+
+jest.mock('@actions/remote/channel', () => ({
+    searchChannels: jest.fn(),
+}));
+
+jest.mock('@actions/remote/user', () => ({
+    searchUsers: jest.fn(),
+}));
+
+// Antimatter: slash commands take channels as #channel-name; ~channel-name keeps working.
+describe('slash command channel mentions', () => {
+    const townSquare = TestHelper.fakeChannel({id: 'town-id', name: 'town-square', display_name: 'Town Square'});
+
+    beforeEach(() => {
+        jest.mocked(searchChannels).mockReset();
+        jest.mocked(searchChannels).mockResolvedValue({channels: [townSquare]});
+    });
+
+    test('suggests channels as #channel-name', async () => {
+        const suggestions = await getChannelSuggestions([townSquare]);
+        expect(suggestions.map((s) => s.Complete)).toEqual(['#town-square']);
+    });
+
+    test('completes a channel typed with #', async () => {
+        const suggestions = await inTextMentionSuggestions('http://server', 'hello #town', 'channel-id', 'team-id');
+        expect(searchChannels).toHaveBeenCalledWith('http://server', 'town', 'team-id');
+        expect(suggestions?.map((s) => s.Complete)).toEqual(['hello #town-square']);
+    });
+
+    test('completes a channel typed with ~ as #channel-name', async () => {
+        const suggestions = await inTextMentionSuggestions('http://server', 'hello ~town', 'channel-id', 'team-id');
+        expect(searchChannels).toHaveBeenCalledWith('http://server', 'town', 'team-id');
+        expect(suggestions?.map((s) => s.Complete)).toEqual(['hello #town-square']);
+    });
+
+    test('leaves ## and ~~ alone', async () => {
+        expect(await inTextMentionSuggestions('http://server', 'hello ##town', 'channel-id', 'team-id')).toBeNull();
+        expect(await inTextMentionSuggestions('http://server', 'hello ~~town', 'channel-id', 'team-id')).toBeNull();
+        expect(searchChannels).not.toHaveBeenCalled();
+    });
+});

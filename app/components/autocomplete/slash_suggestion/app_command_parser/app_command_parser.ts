@@ -11,6 +11,7 @@ import {getChannelById, getChannelByName} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getUserById, queryUsersByUsername} from '@queries/servers/user';
 import {createCallRequest, filterEmptyOptions} from '@utils/apps';
+import {stripChannelSign} from '@utils/channel_link';
 
 import {getChannelSuggestions, getUserSuggestions, inTextMentionSuggestions} from './mentions';
 
@@ -1417,10 +1418,7 @@ export class AppCommandParser {
                         const options: AppSelectOption[] = [];
                         /* eslint-disable no-await-in-loop */
                         for (const value of commandValues) {
-                            let channelName = value;
-                            if (channelName[0] === '~') {
-                                channelName = channelName.substr(1);
-                            }
+                            const channelName = stripChannelSign(value);
                             const channel = await getFieldChannel(channelName);
                             if (!channel) {
                                 setChannelError(channelName);
@@ -1445,10 +1443,7 @@ export class AppCommandParser {
                         break;
                     }
 
-                    let channelName = values[fieldName] as string;
-                    if (channelName[0] === '~') {
-                        channelName = channelName.substr(1);
-                    }
+                    const channelName = stripChannelSign(values[fieldName] as string);
                     const channel = await getFieldChannel(channelName);
                     if (!channel) {
                         setChannelError(channelName);
@@ -1973,10 +1968,7 @@ export class AppCommandParser {
     };
 
     private getChannelFieldSuggestions = async (parsed: ParsedCommand): Promise<AutocompleteSuggestion[]> => {
-        let input = parsed.incomplete.trim();
-        if (input[0] === '~') {
-            input = input.substring(1);
-        }
+        const input = stripChannelSign(parsed.incomplete.trim());
         const res = await searchChannels(this.serverUrl, input, this.teamID);
         return getChannelSuggestions(res.channels);
     };

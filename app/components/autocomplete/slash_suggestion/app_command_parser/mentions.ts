@@ -4,6 +4,7 @@
 import {searchChannels} from '@actions/remote/channel';
 import {searchUsers} from '@actions/remote/user';
 import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@constants/apps';
+import {CHANNEL_LINK_SIGN} from '@utils/channel_link';
 
 export async function inTextMentionSuggestions(serverUrl: string, pretext: string, channelID: string, teamID: string, delimiter = ''): Promise<AutocompleteSuggestion[] | null> {
     const separatedWords = pretext.split(' ');
@@ -22,7 +23,8 @@ export async function inTextMentionSuggestions(serverUrl: string, pretext: strin
         return users;
     }
 
-    if (lastWord.startsWith('~') && !lastWord.startsWith('~~')) {
+    // A channel: #channel-name, or ~channel-name.
+    if ((lastWord.startsWith('#') && !lastWord.startsWith('##')) || (lastWord.startsWith('~') && !lastWord.startsWith('~~'))) {
         const res = await searchChannels(serverUrl, lastWord.substring(1), teamID);
         const channels = await getChannelSuggestions(res.channels);
         channels.forEach((c) => {
@@ -79,7 +81,7 @@ export async function getChannelSuggestions(channels?: Channel[]): Promise<Autoc
 
     const items = channels.map((c) => {
         return {
-            Complete: '~' + c.name,
+            Complete: CHANNEL_LINK_SIGN + c.name,
             Suggestion: '',
             Description: '',
             Hint: '',

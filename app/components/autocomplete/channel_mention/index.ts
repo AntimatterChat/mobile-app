@@ -8,6 +8,7 @@ import {map, switchMap} from 'rxjs/operators';
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_REGEX_DELAYED, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {observeChannel, queryAllMyChannel, queryChannelsForAutocomplete} from '@queries/servers/channel';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {getChannelMentionMatch} from '@utils/channel_link';
 
 import ChannelMention from './channel_mention';
 
@@ -22,20 +23,15 @@ const getMatchTermForChannelMention = (() => {
     let lastIsSearch: boolean;
     return (value: string, matchPattern: RegExp, isSearch: boolean) => {
         if (value !== lastValue || matchPattern !== lastMatchPattern || isSearch !== lastIsSearch) {
-            const match = value.match(matchPattern);
             lastValue = value;
             lastMatchPattern = matchPattern;
             lastIsSearch = isSearch;
-            if (match) {
-                if (isSearch) {
-                    lastMatchTerm = match[1].toLowerCase();
-                } else if (match.index && match.index > 0 && value[match.index - 1] === '~') {
-                    lastMatchTerm = null;
-                } else {
-                    lastMatchTerm = match[2].toLowerCase();
-                }
+            if (isSearch) {
+                const match = value.match(matchPattern);
+                lastMatchTerm = match ? match[1].toLowerCase() : null;
             } else {
-                lastMatchTerm = null;
+                // #channel-name, or ~channel-name.
+                lastMatchTerm = getChannelMentionMatch(value, matchPattern)?.term ?? null;
             }
         }
         return lastMatchTerm;

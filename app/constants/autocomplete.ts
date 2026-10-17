@@ -7,9 +7,12 @@ export const AT_MENTION_REGEX_GLOBAL = /\B(@([^@\r\n]*))/gi;
 
 export const AT_MENTION_SEARCH_REGEX = /\bfrom:\s*([^\r\n]*)$/i;
 
-export const CHANNEL_MENTION_REGEX = /\B(~([^~\r\n]*))$/i;
+// A channel link being typed: Antimatter's #channel-name, or Mattermost's ~channel-name. Group 1 is the link, group 2
+// what follows its sign. A # that follows a letter or digit (C#, page#anchor) doesn't match; getChannelMentionTerm
+// (@utils/channel_link) also leaves out ##, &# (an HTML entity) and "# " (a heading).
+export const CHANNEL_MENTION_REGEX = /\B([~#]([^~#\r\n]*))$/i;
 
-export const CHANNEL_MENTION_REGEX_DELAYED = /\B(~([^~\r\n]{2,}))$/i;
+export const CHANNEL_MENTION_REGEX_DELAYED = /\B([~#]([^~#\r\n]{2,}))$/i;
 
 export const CHANNEL_MENTION_SEARCH_REGEX = /\b(?:in|channel):\s*([^\r\n]*)$/i;
 

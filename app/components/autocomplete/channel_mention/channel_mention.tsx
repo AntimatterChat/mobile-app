@@ -9,12 +9,13 @@ import {searchChannels} from '@actions/remote/channel';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
 import ChannelItem from '@components/channel_item';
 import {General} from '@constants';
-import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
+import {CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import useDidUpdate from '@hooks/did_update';
 import {useDebounce} from '@hooks/utils';
 import {getUserById} from '@queries/servers/user';
+import {CHANNEL_LINK_SIGN, completeChannelMention} from '@utils/channel_link';
 import {hasTrailingSpaces} from '@utils/helpers';
 import {getUserIdFromChannelName} from '@utils/user';
 
@@ -238,12 +239,11 @@ const ChannelMention = ({
         if (isSearch) {
             const channelOrIn = mentionPart.includes('in:') ? 'in:' : 'channel:';
             completedDraft = mentionPart.replace(CHANNEL_MENTION_SEARCH_REGEX, `${channelOrIn} ${mention} `);
-        } else if (Platform.OS === 'ios') {
-            // We are going to set a double ~ on iOS to prevent the auto correct from taking over and replacing it
-            // with the wrong value, this is a hack but I could not found another way to solve it
-            completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~~${mention} `);
         } else {
-            completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~${mention} `);
+            // Antimatter links channels as #channel-name, whether the link was started with # or ~. On iOS, the sign
+            // is doubled for a moment to keep the auto correct from replacing the name with the wrong value: this is
+            // a hack but no other way to solve it was found.
+            completedDraft = completeChannelMention(mentionPart, mention, Platform.OS === 'ios');
         }
 
         const newCursorPosition = completedDraft.length - 1;
@@ -256,10 +256,10 @@ const ChannelMention = ({
         setLocalCursorPosition(newCursorPosition);
 
         if (Platform.OS === 'ios') {
-            // This is the second part of the hack were we replace the double ~ with just one
+            // This is the second part of the hack where we replace the double sign with just one
             // after the auto correct vanished
             setTimeout(() => {
-                updateValue(completedDraft.replace(`~~${mention} `, `~${mention} `));
+                updateValue(completedDraft.replace(`${CHANNEL_LINK_SIGN}${CHANNEL_LINK_SIGN}${mention} `, `${CHANNEL_LINK_SIGN}${mention} `));
             });
         }
 
