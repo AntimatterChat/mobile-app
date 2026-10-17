@@ -636,7 +636,7 @@
   "mobile.ios.plist.NSSpeechRecognitionUsageDescription": "Permettre à votre appareil d'envoyer des données utilisateur à Apple vous permet d'envoyer des messages vocaux à {applicationName}.",
   "mobile.join_channel.error": "Nous n'avons pas pu rejoindre le canal {displayName}.",
   "mobile.leave_and_join_confirmation": "Quitter et rejoindre",
-  "mobile.leave_and_join_message": "Vous êtes déjà dans un appel de canal dans ~{leaveChannelName}. Voulez-vous quitter votre appel actuel et rejoindre l'appel dans ~{joinChannelName} ?",
+  "mobile.leave_and_join_message": "Vous êtes déjà dans un appel de canal dans #{leaveChannelName}. Voulez-vous quitter votre appel actuel et rejoindre l'appel dans #{joinChannelName} ?",
   "mobile.leave_and_join_title": "Voulez-vous vraiment passer à un autre appel ?",
   "mobile.link.error.text": "Impossible d'ouvrir le lien.",
   "mobile.link.error.title": "Erreur",

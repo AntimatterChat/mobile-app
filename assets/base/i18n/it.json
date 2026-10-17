@@ -539,7 +539,7 @@
   "mobile.ios.photos_permission_denied_title": "{applicationName} vorrebbe accedere alle tue foto",
   "mobile.join_channel.error": "Non è stato possibile unirsi al canale {displayName}.",
   "mobile.leave_and_join_confirmation": "Partire e unirsi",
-  "mobile.leave_and_join_message": "Siete già impegnati in una chiamata di canale in ~{leaveChannelName}. Volete lasciare la vostra chiamata attuale e unirvi alla chiamata in ~{joinChannelName}?",
+  "mobile.leave_and_join_message": "Siete già impegnati in una chiamata di canale in #{leaveChannelName}. Volete lasciare la vostra chiamata attuale e unirvi alla chiamata in #{joinChannelName}?",
   "mobile.leave_and_join_title": "Passare a un'altra chiamata?",
   "mobile.link.error.text": "Impossibile aprire il link.",
   "mobile.link.error.title": "Errore",

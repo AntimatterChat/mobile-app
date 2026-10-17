@@ -107,12 +107,12 @@ export const leaveAndJoinWithAlert = async (
 
         let joinMessage = formatMessage({
             id: 'mobile.leave_and_join_message',
-            defaultMessage: 'You are already on a channel call in ~{leaveChannelName}. Do you want to leave your current call and join the call in ~{joinChannelName}?',
+            defaultMessage: 'You are already on a channel call in #{leaveChannelName}. Do you want to leave your current call and join the call in #{joinChannelName}?',
         }, {leaveChannelName, joinChannelName});
         if (newCall) {
             joinMessage = formatMessage({
                 id: 'mobile.leave_and_create_message',
-                defaultMessage: 'You are already on a channel call in ~{leaveChannelName}. Do you want to leave your current call and start a new call in ~{joinChannelName}?',
+                defaultMessage: 'You are already on a channel call in #{leaveChannelName}. Do you want to leave your current call and start a new call in #{joinChannelName}?',
             }, {leaveChannelName, joinChannelName});
         }
 

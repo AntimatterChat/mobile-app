@@ -38,12 +38,12 @@ jest.mock('./at_mention', () => {
 
 jest.mock('../markdown/channel_mention', () => {
     const {Text} = require('react-native');
-    const MockChannelMention = ({channelName, textStyle}: {channelName: string; textStyle: any}) => (
+    const MockChannelMention = ({channelName, textStyle, sigil = '~', unresolved}: {channelName: string; textStyle: any; sigil?: string; unresolved?: any}) => (
         <Text
             testID={`channel_mention.${channelName}`}
             style={textStyle}
         >
-            {`~${channelName}`}
+            {unresolved ?? `${sigil}${channelName}`}
         </Text>
     );
     MockChannelMention.displayName = 'MockChannelMention';
@@ -155,6 +155,48 @@ describe('RemoveMarkdown', () => {
             const json = JSON.stringify(toJSON());
             expect(json).toContain('Heading');
             expect(json).toContain('Body');
+        });
+    });
+
+    // Antimatter: channels are linked as #channel-name; Mattermost's ~channel-name keeps working.
+    describe('channel links', () => {
+        it('should link #channel-name, and names too short for a hashtag', () => {
+            renderWithIntl(
+                <RemoveMarkdown
+                    enableChannelLink={true}
+                    baseStyle={baseStyle}
+                    value='Check #town-square, #qa and ~off-topic'
+                />,
+            );
+
+            expect(screen.getByTestId('channel_mention.town-square')).toBeTruthy();
+            expect(screen.getByTestId('channel_mention.qa')).toHaveTextContent('#qa');
+            expect(screen.getByTestId('channel_mention.off-topic')).toHaveTextContent('~off-topic');
+        });
+
+        it('should show links as written without channel links', () => {
+            renderWithIntl(
+                <RemoveMarkdown
+                    baseStyle={baseStyle}
+                    value='Check #qa and ~off-topic'
+                />,
+            );
+
+            expect(screen.queryByTestId('channel_mention.qa')).toBeNull();
+            expect(screen.getByText('#qa')).toBeTruthy();
+            expect(screen.getByText('~off-topic')).toBeTruthy();
+        });
+
+        it('should not link C#, ## nor a heading', () => {
+            renderWithIntl(
+                <RemoveMarkdown
+                    enableChannelLink={true}
+                    baseStyle={baseStyle}
+                    value={'# town-square\nC# and ##town-square'}
+                />,
+            );
+
+            expect(screen.queryByTestId('channel_mention.town-square')).toBeNull();
         });
     });
 

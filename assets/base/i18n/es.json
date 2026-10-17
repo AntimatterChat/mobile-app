@@ -618,7 +618,7 @@
   "mobile.ios.plist.NSSpeechRecognitionUsageDescription": "Habilitar tu dispositivo para enviar datos de usuario a Apple significa que puedes enviar mensajes de voz a {applicationName}.",
   "mobile.join_channel.error": "No pudimos unirmos al canal {displayName}.",
   "mobile.leave_and_join_confirmation": "Abandonar y unirse",
-  "mobile.leave_and_join_message": "Ya estás en una llamada de canal en ~{leaveChannelName}- ¿Quieres abandonar la llamada actual y unirte a la llamada en ~{joinChannelName}?",
+  "mobile.leave_and_join_message": "Ya estás en una llamada de canal en #{leaveChannelName}- ¿Quieres abandonar la llamada actual y unirte a la llamada en #{joinChannelName}?",
   "mobile.leave_and_join_title": "¿Realmente quieres cambiarte a una llamada diferente?",
   "mobile.link.error.text": "No se pudo abrir el enlace.",
   "mobile.link.error.title": "Error",

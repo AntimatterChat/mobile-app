@@ -417,7 +417,7 @@ describe('alerts', () => {
 
             expect(mockAlert).toHaveBeenCalledWith(
                 'Are you sure you want to switch to a different call?',
-                'You are already on a channel call in ~leave-channel. Do you want to leave your current call and join the call in ~join-channel?',
+                'You are already on a channel call in #leave-channel. Do you want to leave your current call and join the call in #join-channel?',
                 [
                     {
                         text: 'Cancel',
@@ -459,7 +459,7 @@ describe('alerts', () => {
 
             expect(mockAlert).toHaveBeenCalledWith(
                 'Are you sure you want to switch to a different call?',
-                'You are already on a channel call in ~leave-channel. Do you want to leave your current call and start a new call in ~join-channel?',
+                'You are already on a channel call in #leave-channel. Do you want to leave your current call and start a new call in #join-channel?',
                 expect.any(Array),
             );
         });

@@ -10,7 +10,9 @@ import Emoji from '@components/emoji';
 import {useTheme} from '@context/theme';
 import {computeTextStyle, getMarkdownTextStyles} from '@utils/markdown';
 
+import {getChannelLinkProps, linkHashChannels} from '../markdown/channel_links';
 import ChannelMention from '../markdown/channel_mention';
+import {combineTextNodes} from '../markdown/transform';
 
 import AtMention from './at_mention';
 
@@ -100,18 +102,22 @@ const RemoveMarkdown = ({
         );
     }, [baseStyle, textStyle]);
 
-    const renderChannelLink = useCallback(({context, channelName}: MarkdownChannelMentionRenderer) => {
+    const renderChannelLink = useCallback(({context, channelName, sigil = '~'}: MarkdownChannelMentionRenderer) => {
+        // A link is shown as written when it names no channel: a #name that isn't a channel is a hashtag, plain here.
+        const asWritten = `${sigil}${channelName}`;
         if (enableChannelLink) {
             return (
                 <ChannelMention
                     linkStyle={textStyle.link}
                     textStyle={computeTextStyle(textStyle, baseStyle, filterHeadingContext(context))}
                     channelName={channelName}
+                    sigil={sigil}
+                    unresolved={sigil === '#' ? renderText({literal: asWritten}) : undefined}
                 />
             );
         }
 
-        return renderText({literal: `~${channelName}`});
+        return renderText({literal: asWritten});
     }, [baseStyle, enableChannelLink, renderText, textStyle]);
 
     const renderCodeSpan = useCallback(({context, literal}: MarkdownBaseRenderer) => {
@@ -199,6 +205,7 @@ const RemoveMarkdown = ({
                 mention_highlight: Renderer.forwardChildren,
                 editedIndicator: Renderer.forwardChildren,
             } as any,
+            getExtraPropsForNode: getChannelLinkProps,
         });
     };
 
@@ -221,7 +228,7 @@ const RemoveMarkdown = ({
         renderBreak,
         enableSoftBreak,
     ]);
-    const ast = parser.parse(value);
+    const ast = linkHashChannels(combineTextNodes(parser.parse(value)));
 
     const rendered = renderer.render(ast) as ReactElement;
 

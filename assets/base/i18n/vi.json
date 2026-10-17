@@ -565,7 +565,7 @@
   "mobile.ios.plist.NSSpeechRecognitionUsageDescription": "Cho phép thiết bị của bạn gửi dữ liệu người dùng tới Apple nghĩa là bạn có thể gửi tin nhắn thoại tới {applicationName}.",
   "mobile.join_channel.error": "Chúng tôi không thể mở một tin nhắn trực tiếp với {displayName}. Vui lòng kiểm tra kết nối của bạn và thử lại.",
   "mobile.leave_and_join_confirmation": "Rời khỏi & Tham gia",
-  "mobile.leave_and_join_message": "Bạn đã tham gia cuộc gọi kênh trong ~{leaveChannelName}. Bạn có muốn rời khỏi cuộc gọi hiện tại của mình và tham gia cuộc gọi trong ~{joinChannelName} không?",
+  "mobile.leave_and_join_message": "Bạn đã tham gia cuộc gọi kênh trong #{leaveChannelName}. Bạn có muốn rời khỏi cuộc gọi hiện tại của mình và tham gia cuộc gọi trong #{joinChannelName} không?",
   "mobile.leave_and_join_title": "Bạn có chắc chắn muốn chuyển sang cuộc gọi khác không?",
   "mobile.link.error.text": "Không thể mở liên kết.",
   "mobile.link.error.title": "Lỗi",

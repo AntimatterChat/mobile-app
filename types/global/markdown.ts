@@ -40,6 +40,12 @@ export type MarkdownBaseRenderer = {
 export type MarkdownChannelMentionRenderer = {
     context: string[];
     channelName: string;
+
+    // The sign the link was written with: Antimatter's # or Mattermost's ~ (the parser's own links, when unset).
+    sigil?: '~' | '#';
+
+    // For a #name, the hashtag it is when no channel has that name.
+    hashtag?: string;
 }
 
 export type MarkdownEmojiRenderer = MarkdownBaseRenderer & {

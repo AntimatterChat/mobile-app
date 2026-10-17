@@ -23,6 +23,7 @@ import {getScheme} from '@utils/url';
 
 import {applyAntimatterSyntax, type WalltimeContext} from './antimatter_transform';
 import AtMention from './at_mention';
+import {getChannelLinkProps, linkHashChannels} from './channel_links';
 import ChannelMention from './channel_mention';
 import DynamicTimestamp from './dynamic_timestamp';
 import Hashtag from './hashtag';
@@ -152,6 +153,10 @@ const getExtraPropsForNode = (node: any) => {
         extraProps.entityType = node.entityType;
         extraProps.entityId = node.entityId;
         extraProps.linkUrl = node.linkUrl;
+    }
+
+    if (node.type === 'channel_link') {
+        Object.assign(extraProps, getChannelLinkProps(node));
     }
 
     return extraProps;
@@ -301,9 +306,17 @@ const Markdown = ({
         return <Text testID='markdown_break'>{'\n'}</Text>;
     };
 
-    const renderChannelLink = useCallback(({context, channelName}: MarkdownChannelMentionRenderer) => {
+    const renderChannelLink = useCallback(({context, channelName, sigil = '~', hashtag}: MarkdownChannelMentionRenderer) => {
+        // A link that names no channel is shown as written; a #name, as the hashtag it then is.
+        const asWritten = () => {
+            if (sigil === '#' && hashtag && !disableHashtags && !isUnsafeLinksPost) {
+                return renderHashtagWithStyles(context, hashtag, textStyles, baseTextStyle);
+            }
+            return renderText({context, literal: `${sigil}${channelName}`});
+        };
+
         if (disableChannelLink || isUnsafeLinksPost) {
-            return renderText({context, literal: `~${channelName}`});
+            return asWritten();
         }
 
         return (
@@ -312,9 +325,11 @@ const Markdown = ({
                 textStyle={computeTextStyle(textStyles, baseTextStyle, context)}
                 channelName={channelName}
                 channelMentions={channelMentions}
+                sigil={sigil}
+                unresolved={sigil === '#' ? asWritten() : undefined}
             />
         );
-    }, [baseTextStyle, channelMentions, disableChannelLink, isUnsafeLinksPost, renderText, textStyles]);
+    }, [baseTextStyle, channelMentions, disableChannelLink, disableHashtags, isUnsafeLinksPost, renderText, textStyles]);
 
     const renderCheckbox = useCallback(({isChecked}: {isChecked: boolean}) => {
         return (
@@ -773,6 +788,7 @@ const Markdown = ({
             ast = parser.parse(value.toString());
 
             ast = combineTextNodes(ast);
+            ast = linkHashChannels(ast);
             ast = addListItemIndices(ast);
             ast = pullOutImages(ast);
             ast = parseTaskLists(ast);

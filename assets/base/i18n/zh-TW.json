@@ -629,7 +629,7 @@
   "mobile.ios.plist.NSSpeechRecognitionUsageDescription": "允許您的裝置傳送使用者資料給 Apple 即表示您可以傳送語音訊息給 {applicationName}。",
   "mobile.join_channel.error": "我們無法加入頻道 {displayName}。",
   "mobile.leave_and_join_confirmation": "退出並加入",
-  "mobile.leave_and_join_message": "您已在 ~{leaveChannelName} 的群組通話中。確定要離開目前的通話並加入 ~{joinChannelName} 的嗎？",
+  "mobile.leave_and_join_message": "您已在 #{leaveChannelName} 的群組通話中。確定要離開目前的通話並加入 #{joinChannelName} 的嗎？",
   "mobile.leave_and_join_title": "確定要切換至不同的通話嗎？",
   "mobile.link.error.text": "無法開啟連結。",
   "mobile.link.error.title": "錯誤",

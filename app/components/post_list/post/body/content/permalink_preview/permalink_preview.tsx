@@ -207,7 +207,7 @@ const PermalinkPreview = ({
 
     const channelContextText = useMemo(() => {
         const displayName = channel_type === 'D' ? authorDisplayName : channel_display_name;
-        return `~${displayName}`;
+        return `#${displayName}`;
     }, [channel_display_name, channel_type, authorDisplayName]);
 
     const filesInfo = useMemo(() => {

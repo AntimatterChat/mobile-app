@@ -137,7 +137,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
 
         expect(getByText('testuser')).toBeTruthy();
         expect(getByText('This is a test message')).toBeTruthy();
-        expect(getByText('Originally posted in ~Test Channel')).toBeTruthy();
+        expect(getByText('Originally posted in #Test Channel')).toBeTruthy();
     });
 
     it('should cover a spoiler until its cover is tapped, without opening it', () => {
@@ -262,13 +262,13 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         expect(getByText('Someone')).toBeTruthy();
     });
 
-    it('should display channel name with ~ prefix for public channels', () => {
+    it('should display channel name with # prefix for public channels', () => {
         const {getByText} = renderPermalinkPreview(baseProps);
 
-        expect(getByText('Originally posted in ~Test Channel')).toBeTruthy();
+        expect(getByText('Originally posted in #Test Channel')).toBeTruthy();
     });
 
-    it('should display channel name with ~ prefix for direct messages', () => {
+    it('should display channel name with # prefix for direct messages', () => {
         const props = {
             ...baseProps,
             embedData: {
@@ -279,7 +279,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         };
         const {getByText} = renderPermalinkPreview(props);
 
-        expect(getByText('Originally posted in ~testuser')).toBeTruthy();
+        expect(getByText('Originally posted in #testuser')).toBeTruthy();
     });
 
     it('should truncate long messages', () => {
