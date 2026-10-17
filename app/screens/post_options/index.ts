@@ -14,6 +14,7 @@ import {DEFAULT_LOCALE} from '@i18n';
 import AppsManager from '@managers/apps_manager';
 import {observeChannel, observeIsReadOnlyChannel, observeIsChannelAutotranslated, observeChannelInfo} from '@queries/servers/channel';
 import {observeInlineRepliesEnabled} from '@queries/servers/inline_reply';
+import {observeIsThreadModerator} from '@queries/servers/move_thread';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
@@ -25,6 +26,7 @@ import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {canReplyInline as canQuote} from '@utils/inline_reply';
 import {getPostTranslation, isFromWebhook, isSystemMessage} from '@utils/post';
+import {canMoveThread as canMoveThreadRule} from '@utils/move_thread';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import PostOptions from './post_options';
@@ -166,6 +168,15 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         switchMap(([edit, crt]) => of$(edit && crt)),
     );
 
+    // Antimatter: moving the thread of a message (its first message or a reply) to another channel of the community,
+    // for its author and the channel's moderators (see @utils/move_thread).
+    const root = post.rootId ? observePost(database, post.rootId) : of$(post);
+    const isThreadModerator = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => observeIsThreadModerator(database, c, u)));
+    const canMoveThread = isSystemMessage(post) || borPost ? of$(false) : combineLatest([root, channel, currentUser, isThreadModerator]).pipe(
+        switchMap(([r, c, u, moderator]) => of$(u ? canMoveThreadRule(r, c, u.id, moderator) : false)),
+        distinctUntilChanged(),
+    );
+
     const canMarkAsUnread = combineLatest([currentUser, channelIsArchived]).pipe(
         switchMap(([user, isArchived]) => of$(
             !isArchived && (
@@ -229,6 +240,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         canReply,
         canReplyInline,
         canNameThread,
+        canMoveThread,
         canPin,
         canPutOnTop,
         combinedPost: of$(combinedPost),

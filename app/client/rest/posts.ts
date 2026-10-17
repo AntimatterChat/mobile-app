@@ -37,6 +37,7 @@ export interface ClientPostsMix {
     sendTestNotification: () => Promise<{status: 'OK'}>;
     revealBoRPost: (postId: string) => Promise<Post>;
     getPostInfo: (postId: string) => Promise<PostInfo>;
+    moveThreadToChannel: (postId: string, channelId: string, flatten?: boolean) => Promise<Post>;
 }
 
 const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -72,6 +73,16 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return this.doFetch(
             `${this.getPostRoute(postId)}`,
             {method: 'delete'},
+        );
+    };
+
+    // Antimatter's POST /posts/{post_id}/move_to_channel: moves the thread of postId (a reply's id moves its whole
+    // thread) to another channel of its community, and returns the moved first message. With flatten, the replies
+    // become messages of the channel.
+    moveThreadToChannel = async (postId: string, channelId: string, flatten = false) => {
+        return this.doFetch(
+            `${this.getPostRoute(postId)}/move_to_channel`,
+            {method: 'post', body: {channel_id: channelId, flatten}, noRetry: true},
         );
     };
 

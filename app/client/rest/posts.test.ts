@@ -57,6 +57,22 @@ describe('ClientPosts', () => {
         );
     });
 
+    test('moveThreadToChannel', async () => {
+        await client.moveThreadToChannel('post_id', 'channel_id');
+
+        expect(client.doFetch).toHaveBeenCalledWith(
+            `${client.getPostRoute('post_id')}/move_to_channel`,
+            {method: 'post', body: {channel_id: 'channel_id', flatten: false}, noRetry: true},
+        );
+
+        await client.moveThreadToChannel('post_id', 'channel_id', true);
+
+        expect(client.doFetch).toHaveBeenLastCalledWith(
+            `${client.getPostRoute('post_id')}/move_to_channel`,
+            {method: 'post', body: {channel_id: 'channel_id', flatten: true}, noRetry: true},
+        );
+    });
+
     test('deletePost', async () => {
         const postId = 'post_id';
         await client.deletePost(postId);
