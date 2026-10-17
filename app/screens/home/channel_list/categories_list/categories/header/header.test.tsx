@@ -78,4 +78,18 @@ describe('components/channel_list/categories/header', () => {
 
         expect(screen.queryByTestId('channel_list.category_header.custom.locked')).toBeNull();
     });
+
+    it('should label the favourites category Favourites in English, whatever its stored name', () => {
+        const favorites = {id: 'favorites_user_team', teamId: 'team', displayName: 'Favorites', type: 'favorites', collapsed: false, muted: false} as CategoryModel;
+
+        renderWithIntlAndTheme(
+            <CategoryHeader
+                category={favorites}
+                hasChannels={true}
+            />,
+        );
+
+        expect(screen.getByTestId('channel_list.category_header.favorites.display_name')).toHaveTextContent('Favourites');
+        expect(screen.queryByText('Favorites')).toBeNull();
+    });
 });

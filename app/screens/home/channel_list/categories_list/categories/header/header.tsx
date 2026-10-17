@@ -99,7 +99,7 @@ const CategoryHeader = ({category, hasChannels, managed = false, locked = false}
     let displayName = category.displayName;
     switch (category.type) {
         case FAVORITES_CATEGORY:
-            displayName = formatMessage({id: 'channel_list.favorites_category', defaultMessage: 'Favorites'});
+            displayName = formatMessage({id: 'channel_list.favorites_category', defaultMessage: 'Favourites'});
             break;
         case CHANNELS_CATEGORY:
             displayName = formatMessage({id: 'channel_list.channels_category', defaultMessage: 'Channels'});

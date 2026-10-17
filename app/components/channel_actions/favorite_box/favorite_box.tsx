@@ -38,13 +38,13 @@ const FavoriteBox = ({channelId, containerStyle, isFavorited, isManaged = false,
     return (
         <OptionBox
             activeIconName='star'
-            activeText={intl.formatMessage({id: 'channel_info.favorited', defaultMessage: 'Favorited'})}
+            activeText={intl.formatMessage({id: 'channel_info.favorited', defaultMessage: 'Favourited'})}
             containerStyle={containerStyle}
             iconName='star-outline'
             isActive={isFavorited}
             onPress={handleOnPress}
             testID={favoriteActionTestId}
-            text={intl.formatMessage({id: 'channel_info.favorite', defaultMessage: 'Favorite'})}
+            text={intl.formatMessage({id: 'channel_info.favorite', defaultMessage: 'Favourite'})}
         />
     );
 };

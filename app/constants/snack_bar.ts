@@ -92,7 +92,7 @@ const messages = defineMessages({
     },
     FAVORITE_CHANNEL: {
         id: 'snack.bar.favorited.channel',
-        defaultMessage: 'This channel was favorited',
+        defaultMessage: 'This channel was favourited',
     },
     FILE_DOWNLOAD_REJECTED: {
         id: 'snack.bar.file.download.rejected',
@@ -132,7 +132,7 @@ const messages = defineMessages({
     },
     UNFAVORITE_CHANNEL: {
         id: 'snack.bar.unfavorite.channel',
-        defaultMessage: 'This channel was unfavorited',
+        defaultMessage: 'This channel was unfavourited',
     },
     UNMUTE_CHANNEL: {
         id: 'snack.bar.unmute.channel',
