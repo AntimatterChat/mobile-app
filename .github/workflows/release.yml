@@ -38,6 +38,9 @@ env:
   TERM: xterm
   # No Intune: its library is a private Mattermost repository
   INTUNE_ENABLED: "false"
+  # The Android versionCode and the iOS build number of a build are this plus the run number, so they always increase.
+  # Keep it at least the versionCode of android/app/build.gradle (the floor, for local builds); never lower it.
+  BUILD_NUMBER_OFFSET: "822"
 
 jobs:
   version:
@@ -46,6 +49,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       prerelease: ${{ steps.version.outputs.prerelease }}
+      build-number: ${{ steps.version.outputs.build-number }}
     steps:
       - name: Check out the code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -71,9 +75,20 @@ jobs:
           fi
           PRERELEASE=false
           [[ "${VERSION}" == *-* ]] && PRERELEASE=true
-          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
-          echo "prerelease=${PRERELEASE}" >> "${GITHUB_OUTPUT}"
-          echo "Building Antimatter Mobile ${VERSION} (prerelease: ${PRERELEASE})"
+          # Android and the stores refuse an update with a lower versionCode or build number, whatever the version
+          BUILD_NUMBER=$(( BUILD_NUMBER_OFFSET + GITHUB_RUN_NUMBER ))
+          FLOOR="$(sed -n -E 's/^ *versionCode ([0-9]+).*/\1/p' android/app/build.gradle)"
+          if [[ -z "${FLOOR}" || "${BUILD_NUMBER}" -le "${FLOOR}" ]]; then
+            echo "::error::Build number ${BUILD_NUMBER} is not above the versionCode of android/app/build.gradle" \
+              "(${FLOOR:-not found}): raise BUILD_NUMBER_OFFSET"
+            exit 1
+          fi
+          {
+            echo "version=${VERSION}"
+            echo "prerelease=${PRERELEASE}"
+            echo "build-number=${BUILD_NUMBER}"
+          } >> "${GITHUB_OUTPUT}"
+          echo "Building Antimatter Mobile ${VERSION}, build ${BUILD_NUMBER} (prerelease: ${PRERELEASE})"
 
   test:
     name: Lint, type check and i18n check
@@ -92,6 +107,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       VERSION: ${{ needs.version.outputs.version }}
+      BUILD_NUMBER: ${{ needs.version.outputs.build-number }}
     steps:
       - name: Check out the code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -117,6 +133,7 @@ jobs:
         shell: bash
         run: |
           sed -i -E "s/^( *versionName )\"[^\"]*\"/\1\"${VERSION}\"/" android/app/build.gradle
+          sed -i -E "s/^( *versionCode )[0-9]+/\1${BUILD_NUMBER}/" android/app/build.gradle
           grep -E '^ *version(Name|Code) ' android/app/build.gradle
       - name: Build the unsigned APK
         working-directory: ./fastlane
@@ -195,6 +212,7 @@ jobs:
     runs-on: macos-26
     env:
       VERSION: ${{ needs.version.outputs.version }}
+      BUILD_NUMBER: ${{ needs.version.outputs.build-number }}
     steps:
       - name: Check out the code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -207,8 +225,11 @@ jobs:
       - name: Set the version
         working-directory: ./fastlane
         shell: bash
-        # iOS takes numbers only (CFBundleShortVersionString): 1.2.0-rc.1 becomes 1.2.0
-        run: VERSION_NUMBER="${VERSION%%-*}" bundle exec fastlane set_app_version
+        # iOS takes numbers only (CFBundleShortVersionString): 1.2.0-rc.1 becomes 1.2.0. The build number
+        # (CFBundleVersion, CURRENT_PROJECT_VERSION) is the run's.
+        run: |
+          VERSION_NUMBER="${VERSION%%-*}" bundle exec fastlane set_app_version
+          INCREMENT_BUILD_NUMBER=true bundle exec fastlane set_app_build_number
       - name: Build the unsigned ipa
         working-directory: ./fastlane
         run: bundle exec fastlane ios unsigned
@@ -234,6 +255,7 @@ jobs:
     runs-on: macos-26
     env:
       VERSION: ${{ needs.version.outputs.version }}
+      BUILD_NUMBER: ${{ needs.version.outputs.build-number }}
     steps:
       - name: Check out the code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -246,7 +268,9 @@ jobs:
       - name: Set the version
         working-directory: ./fastlane
         shell: bash
-        run: VERSION_NUMBER="${VERSION%%-*}" bundle exec fastlane set_app_version
+        run: |
+          VERSION_NUMBER="${VERSION%%-*}" bundle exec fastlane set_app_version
+          INCREMENT_BUILD_NUMBER=true bundle exec fastlane set_app_build_number
       - name: Build the app for the simulator
         working-directory: ./fastlane
         run: bundle exec fastlane ios simulator

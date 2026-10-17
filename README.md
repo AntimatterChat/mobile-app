@@ -55,9 +55,11 @@ App Store or Google Play.
   provisioning profiles (or a sideloading tool) to install it, and `Antimatter-<version>-simulator-arm64.app.zip` for
   the iOS simulator.
 - Android push notifications need your Firebase project: put its `google-services.json` in the
-  `ANTIMATTER_GOOGLE_SERVICES_JSON` secret (otherwise the placeholder is used and push doesn't work). The version code
-  and build number come from `android/app/build.gradle` and the Xcode project: raise them with the version, and never
-  lower them (Android and the stores refuse an update with a lower version code or build number).
+  `ANTIMATTER_GOOGLE_SERVICES_JSON` secret (otherwise the placeholder is used and push doesn't work).
+- The Android version code and the iOS build number of a workflow build are `BUILD_NUMBER_OFFSET` (in the workflow)
+  plus the run number, so every build gets a higher one: Android and the stores refuse an update with a lower one,
+  whatever the version. The values in `android/app/build.gradle` and the Xcode project are the floor, for local builds;
+  the workflow stops if its number isn't above `build.gradle`'s. Never lower the offset.
 
 Antimatter Mobile versions start at 0.9.0: the tag's version is the one people see in About (iOS takes its numbers
 only, so `0.9.0-rc.1` shows as 0.9.0 there). Servers and plugins compare the mobile app's version against Mattermost
