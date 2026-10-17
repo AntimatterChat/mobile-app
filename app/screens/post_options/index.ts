@@ -25,8 +25,8 @@ import {isBoRPost, isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {canReplyInline as canQuote} from '@utils/inline_reply';
-import {getPostTranslation, isFromWebhook, isSystemMessage} from '@utils/post';
 import {canMoveThread as canMoveThreadRule} from '@utils/move_thread';
+import {getPostTranslation, isFromWebhook, isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import PostOptions from './post_options';

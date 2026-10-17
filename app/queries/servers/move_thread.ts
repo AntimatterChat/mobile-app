@@ -13,6 +13,7 @@ import {observeMyTeamRoles} from './team';
 
 import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type RoleModel from '@typings/database/models/servers/role';
 import type UserModel from '@typings/database/models/servers/user';
 
 // observeIsThreadModerator says whether user moderates the threads of channel (see isThreadModerator).
@@ -50,16 +51,16 @@ export function observeMoveTargets(database: Database, teamId: string, user: Use
             const channelNames = new Map(memberships.map((m) => [m.id, splitRoles(m.roles)]));
             const allNames = new Set([...userNames, ...teamNames, ...[...channelNames.values()].flat()]);
 
+            const toTargets = ([channels, roles]: [ChannelModel[], RoleModel[]]) => of$(channels.map((channel) => ({
+                channel,
+                isMember: channelNames.has(channel.id),
+                canPost: grants(roles, [...userNames, ...teamNames, ...(channelNames.get(channel.id) ?? [])], Permissions.CREATE_POST),
+            })));
+
             return combineLatest([
                 queryChannelsById(database, [...channelNames.keys()]).observeWithColumns(['display_name', 'type', 'delete_at']),
                 queryRolesByNames(database, [...allNames]).observeWithColumns(['permissions']),
-            ]).pipe(
-                switchMap(([channels, roles]) => of$(channels.map((channel) => ({
-                    channel,
-                    isMember: channelNames.has(channel.id),
-                    canPost: grants(roles, [...userNames, ...teamNames, ...(channelNames.get(channel.id) ?? [])], Permissions.CREATE_POST),
-                })))),
-            );
+            ]).pipe(switchMap(toTargets));
         }),
     );
 }
