@@ -38,9 +38,10 @@ Deep links use the `antimatter://` scheme; `mattermost://` links keep working.
 ## Releases
 
 The [release workflow](.github/workflows/release.yml) builds the apps on GitHub's runners: pushing a tag
-`v<version>` (e.g. `v2.46.0`, or `v2.46.0-rc.1` for a prerelease) publishes them on the GitHub release of that tag,
+`v<version>` (e.g. `v0.9.0`, or `v0.9.0-rc.1` for a prerelease) publishes them on the GitHub release of that tag,
 with a `SHA256SUMS` file. Run by hand from the Actions tab, it keeps the files as workflow artifacts (and, if asked,
-saves them as a draft prerelease). Nothing goes to the App Store or Google Play.
+saves them as a draft prerelease) under the version `<package.json version>-dev.<run number>`. Nothing goes to the
+App Store or Google Play.
 
 - **Android**: `Antimatter-<version>.apk` to install, signed with the release key of the repository secrets
   `ANTIMATTER_ANDROID_KEYSTORE` (the keystore, base64), `ANTIMATTER_ANDROID_KEYSTORE_PASSWORD`,
@@ -55,7 +56,14 @@ saves them as a draft prerelease). Nothing goes to the App Store or Google Play.
   the iOS simulator.
 - Android push notifications need your Firebase project: put its `google-services.json` in the
   `ANTIMATTER_GOOGLE_SERVICES_JSON` secret (otherwise the placeholder is used and push doesn't work). The version code
-  and build number come from `android/app/build.gradle` and the Xcode project: raise them with the version.
+  and build number come from `android/app/build.gradle` and the Xcode project: raise them with the version, and never
+  lower them (Android and the stores refuse an update with a lower version code or build number).
+
+Antimatter Mobile versions start at 0.9.0: the tag's version is the one people see in About (iOS takes its numbers
+only, so `0.9.0-rc.1` shows as 0.9.0 there). Servers and plugins compare the mobile app's version against Mattermost
+Mobile versions, so the app tells them the Mattermost Mobile version it is based on
+(`COMPATIBLE_MATTERMOST_MOBILE_VERSION` in `app/constants/versions.ts`), in its `Mattermost Mobile/<version>` user
+agent, the session's `mobile_version` and the session attributes' `client_version`.
 
 ## Documentation
 
