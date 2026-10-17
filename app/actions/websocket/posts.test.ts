@@ -177,6 +177,36 @@ describe('WebSocket Post Actions', () => {
             }), true);
         });
 
+        it('should not make the channel unread nor count a mention for a silent post (a moved thread)', async () => {
+            const silentPost = TestHelper.fakePost({...post, user_id: 'user2', props: {silent_notification: true}});
+            jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
+            jest.spyOn(operator, 'handlePosts').mockResolvedValue(postModels);
+            mockedGetMyChannel.mockResolvedValue(myChannelModel);
+            mockedUpdateLastPostAt.mockResolvedValue({member: myChannelModel});
+            mockedGetIsCRTEnabled.mockResolvedValue(false);
+            mockedShouldIgnorePost.mockReturnValue(false);
+
+            await handleNewPostEvent(serverUrl, {data: {post: JSON.stringify(silentPost), mentions: ['user1']}} as WebSocketMessage);
+
+            expect(mockedMarkChannelAsUnread).not.toHaveBeenCalled();
+            expect(operator.handlePosts).toHaveBeenCalledWith(expect.objectContaining({posts: [silentPost]}));
+        });
+
+        it('should still count a silent post that forces its notification', async () => {
+            const forcedPost = TestHelper.fakePost({...post, user_id: 'user2', props: {silent_notification: true, force_notification: true}});
+            jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
+            jest.spyOn(operator, 'handlePosts').mockResolvedValue(postModels);
+            mockedGetMyChannel.mockResolvedValue(myChannelModel);
+            mockedUpdateLastPostAt.mockResolvedValue({member: myChannelModel});
+            mockedGetIsCRTEnabled.mockResolvedValue(false);
+            mockedShouldIgnorePost.mockReturnValue(false);
+            mockedMarkChannelAsUnread.mockResolvedValue({member: myChannelModel});
+
+            await handleNewPostEvent(serverUrl, {data: {post: JSON.stringify(forcedPost), mentions: ['user1']}} as WebSocketMessage);
+
+            expect(mockedMarkChannelAsUnread).toHaveBeenCalledWith(serverUrl, expect.objectContaining({mentionsCount: 1}), true);
+        });
+
         it('should handle new post event - without channel membership present', async () => {
             const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
             const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());

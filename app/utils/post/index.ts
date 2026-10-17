@@ -123,6 +123,13 @@ export function postUserDisplayName(post: PostModel, author?: UserModel, teammat
     return displayUsername(author, author?.locale || DEFAULT_LOCALE, teammateNameDisplay, true);
 }
 
+// isNotificationSilenced says whether a post asks for no notification (props.silent_notification), as the copies of
+// a moved thread do, unless it forces one (props.force_notification), as the server reads them
+// (model.Post.IsNotificationSuppressed).
+export function isNotificationSilenced(post: Post): boolean {
+    return post.props?.silent_notification === true && post.props?.force_notification !== true;
+}
+
 export function shouldIgnorePost(post: Post): boolean {
     return includes(Post.IGNORE_POST_TYPES, post.type);
 }

@@ -23,6 +23,7 @@ import {
     isPostPendingOrFailed,
     isSystemMessage,
     fromAutoResponder,
+    isNotificationSilenced,
     postUserDisplayName,
     shouldIgnorePost,
     processPostsFetched,
@@ -565,6 +566,18 @@ describe('post utils', () => {
 
             const result = postUserDisplayName(post, author, 'nickname', false);
             expect(result).toBe('user1');
+        });
+    });
+
+    describe('isNotificationSilenced', () => {
+        it('should be silent for silent posts, such as a moved thread\'s copies', () => {
+            expect(isNotificationSilenced(TestHelper.fakePost({props: {silent_notification: true}}))).toBe(true);
+        });
+
+        it('should not be silent otherwise, nor when the notification is forced', () => {
+            expect(isNotificationSilenced(TestHelper.fakePost({props: {}}))).toBe(false);
+            expect(isNotificationSilenced(TestHelper.fakePost({props: {silent_notification: 'true'}}))).toBe(false);
+            expect(isNotificationSilenced(TestHelper.fakePost({props: {silent_notification: true, force_notification: true}}))).toBe(false);
         });
     });
 

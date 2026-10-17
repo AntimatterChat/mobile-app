@@ -26,7 +26,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {hasArrayChanged, isTablet} from '@utils/helpers';
 import {logDebug, logWarning} from '@utils/log';
-import {isFromWebhook, isPostEphemeral, isSystemMessage, restoreEphemeralIdentityFieldsForEdit, shouldIgnorePost} from '@utils/post';
+import {isFromWebhook, isNotificationSilenced, isPostEphemeral, isSystemMessage, restoreEphemeralIdentityFieldsForEdit, shouldIgnorePost} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -149,7 +149,9 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             if (viewedAt) {
                 models.push(viewedAt);
             }
-        } else if (!isCRTEnabled || !post.root_id) {
+        } else if ((!isCRTEnabled || !post.root_id) && !isNotificationSilenced(post)) {
+            // A silent post (such as the copies of a moved thread, which keep their old times) doesn't make the
+            // channel unread nor count as a mention: the server notifies nobody for it either.
             const hasMentions = Boolean(msg.data.mentions?.includes(currentUserId));
             const hasUrgentMention = hasMentions && post.metadata?.priority?.priority === 'urgent';
             preparedMyChannelHack(myChannel);
