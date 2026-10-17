@@ -23,10 +23,10 @@ export async function inTextMentionSuggestions(serverUrl: string, pretext: strin
         return users;
     }
 
-    // A channel: #channel-name, or ~channel-name.
+    // A channel: #channel-name, or ~channel-name, completed with the sign typed.
     if ((lastWord.startsWith('#') && !lastWord.startsWith('##')) || (lastWord.startsWith('~') && !lastWord.startsWith('~~'))) {
         const res = await searchChannels(serverUrl, lastWord.substring(1), teamID);
-        const channels = await getChannelSuggestions(res.channels);
+        const channels = await getChannelSuggestions(res.channels, lastWord[0] as ChannelSign);
         channels.forEach((c) => {
             let complete = incompleteLessLastWord ? incompleteLessLastWord + ' ' + c.Complete : c.Complete;
             if (delimiter) {
@@ -67,7 +67,10 @@ export async function getUserSuggestions(usersAutocomplete?: {users: UserProfile
     return items;
 }
 
-export async function getChannelSuggestions(channels?: Channel[]): Promise<AutocompleteSuggestion[]> {
+type ChannelSign = '#' | '~';
+
+// getChannelSuggestions suggests channels as #channel-name (Antimatter's sign), or ~channel-name when typed so.
+export async function getChannelSuggestions(channels?: Channel[], sign: ChannelSign = CHANNEL_LINK_SIGN): Promise<AutocompleteSuggestion[]> {
     const notFoundSuggestion = [{
         Complete: '',
         Suggestion: '',
@@ -81,7 +84,7 @@ export async function getChannelSuggestions(channels?: Channel[]): Promise<Autoc
 
     const items = channels.map((c) => {
         return {
-            Complete: CHANNEL_LINK_SIGN + c.name,
+            Complete: sign + c.name,
             Suggestion: '',
             Description: '',
             Hint: '',

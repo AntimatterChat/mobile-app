@@ -14,7 +14,7 @@ jest.mock('@actions/remote/user', () => ({
     searchUsers: jest.fn(),
 }));
 
-// Antimatter: slash commands take channels as #channel-name; ~channel-name keeps working.
+// Antimatter: slash commands take channels as #channel-name; ~channel-name keeps working, and completes as typed.
 describe('slash command channel mentions', () => {
     const townSquare = TestHelper.fakeChannel({id: 'town-id', name: 'town-square', display_name: 'Town Square'});
 
@@ -23,9 +23,9 @@ describe('slash command channel mentions', () => {
         jest.mocked(searchChannels).mockResolvedValue({channels: [townSquare]});
     });
 
-    test('suggests channels as #channel-name', async () => {
-        const suggestions = await getChannelSuggestions([townSquare]);
-        expect(suggestions.map((s) => s.Complete)).toEqual(['#town-square']);
+    test('suggests channels as #channel-name, or ~channel-name when asked', async () => {
+        expect((await getChannelSuggestions([townSquare])).map((s) => s.Complete)).toEqual(['#town-square']);
+        expect((await getChannelSuggestions([townSquare], '~')).map((s) => s.Complete)).toEqual(['~town-square']);
     });
 
     test('completes a channel typed with #', async () => {
@@ -34,10 +34,10 @@ describe('slash command channel mentions', () => {
         expect(suggestions?.map((s) => s.Complete)).toEqual(['hello #town-square']);
     });
 
-    test('completes a channel typed with ~ as #channel-name', async () => {
+    test('completes a channel typed with ~ as ~channel-name', async () => {
         const suggestions = await inTextMentionSuggestions('http://server', 'hello ~town', 'channel-id', 'team-id');
         expect(searchChannels).toHaveBeenCalledWith('http://server', 'town', 'team-id');
-        expect(suggestions?.map((s) => s.Complete)).toEqual(['hello #town-square']);
+        expect(suggestions?.map((s) => s.Complete)).toEqual(['hello ~town-square']);
     });
 
     test('leaves ## and ~~ alone', async () => {

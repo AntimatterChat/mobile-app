@@ -1968,9 +1968,12 @@ export class AppCommandParser {
     };
 
     private getChannelFieldSuggestions = async (parsed: ParsedCommand): Promise<AutocompleteSuggestion[]> => {
-        const input = stripChannelSign(parsed.incomplete.trim());
+        const typed = parsed.incomplete.trim();
+        const input = stripChannelSign(typed);
         const res = await searchChannels(this.serverUrl, input, this.teamID);
-        return getChannelSuggestions(res.channels);
+
+        // Completed with the sign typed, # (Antimatter's) by default.
+        return getChannelSuggestions(res.channels, typed.startsWith('~') ? '~' : '#');
     };
 
     // getBooleanSuggestions returns true/false suggestions
