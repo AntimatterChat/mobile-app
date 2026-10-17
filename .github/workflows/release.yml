@@ -177,7 +177,8 @@ jobs:
             cp "${AAB}" "upload/Antimatter-${VERSION}-unsigned.aab"
           fi
           rm -f "${ALIGNED_APK}" "${SIGNED_APK}.idsig"
-          "${BUILD_TOOLS}/apksigner" verify --print-certs "${SIGNED_APK}" | grep -E 'Signer #1 certificate (DN|SHA-256)'
+          # The whole report, so a failed verification shows why (a grep here used to hide it).
+          "${BUILD_TOOLS}/apksigner" verify --verbose --print-certs "${SIGNED_APK}"
           ls -l upload
       - name: Upload the packages
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

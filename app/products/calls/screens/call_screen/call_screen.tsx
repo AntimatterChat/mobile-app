@@ -470,10 +470,17 @@ const CallScreen = ({
         }
     }, [displayMySession.muted]);
 
-    const deafenText = (
+    // Two literal messages, so that the string extractor (npm run i18n-extract) sees both ids.
+    const deafenText = myVoiceCall.deafened ? (
         <FormattedText
-            id={myVoiceCall.deafened ? 'mobile.calls_undeafen' : 'mobile.calls_deafen'}
-            defaultMessage={myVoiceCall.deafened ? 'Undeafen' : 'Deafen'}
+            id='mobile.calls_undeafen'
+            defaultMessage='Undeafen'
+            style={style.buttonText}
+        />
+    ) : (
+        <FormattedText
+            id='mobile.calls_deafen'
+            defaultMessage='Deafen'
             style={style.buttonText}
         />
     );
