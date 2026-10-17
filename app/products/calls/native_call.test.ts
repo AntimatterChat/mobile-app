@@ -156,7 +156,7 @@ describe('registerOutgoingNativeCall', () => {
 
     it('suffixes team name for public/private channels', async () => {
         (getChannelById as jest.Mock).mockResolvedValueOnce({
-            displayName: 'town-square',
+            displayName: 'general',
             teamId: 'team1',
         });
         (getTeamById as jest.Mock).mockResolvedValueOnce({
@@ -167,7 +167,7 @@ describe('registerOutgoingNativeCall', () => {
 
         expect(CallsNative.reportOutgoingCall).toHaveBeenCalledWith({
             channelId: 'ch1',
-            calleeName: 'town-square (Engineering)',
+            calleeName: 'general (Engineering)',
         });
     });
 
@@ -237,7 +237,7 @@ describe('registerOutgoingNativeCall', () => {
 
     it('falls back to channel-only name when team lookup returns null', async () => {
         (getChannelById as jest.Mock).mockResolvedValueOnce({
-            displayName: 'town-square',
+            displayName: 'general',
             teamId: 'team1',
         });
         (getTeamById as jest.Mock).mockResolvedValueOnce(null);
@@ -246,7 +246,7 @@ describe('registerOutgoingNativeCall', () => {
 
         expect(CallsNative.reportOutgoingCall).toHaveBeenCalledWith({
             channelId: 'ch1',
-            calleeName: 'town-square',
+            calleeName: 'general',
         });
     });
 

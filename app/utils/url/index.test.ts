@@ -97,7 +97,7 @@ describe('isUrlSafe', () => {
         expect(isUrlSafe('http://example.com/path')).toBe(true);
         expect(isUrlSafe('ftp://example.com')).toBe(true);
         expect(isUrlSafe('mailto:user@example.com')).toBe(true);
-        expect(isUrlSafe('/channels/town-square')).toBe(true);
+        expect(isUrlSafe('/channels/general')).toBe(true);
         expect(isUrlSafe('')).toBe(true);
     });
 

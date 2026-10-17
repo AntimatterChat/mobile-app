@@ -40,7 +40,7 @@ describe('Markdown channel links', () => {
         location: Screens.CHANNEL,
         maxNodes: 2000,
         theme: Preferences.THEMES.denim,
-        channelMentions: {'town-square': {display_name: 'Town Square'}},
+        channelMentions: {general: {display_name: 'General'}},
     };
 
     beforeEach(() => {
@@ -51,16 +51,16 @@ describe('Markdown channel links', () => {
         renderWithIntl(
             <Markdown
                 {...baseProps}
-                value='see #town-square, #qa, #2026-plan and ~off-topic'
+                value='see #general, #qa, #2026-plan and ~off-topic'
             />,
         );
 
-        expect(screen.getByTestId('channel_mention.#town-square')).toBeTruthy();
+        expect(screen.getByTestId('channel_mention.#general')).toBeTruthy();
         expect(screen.getByTestId('channel_mention.#qa')).toBeTruthy();
         expect(screen.getByTestId('channel_mention.#2026-plan')).toBeTruthy();
         expect(screen.getByTestId('channel_mention.~off-topic')).toBeTruthy();
         expect(mockChannelMention).toHaveBeenCalledWith(expect.objectContaining({
-            channelName: 'town-square',
+            channelName: 'general',
             sigil: '#',
             channelMentions: baseProps.channelMentions,
         }));
@@ -114,7 +114,7 @@ describe('Markdown channel links', () => {
         renderWithIntl(
             <Markdown
                 {...baseProps}
-                value={'# town-square\nC# and ##town-square'}
+                value={'# general\nC# and ##general'}
             />,
         );
 

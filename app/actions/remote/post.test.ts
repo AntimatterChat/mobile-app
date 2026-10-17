@@ -131,7 +131,7 @@ const mockClient = {
     getPostInfo: jest.fn(() => ({
         channel_id: channelId,
         channel_type: 'O' as ChannelType,
-        channel_display_name: 'Town Square',
+        channel_display_name: 'General',
         has_joined_channel: false,
         team_id: teamId,
         team_type: 'O',
@@ -239,7 +239,7 @@ describe('create, update & delete posts', () => {
         expect(result.data).toBeTruthy();
     });
 
-    it('createPost - fail on town square read only server error', async () => {
+    it('createPost - fail on general read only server error', async () => {
         mockClient.createPost.mockImplementationOnce(jest.fn(() => {
             // eslint-disable-next-line no-throw-literal
             throw {message: 'error', server_error_id: ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR};
@@ -334,7 +334,7 @@ describe('create, update & delete posts', () => {
         expect(result.error).toBeDefined();
     });
 
-    it('retryFailedPost - fail on town square read only server error', async () => {
+    it('retryFailedPost - fail on general read only server error', async () => {
         mockClient.createPost.mockImplementationOnce(jest.fn(() => {
             // eslint-disable-next-line no-throw-literal
             throw {message: 'error', server_error_id: ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR};

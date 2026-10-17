@@ -271,4 +271,24 @@ describe('isDefaultChannel', () => {
     it('should return false if channel is undefined', () => {
         expect(isDefaultChannel(undefined)).toBe(false);
     });
+
+    it('should know the default channel by its name, general, and by its former name on older servers', () => {
+        expect(General.DEFAULT_CHANNEL).toBe('general');
+        expect(General.LEGACY_DEFAULT_CHANNEL).toBe('town-square');
+        expect(isDefaultChannel({name: 'general'} as Channel)).toBe(true);
+        expect(isDefaultChannel({name: 'town-square'} as Channel)).toBe(true);
+        expect(isDefaultChannel({name: 'general-chat'} as Channel)).toBe(false);
+        expect(isDefaultChannel({name: ''} as Channel)).toBe(false);
+    });
+});
+
+describe('selectDefaultChannelForTeam on older servers', () => {
+    it('should select town-square, the default channel\'s former name, if user is a member', () => {
+        const channels = [
+            {id: '1', name: General.LEGACY_DEFAULT_CHANNEL, team_id: 'team1', type: General.OPEN_CHANNEL},
+            {id: '2', name: 'random', team_id: 'team1', type: General.OPEN_CHANNEL},
+        ] as Channel[];
+        const result = selectDefaultChannelForTeam(channels, [{channel_id: '1'}] as ChannelMembership[], 'team1', [{permissions: [Permissions.JOIN_PUBLIC_CHANNELS]}] as Role[]);
+        expect(result).toEqual(channels[0]);
+    });
 });

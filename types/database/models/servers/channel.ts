@@ -37,13 +37,13 @@ declare class ChannelModel extends Model {
     /** update_at : The timestamp to when this channel was last updated on the server */
     updateAt: number;
 
-    /** display_name : The channel display name (e.g. Town Square ) */
+    /** display_name : The channel display name (e.g. General ) */
     displayName: string;
 
     /** is_group_constrained : If a channel is  restricted to certain groups, this boolean will be true and only members of that group have access to this team. Hence indicating that the members of this channel are managed by groups. */
     isGroupConstrained: boolean;
 
-    /** name : The name of the channel (e.g town-square) */
+    /** name : The name of the channel (e.g general) */
     name: string;
 
     /** shared: determines if it is a shared channel with another organization */

@@ -11,7 +11,7 @@ import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {sanitizeLikeString} from '@helpers/database';
 import EphemeralStore from '@store/ephemeral_store';
-import {isDefaultChannel, isDMorGM} from '@utils/channel';
+import {DEFAULT_CHANNEL_NAMES, isDefaultChannel, isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
 
@@ -478,7 +478,7 @@ export const queryUserChannelsByTypes = (database: Database, userId: string, cha
 export const queryTeamDefaultChannel = (database: Database, teamId: string) => {
     return database.get<ChannelModel>(CHANNEL).query(
         Q.where('team_id', teamId),
-        Q.where('name', General.DEFAULT_CHANNEL),
+        Q.where('name', Q.oneOf(DEFAULT_CHANNEL_NAMES)),
     );
 };
 

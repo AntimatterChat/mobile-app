@@ -81,7 +81,7 @@ describe('CreateOrEditChannel', () => {
         );
 
         act(() => {
-            fireEvent.changeText(getByTestId('channel_info_form.display_name.input'), 'town-square');
+            fireEvent.changeText(getByTestId('channel_info_form.display_name.input'), 'general');
         });
 
         await waitFor(() => {

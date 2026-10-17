@@ -68,4 +68,53 @@ describe('move thread system messages', () => {
         render({TranslationID: 'app.post.move_thread_command.channel.multiple_messages', NumMessages: 3});
         expect(screen.getByText('Ein Thread wurde verschoben')).toBeTruthy();
     });
+
+    // Antimatter's pointers and notes name the channel: a link with the channel's name, never the bare address.
+    it('should name the channel a thread moved to, as a link to it', () => {
+        render({
+            TranslationID: 'app.post.move_thread.moved_to.multiple',
+            MovedThreadPermalink: 'https://chat.example.com/lumen/pl/newroot',
+            NumMessages: 13,
+            MovedThreadChannelId: 'oncall',
+            MovedThreadChannelName: 'ops-oncall',
+            MovedThreadChannelDisplayName: 'Ops on call',
+            MovedThreadTeamName: 'lumen',
+            MovedThreadPostId: 'newroot',
+        });
+
+        expect(screen.getByText(/^A thread with 13 messages has been moved to /)).toBeTruthy();
+        expect(screen.getByText('#Ops on call')).toBeTruthy();
+        expect(screen.queryByText(/https:/)).toBeNull();
+        expect(screen.queryByText(/\\/)).toBeNull();
+        expect(screen.queryByText(/Ein Thread/)).toBeNull();
+    });
+
+    it('should say "another channel" for a private channel, still as a link', () => {
+        render({
+            TranslationID: 'app.post.move_thread.moved_to_hidden.one',
+            MovedThreadPermalink: 'https://chat.example.com/lumen/pl/newroot',
+            NumMessages: 1,
+            MovedThreadChannelId: 'secret',
+            MovedThreadTeamName: 'lumen',
+            MovedThreadPostId: 'newroot',
+        });
+
+        expect(screen.getByText(/^A message has been moved to /)).toBeTruthy();
+        expect(screen.getByText('another channel')).toBeTruthy();
+        expect(screen.queryByText(/https:/)).toBeNull();
+    });
+
+    it('should name the channel a thread came from', () => {
+        render({
+            TranslationID: 'app.post.move_thread.moved_from',
+            MovedFromChannelId: 'general',
+            MovedFromChannelName: 'general',
+            MovedFromChannelDisplayName: 'General',
+            MovedFromPermalink: 'https://chat.example.com/lumen/pl/pointer',
+        });
+
+        expect(screen.getByText(/^This thread was moved from /)).toBeTruthy();
+        expect(screen.getByText('#General')).toBeTruthy();
+        expect(screen.queryByText(/https:/)).toBeNull();
+    });
 });

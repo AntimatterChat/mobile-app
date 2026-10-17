@@ -34,7 +34,7 @@ describe('Channels - Channel List', () => {
     const serverOneDisplayName = 'Server 1';
     const directMessagesCategory = 'direct_messages';
     const offTopicChannelName = 'off-topic';
-    const townSquareChannelName = 'town-square';
+    const townSquareChannelName = 'general';
     const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
@@ -100,7 +100,7 @@ describe('Channels - Channel List', () => {
 
         // * Verify on third channel
         await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.headerTitle).toHaveText('Town Square');
+        await expect(ChannelScreen.headerTitle).toHaveText('General');
 
         // # Go back to channel list screen
         await ChannelScreen.back();

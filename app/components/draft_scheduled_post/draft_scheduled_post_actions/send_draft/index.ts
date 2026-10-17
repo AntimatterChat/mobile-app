@@ -10,6 +10,7 @@ import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
+import {isDefaultChannel} from '@utils/channel';
 import {isSystemAdmin, getUserIdFromChannelName} from '@utils/user';
 
 import SendDraft from './send_draft';
@@ -39,7 +40,7 @@ const enhanced = withObservables(['channelId', 'rootId'], (ownProps: WithDatabas
 
     const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
     const channelIsReadOnly = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(
-        switchMap(([u, c, readOnly]) => of$(c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u?.roles || '') && readOnly)),
+        switchMap(([u, c, readOnly]) => of$(isDefaultChannel(c) && !isSystemAdmin(u?.roles || '') && readOnly)),
     );
 
     const deactivatedChannel = combineLatest([currentUser, channel]).pipe(
