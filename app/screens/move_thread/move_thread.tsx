@@ -168,7 +168,7 @@ export default function MoveThread({rootId, root, source, currentUser, isModerat
                 {intl.formatMessage({id: 'move_thread.lead', defaultMessage: 'Choose the channel to move this thread to. Its messages keep their authors and times, and a link to them stays here.'})}
             </Text>
             <OptionItem
-                action={(v) => setFlatten(Boolean(v))}
+                action={(v: string | boolean) => setFlatten(Boolean(v))}
                 label={intl.formatMessage({id: 'move_thread.flatten', defaultMessage: 'Post replies as separate messages'})}
                 description={intl.formatMessage({id: 'move_thread.flatten_description', defaultMessage: 'The replies become messages of the channel instead of a thread.'})}
                 selected={flatten}
