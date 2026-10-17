@@ -91,7 +91,7 @@ export ADMIN_USERNAME="admin"             # username, not email
 export ADMIN_PASSWORD="..."
 export TEST_USER_EMAIL="testuser@example.com"
 export TEST_USER_PASSWORD="User1234!"
-export TEST_CHANNEL_NAME="town-square"
+export TEST_CHANNEL_NAME="general"
 export MAESTRO_APP_ID="chat.antimatter.app"   # optional, defaults to rnbeta
 ```
 

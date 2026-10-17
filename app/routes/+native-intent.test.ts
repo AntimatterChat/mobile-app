@@ -48,7 +48,7 @@ describe('native-intent', () => {
         });
 
         it('should return null and not alert when the deep link is handled successfully, regardless of initial', async () => {
-            const path = 'https://community.mattermost.com/team/channels/town-square';
+            const path = 'https://community.mattermost.com/team/channels/general';
 
             expect(await redirectSystemPath({path, initial: false})).toBeNull();
             expect(await redirectSystemPath({path, initial: true})).toBeNull();
@@ -60,7 +60,7 @@ describe('native-intent', () => {
         it('should return the path and alert when the deep link handling errors, regardless of initial', async () => {
             (parseAndHandleDeepLink as jest.Mock).mockResolvedValue({error: true});
 
-            const path = 'https://community.mattermost.com/team/channels/town-square';
+            const path = 'https://community.mattermost.com/team/channels/general';
 
             expect(await redirectSystemPath({path, initial: false})).toBe(path);
             expect(await redirectSystemPath({path, initial: true})).toBe(path);
@@ -106,7 +106,7 @@ describe('native-intent', () => {
         it('should return true when the deep link is handled successfully', async () => {
             const handleUrl = getHandler();
 
-            const result = await handleUrl({url: 'https://community.mattermost.com/team/channels/town-square'});
+            const result = await handleUrl({url: 'https://community.mattermost.com/team/channels/general'});
 
             expect(result).toBe(true);
             expect(alertInvalidDeepLink).not.toHaveBeenCalled();
@@ -116,7 +116,7 @@ describe('native-intent', () => {
             (parseAndHandleDeepLink as jest.Mock).mockResolvedValue({error: true});
             const handleUrl = getHandler();
 
-            const result = await handleUrl({url: 'https://community.mattermost.com/team/channels/town-square'});
+            const result = await handleUrl({url: 'https://community.mattermost.com/team/channels/general'});
 
             expect(result).toBe(false);
             expect(alertInvalidDeepLink).toHaveBeenCalled();

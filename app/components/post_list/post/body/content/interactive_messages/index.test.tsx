@@ -229,7 +229,7 @@ describe('InteractiveMessages', () => {
     });
 
     it('should call handleGotoLocation when action succeeds with goto_location', async () => {
-        const gotoLocation = 'https://server.com/team/channels/town-square';
+        const gotoLocation = 'https://server.com/team/channels/general';
         jest.mocked(integrationActions.postActionWithCookie).mockResolvedValue({
             data: {goto_location: gotoLocation},
         });

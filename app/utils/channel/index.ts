@@ -163,6 +163,9 @@ export function filterChannelsMatchingTerm(channels: Channel[], term: string): C
     });
 }
 
+// DEFAULT_CHANNEL_NAMES are the default channel's names: general, and town-square on older servers.
+export const DEFAULT_CHANNEL_NAMES = [General.DEFAULT_CHANNEL, General.LEGACY_DEFAULT_CHANNEL];
+
 export function isDefaultChannel(channel: Channel | ChannelModel | undefined): boolean {
-    return channel?.name === General.DEFAULT_CHANNEL;
+    return Boolean(channel?.name) && DEFAULT_CHANNEL_NAMES.includes(channel!.name);
 }

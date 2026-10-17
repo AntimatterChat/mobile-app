@@ -195,9 +195,29 @@ describe('actions/remote/entry/common', () => {
 
         it('should return default channel when available', async () => {
             const channels = [
+                {id: 'general', name: 'general', team_id: 'team1', type: 'O'},
+            ] as Channel[];
+            const memberships = [{channel_id: 'general'}] as ChannelMembership[];
+
+            const result = await entryInitialChannelId(
+                mockDatabase as any,
+                '',
+                'team1',
+                'team1',
+                'en',
+                channels,
+                memberships,
+            );
+
+            expect(result).toBe('general');
+        });
+
+        it('should return the default channel of an older server, town-square', async () => {
+            const channels = [
+                {id: 'off-topic', name: 'off-topic', team_id: 'team1', type: 'O'},
                 {id: 'town-square', name: 'town-square', team_id: 'team1', type: 'O'},
             ] as Channel[];
-            const memberships = [{channel_id: 'town-square'}] as ChannelMembership[];
+            const memberships = [{channel_id: 'off-topic'}, {channel_id: 'town-square'}] as ChannelMembership[];
 
             const result = await entryInitialChannelId(
                 mockDatabase as any,

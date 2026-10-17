@@ -192,7 +192,7 @@ describe('UrlUtils', () => {
             {
                 name: 'should return null for invalid deeplink',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/../town-square',
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/../general',
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
@@ -201,7 +201,7 @@ describe('UrlUtils', () => {
             {
                 name: 'should return null for backslash-invalid deeplink',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/\\..town-square',
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/\\..general',
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
@@ -210,7 +210,7 @@ describe('UrlUtils', () => {
             {
                 name: 'should return null for backslash-invalid-alt deeplink',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/t..\\town-square',
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/t..\\general',
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
@@ -219,7 +219,7 @@ describe('UrlUtils', () => {
             {
                 name: 'should return null for double encoded invalid deeplink',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/%252f%252e.town-square',
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/%252f%252e.general',
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
@@ -228,7 +228,7 @@ describe('UrlUtils', () => {
             {
                 name: 'should return null for double encoded backslash-invalid deeplink',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/%255C%252e.town-square',
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/%255C%252e.general',
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
@@ -237,13 +237,13 @@ describe('UrlUtils', () => {
             {
                 name: 'should match channel link',
                 input: {
-                    url: SITE_URL + '/ad-1/channels/town-square',
+                    url: SITE_URL + '/ad-1/channels/general',
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
                 expected: {
                     data: {
-                        channelName: 'town-square',
+                        channelName: 'general',
                         serverUrl: URL_NO_PROTOCOL,
                         teamName: 'ad-1',
                     },
@@ -269,13 +269,13 @@ describe('UrlUtils', () => {
             {
                 name: 'should match channel link with deeplink prefix',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/town-square',
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/general',
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
                 expected: {
                     data: {
-                        channelName: 'town-square',
+                        channelName: 'general',
                         serverUrl: URL_NO_PROTOCOL,
                         teamName: 'ad-1',
                     },

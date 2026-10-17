@@ -584,7 +584,7 @@ describe('Channel Queries', () => {
         expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.CHANNEL);
         expect(mockQuery).toHaveBeenCalledWith(
             Q.where('team_id', teamId),
-            Q.where('name', General.DEFAULT_CHANNEL),
+            Q.where('name', Q.oneOf([General.DEFAULT_CHANNEL, General.LEGACY_DEFAULT_CHANNEL])),
         );
     });
 

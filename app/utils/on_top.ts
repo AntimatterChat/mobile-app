@@ -59,7 +59,7 @@ export function durationLabel(intl: IntlShape, duration: OnTopDuration): string 
     return intl.formatMessage(DURATION_MESSAGES[duration]);
 }
 
-// putOnTopToast is what's said once a message is on top: "On top of #town-square for 1 hour".
+// putOnTopToast is what's said once a message is on top: "On top of #general for 1 hour".
 export function putOnTopToast(intl: IntlShape, duration: OnTopDuration, channel?: {type: string; displayName: string}) {
     const direct = channel?.type === 'D' || channel?.type === 'G';
     return intl.formatMessage(onTopMessages.putToast, {

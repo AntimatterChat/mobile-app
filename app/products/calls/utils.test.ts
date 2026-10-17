@@ -377,7 +377,7 @@ describe('getDMCalleeId', () => {
 
     it('should return empty for group and open channels', () => {
         expect(getDMCalleeId('me', {type: 'G', name: 'group'} as ChannelModel)).toBe('');
-        expect(getDMCalleeId('me', {type: 'O', name: 'town-square'} as ChannelModel)).toBe('');
+        expect(getDMCalleeId('me', {type: 'O', name: 'general'} as ChannelModel)).toBe('');
     });
 
     it('should return empty when the channel is unknown', () => {

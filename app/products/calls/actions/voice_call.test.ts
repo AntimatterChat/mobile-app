@@ -59,7 +59,7 @@ describe('voice channel calls', () => {
         });
 
         it('should not join other channels, the same call, another kind of call, or without auto-join', async () => {
-            expect(await autoJoinVoiceChannel(serverUrl, 'town-square', intl)).toBe(false);
+            expect(await autoJoinVoiceChannel(serverUrl, 'general', intl)).toBe(false);
 
             setCurrentCall(inCall('voice1', true));
             expect(await autoJoinVoiceChannel(serverUrl, 'voice1', intl)).toBe(false);

@@ -63,10 +63,10 @@ describe('Search - Cross Team Search', () => {
         teamOpen = testTeamOpen;
         await Team.apiAddUserToTeam(siteOneUrl, testUser.id, teamOpen.id);
 
-        // # Get Town Square channel for Team Open
-        const {channel: townSquareChannelResult} = await Channel.apiGetChannelByName(siteOneUrl, teamOpen.id, 'town-square');
+        // # Get General channel for Team Open
+        const {channel: townSquareChannelResult} = await Channel.apiGetChannelByName(siteOneUrl, teamOpen.id, 'general');
         if (!townSquareChannelResult?.id) {
-            throw new Error("[beforeAll] Failed to get 'town-square' channel for Team Open");
+            throw new Error("[beforeAll] Failed to get 'general' channel for Team Open");
         }
         townSquareChannel = townSquareChannelResult;
 
@@ -130,10 +130,10 @@ describe('Search - Cross Team Search', () => {
         // * d) Verify in Team Open
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(teamOpen.display_name);
 
-        // # e) Tap on Town Square channel
+        // # e) Tap on General channel
         await ChannelScreen.open(channelsCategory, townSquareChannel.name);
 
-        // * e) Verify in Town Square channel
+        // * e) Verify in General channel
         await ChannelScreen.toBeVisible();
         await waitForElementToHaveText(ChannelScreen.introDisplayName, townSquareChannel.display_name, timeouts.HALF_MIN);
 

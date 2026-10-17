@@ -19,7 +19,11 @@ export default {
     ONLINE: 'online' as const,
     DND: 'dnd' as const,
     STATUS_COMMANDS: ['offline', 'away', 'online', 'dnd'],
-    DEFAULT_CHANNEL: 'town-square',
+    DEFAULT_CHANNEL: 'general',
+
+    // Antimatter: the default channel's name before it became general, as older servers (and Mattermost ones) still
+    // name it.
+    LEGACY_DEFAULT_CHANNEL: 'town-square',
     DM_CHANNEL: 'D' as const,
     OPEN_CHANNEL: 'O' as const,
     PRIVATE_CHANNEL: 'P' as const,

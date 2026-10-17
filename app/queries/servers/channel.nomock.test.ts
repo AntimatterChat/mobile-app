@@ -228,7 +228,7 @@ describe('observeIsReadOnlyChannel', () => {
         await DatabaseManager.deleteServerDatabase(serverUrl);
     });
 
-    it('should return true for town square when user is not admin and setting is enabled', async () => {
+    it('should return true for general when user is not admin and setting is enabled', async () => {
         const subscriptionNext = jest.fn();
         const channelId = 'channel_id';
 
@@ -258,7 +258,7 @@ describe('observeIsReadOnlyChannel', () => {
         expect(subscriptionNext).toHaveBeenCalledWith(true);
     });
 
-    it('should return false for non-town-square channels', async () => {
+    it('should return false for non-general channels', async () => {
         const subscriptionNext = jest.fn();
         const channelId = 'channel_id';
 

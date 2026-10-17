@@ -48,7 +48,7 @@ describe('on top utils', () => {
     });
 
     it('should say where and for how long a message was put on top', () => {
-        expect(putOnTopToast(intl, '1h', {type: 'O', displayName: 'Town Square'})).toBe('On top of #Town Square for 1 hour');
+        expect(putOnTopToast(intl, '1h', {type: 'O', displayName: 'General'})).toBe('On top of #General for 1 hour');
         expect(putOnTopToast(intl, 'forever', {type: 'D', displayName: 'leo'})).toBe('On top of the conversation until removed');
     });
 });

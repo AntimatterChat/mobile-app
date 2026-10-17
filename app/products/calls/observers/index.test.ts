@@ -450,7 +450,7 @@ describe('Calls Observers', () => {
         it('should not be calling in a channel call, and should time from the call start', async () => {
             const state = await getState(
                 {...dmCall, dmCalleeAnsweredAt: 5000},
-                {type: General.OPEN_CHANNEL, name: 'town-square'},
+                {type: General.OPEN_CHANNEL, name: 'general'},
             );
 
             expect(state.isDMCall).toBe(false);

@@ -94,11 +94,11 @@ describe('RemoveMarkdown', () => {
                 <RemoveMarkdown
                     enableChannelLink={true}
                     baseStyle={baseStyle}
-                    value='### Check ~town-square'
+                    value='### Check ~general'
                 />,
             );
 
-            const style = getFlatStyle(screen.getByTestId('channel_mention.town-square'));
+            const style = getFlatStyle(screen.getByTestId('channel_mention.general'));
             const heading3FontSize = StyleSheet.flatten(headingTextStyles.heading3 as TextStyle).fontSize;
             expect(style.fontSize).not.toBe(heading3FontSize);
             expect(style.fontSize).toBe(baseStyle.fontSize);
@@ -165,11 +165,11 @@ describe('RemoveMarkdown', () => {
                 <RemoveMarkdown
                     enableChannelLink={true}
                     baseStyle={baseStyle}
-                    value='Check #town-square, #qa and ~off-topic'
+                    value='Check #general, #qa and ~off-topic'
                 />,
             );
 
-            expect(screen.getByTestId('channel_mention.town-square')).toBeTruthy();
+            expect(screen.getByTestId('channel_mention.general')).toBeTruthy();
             expect(screen.getByTestId('channel_mention.qa')).toHaveTextContent('#qa');
             expect(screen.getByTestId('channel_mention.off-topic')).toHaveTextContent('~off-topic');
         });
@@ -192,11 +192,11 @@ describe('RemoveMarkdown', () => {
                 <RemoveMarkdown
                     enableChannelLink={true}
                     baseStyle={baseStyle}
-                    value={'# town-square\nC# and ##town-square'}
+                    value={'# general\nC# and ##general'}
                 />,
             );
 
-            expect(screen.queryByTestId('channel_mention.town-square')).toBeNull();
+            expect(screen.queryByTestId('channel_mention.general')).toBeNull();
         });
     });
 

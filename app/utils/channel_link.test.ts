@@ -40,27 +40,27 @@ describe('getChannelMentionMatch', () => {
 
 describe('completeChannelMention', () => {
     test('completes a # link as #channel-name', () => {
-        expect(completeChannelMention('see #town', 'town-square')).toBe('see #town-square ');
+        expect(completeChannelMention('see #gen', 'general')).toBe('see #general ');
     });
 
     test('completes a ~ link as #channel-name too', () => {
-        expect(completeChannelMention('see ~town', 'town-square')).toBe('see #town-square ');
+        expect(completeChannelMention('see ~gen', 'general')).toBe('see #general ');
     });
 
     test('only replaces the link being typed', () => {
-        expect(completeChannelMention('#off-topic and #to', 'town-square')).toBe('#off-topic and #town-square ');
+        expect(completeChannelMention('#off-topic and #ge', 'general')).toBe('#off-topic and #general ');
     });
 
     test('doubles the sign for iOS', () => {
-        expect(completeChannelMention('see #town', 'town-square', true)).toBe('see ##town-square ');
+        expect(completeChannelMention('see #gen', 'general', true)).toBe('see ##general ');
     });
 });
 
 describe('stripChannelSign', () => {
     test.each([
-        ['#town-square', 'town-square'],
-        ['~town-square', 'town-square'],
-        ['town-square', 'town-square'],
+        ['#general', 'general'],
+        ['~general', 'general'],
+        ['general', 'general'],
         ['', ''],
     ])('%j => %j', (name, expected) => {
         expect(stripChannelSign(name)).toBe(expected);

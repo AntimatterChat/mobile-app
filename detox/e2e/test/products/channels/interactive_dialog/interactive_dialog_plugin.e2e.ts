@@ -201,7 +201,7 @@ async function selectChannel(channel?: {id: string; display_name: string}, {mult
         // Fall through to well-known channel names.
     }
 
-    for (const name of ['Town Square', 'Off-Topic', 'General']) {
+    for (const name of ['General', 'Off-Topic', 'Town Square']) {
         try {
             await expect(element(by.id('integration_selector.screen'))).toExist();
             await element(by.text(name)).tap();

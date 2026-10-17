@@ -100,7 +100,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await ChannelListScreen.toBeVisible();
         await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
         await wait(timeouts.TWO_SEC);
-        await ChannelScreen.open('channels', 'town-square');
+        await ChannelScreen.open('channels', 'general');
 
         await GlobalClassificationBanner.toBeVisible();
 
@@ -147,7 +147,7 @@ describe('Classification Banner - Global Classification Banner', () => {
 
         await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
         await wait(timeouts.TWO_SEC);
-        await ChannelScreen.open('channels', 'town-square');
+        await ChannelScreen.open('channels', 'general');
 
         await GlobalClassificationBanner.toBeVisible();
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
@@ -225,7 +225,7 @@ describe('Classification Banner - Global Classification Banner', () => {
 
         await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
         await wait(timeouts.TWO_SEC);
-        await ChannelScreen.open('channels', 'town-square');
+        await ChannelScreen.open('channels', 'general');
 
         await GlobalClassificationBanner.toNotBeVisible();
 

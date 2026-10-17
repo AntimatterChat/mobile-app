@@ -38,9 +38,9 @@ function parse(text: string, minimumHashtagLength = 3) {
 
 describe('linkHashChannels: #channel-name links (Antimatter)', () => {
     it('should make a #name hashtag a channel link, which falls back to the hashtag', () => {
-        expect(parse('see #town-square now')).toEqual([
+        expect(parse('see #general now')).toEqual([
             'text:see ',
-            'channel:#town-square (hashtag town-square)',
+            'channel:#general (hashtag general)',
             'text: now',
         ]);
     });
@@ -55,19 +55,19 @@ describe('linkHashChannels: #channel-name links (Antimatter)', () => {
     });
 
     it('should link #names at the start, after punctuation and before it', () => {
-        expect(parse('#qa, (#ops) and #town-square.')).toEqual([
+        expect(parse('#qa, (#ops) and #general.')).toEqual([
             'channel:#qa',
             'text:, (',
             'channel:#ops (hashtag ops)',
             'text:) and ',
-            'channel:#town-square (hashtag town-square)',
+            'channel:#general (hashtag general)',
             'text:.',
         ]);
     });
 
     it('should keep ~ links, marked as written with ~', () => {
-        expect(parse('~town-square and #off-topic')).toEqual([
-            'channel:~town-square',
+        expect(parse('~general and #off-topic')).toEqual([
+            'channel:~general',
             'text: and ',
             'channel:#off-topic (hashtag off-topic)',
         ]);
@@ -89,14 +89,14 @@ describe('linkHashChannels: #channel-name links (Antimatter)', () => {
     });
 
     it('should not link ##name', () => {
-        expect(parse('a ##town-square b')).toEqual(['text:a #', 'hashtag:town-square', 'text: b']);
+        expect(parse('a ##general b')).toEqual(['text:a #', 'hashtag:general', 'text: b']);
         expect(parse('a ##qa b')).toEqual(['text:a ##qa b']);
     });
 
     it('should not take a heading for a channel', () => {
-        const ast = linkHashChannels(combineTextNodes(new Parser({minimumHashtagLength: 3}).parse('# town-square')));
+        const ast = linkHashChannels(combineTextNodes(new Parser({minimumHashtagLength: 3}).parse('# general')));
         expect(ast.firstChild!.type).toBe('heading');
-        expect(nodes(ast.firstChild!)).toEqual(['text:town-square']);
+        expect(nodes(ast.firstChild!)).toEqual(['text:general']);
         expect(parse('\\# not a heading')).toEqual(['text:# not a heading']);
     });
 
@@ -133,8 +133,8 @@ describe('linkHashChannels: #channel-name links (Antimatter)', () => {
     });
 
     it('should link with the parser\'s defaults too, as remove_markdown parses', () => {
-        const ast = linkHashChannels(combineTextNodes(new Parser().parse('see #town-square')));
-        expect(nodes(ast.firstChild!)).toEqual(['text:see ', 'channel:#town-square (hashtag town-square)']);
+        const ast = linkHashChannels(combineTextNodes(new Parser().parse('see #general')));
+        expect(nodes(ast.firstChild!)).toEqual(['text:see ', 'channel:#general (hashtag general)']);
     });
 });
 

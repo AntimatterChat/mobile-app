@@ -53,7 +53,7 @@ const truncateForDisplay = (s: string, max: number): string => {
 // Builds the name the system call UI shows on the lock screen.
 // DM/GM channels already have a person-shaped displayName,
 // so we use it as-is. public/private channels
-// share names across teams ("Town Square" exists everywhere), so we
+// share names across teams ("General" exists everywhere), so we
 // suffix the team to disambiguate. Per-segment truncation keeps both
 // ends visible when either is long.
 const buildDisplayName = async (database: Database, channelId: string): Promise<string> => {

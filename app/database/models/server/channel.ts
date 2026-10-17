@@ -94,7 +94,7 @@ export default class ChannelModel extends Model implements ChannelModelInterface
     /** delete_at : The deletion/archived date of this channel */
     @field('delete_at') deleteAt!: number;
 
-    /** display_name : The channel display name (e.g. Town Square ) */
+    /** display_name : The channel display name (e.g. General ) */
     @field('display_name') displayName!: string;
 
     /** is_group_constrained : If a channel is  restricted to certain groups, this boolean will be true and only
@@ -103,7 +103,7 @@ export default class ChannelModel extends Model implements ChannelModelInterface
      */
     @field('is_group_constrained') isGroupConstrained!: boolean;
 
-    /** name : The name of the channel (e.g town-square) */
+    /** name : The name of the channel (e.g general) */
     @field('name') name!: string;
 
     /** shared: determines if it is a shared channel with another organization */
