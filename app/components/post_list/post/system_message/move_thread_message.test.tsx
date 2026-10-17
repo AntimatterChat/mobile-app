@@ -85,6 +85,7 @@ describe('move thread system messages', () => {
         expect(screen.getByText(/^A thread with 13 messages has been moved to /)).toBeTruthy();
         expect(screen.getByText('#Ops on call')).toBeTruthy();
         expect(screen.queryByText(/https:/)).toBeNull();
+        expect(screen.queryByText(/\\/)).toBeNull();
         expect(screen.queryByText(/Ein Thread/)).toBeNull();
     });
 
