@@ -9,8 +9,6 @@ import {
     RetryTypes,
     type APIClientConfiguration,
 } from '@mattermost/react-native-network-client';
-import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
-import {modelName, osName, osVersion} from 'expo-device';
 import {defineMessages} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 import urlParse from 'url-parse';
@@ -21,6 +19,7 @@ import * as ClientConstants from '@client/rest/constants';
 import ClientError from '@client/rest/error';
 import {CERTIFICATE_ERRORS} from '@constants/network';
 import ManagedApp from '@init/managed_app';
+import {getServerUserAgent} from '@utils/client_version';
 import {toMilliseconds} from '@utils/datetime';
 import {getIntlShape} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
@@ -126,7 +125,7 @@ class NetworkManagerSingleton {
     };
 
     private buildConfig = async (preauthSecret?: string) => {
-        const userAgent = `Mattermost Mobile/${nativeApplicationVersion}+${nativeBuildVersion} (${osName}; ${osVersion}; ${modelName})`;
+        const userAgent = getServerUserAgent();
         const managedConfig = ManagedApp.enabled ? Emm.getManagedConfig<ManagedConfig>() : undefined;
         const headers: Record<string, string> = {
             [ClientConstants.HEADER_USER_AGENT]: userAgent,

@@ -1,6 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// The upstream Mattermost Mobile version this fork is based on.
+//
+// Antimatter Mobile has its own version numbers (nativeApplicationVersion, 0.9.0 for the first beta, set by the release
+// workflow from the tag), which people see in About and in the stores. The servers and plugins such as Calls compare
+// the mobile app's version against Mattermost Mobile versions, so everything a server reads gets this version instead,
+// the same way the Antimatter server reports a Mattermost-compatible version: the "Mattermost Mobile/<version>"
+// user agent, the session's mobile_version prop and the session attributes' client_version.
+//
+// Raise it when an upstream Mattermost Mobile release is merged, never lower it.
+export const COMPATIBLE_MATTERMOST_MOBILE_VERSION = '2.45.0';
+
 export const GM_AS_DM_VERSION = [9, 1, 0];
 
 export const PROPERTY_FIELDS_SEARCH_VERSION = [11, 10, 0];

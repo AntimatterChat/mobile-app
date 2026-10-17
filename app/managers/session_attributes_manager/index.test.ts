@@ -6,6 +6,7 @@ import {isRootedExperimentalAsync} from 'expo-device';
 import {Alert, Platform} from 'react-native';
 import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 
+import {COMPATIBLE_MATTERMOST_MOBILE_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import {getConfigBooleanValue} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
@@ -22,7 +23,7 @@ const mockFetchSessionAttributesManifest = jest.fn();
 jest.mock('expo-application', () => ({
     getAndroidId: jest.fn(() => 'android-device-id'),
     getIosIdForVendorAsync: jest.fn().mockResolvedValue('ios-device-id'),
-    nativeApplicationVersion: '2.20.0',
+    nativeApplicationVersion: '0.9.0',
     nativeBuildVersion: '456',
 }));
 
@@ -65,7 +66,7 @@ const iosStableValues = {
     jailbreak_detected: 'false',
     os_version: '18.0',
     os_platform: 'ios',
-    client_version: '2.20.0+456',
+    client_version: `${COMPATIBLE_MATTERMOST_MOBILE_VERSION}+456`,
     client_device_id: 'ios-device-id',
 };
 
@@ -99,6 +100,15 @@ describe('SessionAttributesManager', () => {
         expect(getIosIdForVendorAsync).toHaveBeenCalled();
     });
 
+    // The server's access policies compare client_version against Mattermost Mobile versions
+    it('should report the Mattermost-compatible client version, not the Antimatter one', async () => {
+        await manager.syncStaticValues();
+
+        const values = mockSetSessionAttributesStableValues.mock.calls[0][0];
+        expect(values.client_version).toBe(`${COMPATIBLE_MATTERMOST_MOBILE_VERSION}+456`);
+        expect(values.client_version).not.toContain('0.9.0');
+    });
+
     it('should collect stable values from Expo on Android', async () => {
         Platform.OS = 'android';
         jest.mocked(isRootedExperimentalAsync).mockResolvedValue(true);
@@ -109,7 +119,7 @@ describe('SessionAttributesManager', () => {
             jailbreak_detected: 'true',
             os_version: '18.0',
             os_platform: 'android',
-            client_version: '2.20.0+456',
+            client_version: `${COMPATIBLE_MATTERMOST_MOBILE_VERSION}+456`,
             client_device_id: 'android-device-id',
         });
         expect(getAndroidId).toHaveBeenCalled();

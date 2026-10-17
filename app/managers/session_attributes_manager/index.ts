@@ -9,7 +9,7 @@ import {
     setSessionAttributesStableValues,
     upsertSessionAttributesField,
 } from '@mattermost/react-native-network-client';
-import {getAndroidId, getIosIdForVendorAsync, nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
+import {getAndroidId, getIosIdForVendorAsync} from 'expo-application';
 import {isRootedExperimentalAsync, osVersion} from 'expo-device';
 import {defineMessages} from 'react-intl';
 import {Alert, Platform} from 'react-native';
@@ -21,6 +21,7 @@ import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE} from '@i18n';
 import {getConfigBooleanValue} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {getServerClientVersion} from '@utils/client_version';
 import {getFullErrorMessage} from '@utils/errors';
 import {getIntlShape} from '@utils/general';
 import {logDebug} from '@utils/log';
@@ -187,14 +188,8 @@ export class SessionAttributesManagerSingleton {
     };
 
     private collectStaticValues = async (): Promise<Record<string, string>> => {
-        let clientVersion = '';
-        if (nativeApplicationVersion) {
-            if (nativeBuildVersion) {
-                clientVersion = `${nativeApplicationVersion}+${nativeBuildVersion}`;
-            } else {
-                clientVersion = nativeApplicationVersion;
-            }
-        }
+        // The server's access policies compare it against Mattermost Mobile versions
+        const clientVersion = getServerClientVersion();
 
         let clientDeviceId = '';
         if (Platform.OS === 'android') {

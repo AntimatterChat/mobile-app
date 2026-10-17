@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS} from 'react-native-permissions';
 
 import {handleKickFromChannel, fetchMyChannelsForTeam} from '@actions/remote/channel';
@@ -13,6 +12,7 @@ import {fetchMe} from '@actions/remote/user';
 import {Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import {COMPATIBLE_MATTERMOST_MOBILE_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
@@ -98,7 +98,7 @@ describe('actions/remote/entry/common', () => {
         // Reset mock implementations
         (RESULTS as any).GRANTED = 'granted';
         require('react-native-permissions').checkNotifications = jest.fn().mockResolvedValue({status: RESULTS.GRANTED});
-        require('expo-application').nativeApplicationVersion = '0.0.0';
+        require('expo-application').nativeApplicationVersion = '0.9.0';
     });
 
     describe('entry', () => {
@@ -226,7 +226,7 @@ describe('actions/remote/entry/common', () => {
             expect(mockClient.setExtraSessionProps).toHaveBeenCalledWith(
                 expect.any(String),
                 false,
-                nativeApplicationVersion,
+                COMPATIBLE_MATTERMOST_MOBILE_VERSION,
                 undefined,
                 undefined,
             );
@@ -244,10 +244,23 @@ describe('actions/remote/entry/common', () => {
             expect(mockClient.setExtraSessionProps).toHaveBeenCalledWith(
                 expect.any(String),
                 false,
-                nativeApplicationVersion,
+                COMPATIBLE_MATTERMOST_MOBILE_VERSION,
                 undefined,
                 undefined,
             );
+        });
+
+        // The server stores it as the session's mobile_version, and servers compare Mattermost Mobile versions
+        it('should send the Mattermost-compatible version, not the Antimatter one', async () => {
+            (RESULTS as any).GRANTED = 'granted';
+            require('react-native-permissions').checkNotifications = jest.fn().mockResolvedValue({status: RESULTS.GRANTED});
+            jest.mocked(getDeviceToken).mockResolvedValueOnce('deviceToken');
+
+            await setExtraSessionProps(serverUrl);
+
+            const version = jest.mocked(mockClient.setExtraSessionProps).mock.calls[0][2];
+            expect(version).toBe(COMPATIBLE_MATTERMOST_MOBILE_VERSION);
+            expect(version).not.toBe('0.9.0');
         });
 
         it('should handle errors gracefully', async () => {

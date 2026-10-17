@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS, checkNotifications} from 'react-native-permissions';
 
 import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '@actions/local/channel';
@@ -28,6 +27,7 @@ import {getTeamChannelHistory} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {NavigationStore} from '@store/navigation_store';
 import {isDefaultChannel, isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
+import {getServerMobileVersion} from '@utils/client_version';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion, isTablet} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
@@ -314,7 +314,7 @@ export const setExtraSessionProps = async (serverUrl: string, groupLabel?: Reque
             const res = await checkNotifications();
             const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
             const client = NetworkManager.getClient(serverUrl);
-            client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, voipDeviceToken || undefined, groupLabel);
+            client.setExtraSessionProps(deviceToken, !granted, getServerMobileVersion(), voipDeviceToken || undefined, groupLabel);
         }
         return {};
     } catch (error) {
