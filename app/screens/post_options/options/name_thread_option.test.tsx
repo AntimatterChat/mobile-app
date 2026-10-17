@@ -16,19 +16,19 @@ jest.mock('@screens/navigation', () => ({
 }));
 
 describe('NameThreadOption', () => {
-    it('should name a thread', async () => {
+    it('should offer to make a thread a topic', async () => {
         const post = TestHelper.fakePostModel({id: 'root', props: {}});
         const {getByText, getByTestId} = renderWithIntl(<NameThreadOption post={post}/>);
 
-        expect(getByText('Name thread…')).toBeTruthy();
+        expect(getByText('Make it a topic…')).toBeTruthy();
         fireEvent.press(getByTestId('post_options.name_thread.option'));
         await waitFor(() => expect(navigateToScreen).toHaveBeenCalledWith(Screens.NAME_THREAD, {rootId: 'root', currentTitle: ''}));
     });
 
-    it('should rename a named thread', () => {
+    it('should offer to rename a topic', () => {
         const post = TestHelper.fakePostModel({id: 'root', props: {am_thread_title: 'Release'}});
         const {getByText} = renderWithIntl(<NameThreadOption post={post}/>);
 
-        expect(getByText('Rename thread…')).toBeTruthy();
+        expect(getByText('Rename topic…')).toBeTruthy();
     });
 });

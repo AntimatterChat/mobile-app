@@ -18,15 +18,16 @@ type Props = {
 const messages = defineMessages({
     name: {
         id: 'mobile.post_info.name_thread',
-        defaultMessage: 'Name thread…',
+        defaultMessage: 'Make it a topic…',
     },
     rename: {
         id: 'mobile.post_info.rename_thread',
-        defaultMessage: 'Rename thread…',
+        defaultMessage: 'Rename topic…',
     },
 });
 
-// NameThreadOption names the thread a message starts, making it a sub-chat of its channel, as Fusion's menu does.
+// NameThreadOption makes the thread a message starts a topic, a named conversation inside its channel, by naming it,
+// or renames the topic, as Fusion's message menu does ("Make it a topic…", "Rename topic…").
 const NameThreadOption = ({post}: Props) => {
     const currentTitle = getThreadTitle(post);
 

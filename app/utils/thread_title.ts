@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// A named thread is a sub-chat of its channel, as in Fusion: its name is kept in its first message's props, and
-// shows in the thread's header, in the threads list and under its first message.
+// A topic is a named conversation inside its channel, as in Fusion: a thread becomes a topic once it has a name. The
+// name is kept in its first message's props (the data keeps its old "thread title" name), and shows in the thread's
+// header, in the threads list and under its first message.
 export const THREAD_TITLE_PROP = 'am_thread_title';
 
 // The server keeps 60 characters of a thread's name.

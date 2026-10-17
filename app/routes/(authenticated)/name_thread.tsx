@@ -16,7 +16,7 @@ export default function NameThreadRoute() {
     useNavigationHeader({
         showWhenPushed: true,
         headerOptions: {
-            headerTitle: intl.formatMessage({id: 'name_thread.title', defaultMessage: 'Name this thread'}),
+            headerTitle: props.currentTitle ? intl.formatMessage({id: 'name_thread.rename_title', defaultMessage: 'Rename the topic'}) : intl.formatMessage({id: 'name_thread.title', defaultMessage: 'Make it a topic'}),
             ...getHeaderOptions(theme),
         },
     });

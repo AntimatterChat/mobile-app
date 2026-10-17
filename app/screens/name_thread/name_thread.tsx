@@ -45,7 +45,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-// NameThread names a thread, or takes its name away when left empty, as Fusion's "Name this thread" dialog.
+// NameThread makes a thread a topic by naming it, renames a topic, or makes it a plain thread again when its name is
+// left empty, as Fusion's topic dialog. (Topics were "named threads": the data keeps the thread title name.)
 export default function NameThread({rootId, currentTitle}: Props) {
     const navigation = useNavigation();
     const intl = useIntl();
@@ -62,7 +63,7 @@ export default function NameThread({rootId, currentTitle}: Props) {
         const {error} = await setThreadTitle(serverUrl, rootId, title);
         if (error) {
             Alert.alert(
-                intl.formatMessage({id: 'name_thread.error', defaultMessage: 'The thread couldn\'t be named'}),
+                intl.formatMessage({id: 'name_thread.error', defaultMessage: 'The topic couldn\'t be saved'}),
                 getFullErrorMessage(error),
             );
             return;
@@ -89,9 +90,17 @@ export default function NameThread({rootId, currentTitle}: Props) {
         <View style={styles.container}>
             <FormattedText
                 id='name_thread.lead'
-                defaultMessage='A named thread is a sub-chat of its channel: its name shows in the thread, in the threads list and under its first message.'
+                defaultMessage='A topic is a named conversation inside its channel: its name shows in the thread, in the threads list and under its first message.'
                 style={styles.lead}
             />
+            {Boolean(currentTitle) && (
+                <FormattedText
+                    id='name_thread.lead_rename'
+                    defaultMessage='Leave the name empty to make it a plain thread again.'
+                    style={styles.lead}
+                    testID='name_thread.lead_rename'
+                />
+            )}
             <FloatingTextInput
                 label={intl.formatMessage({id: 'name_thread.name', defaultMessage: 'Name'})}
                 placeholder={intl.formatMessage({id: 'name_thread.placeholder', defaultMessage: 'e.g. Release 2.1'})}
