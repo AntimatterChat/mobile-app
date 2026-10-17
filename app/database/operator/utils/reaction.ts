@@ -12,7 +12,8 @@ const {REACTION} = MM_TABLES.SERVER;
 /**
  * sanitizeReactions: Treats reactions happening on a Post. For example, a user can add/remove an emoji.  Hence, this function
  * tell us which reactions to create/delete in the Reaction table and which custom-emoji to create in our database.
- * For more information, please have a look at https://community.mattermost.com/core/pl/rq9e8jnonpyrmnyxpuzyc4d6ko
+ * A reaction is a user's emoji on the post: the post's reactions from the server (rawReactions) that the table lacks
+ * are created, and the table's reactions the server no longer has are deleted, unless skipSync is set.
  * @param {SanitizeReactionsArgs} sanitizeReactions
  * @param {Database} sanitizeReactions.database
  * @param {string} sanitizeReactions.post_id
