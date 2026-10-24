@@ -115,6 +115,31 @@ export const fetchSessions = async (serverUrl: string, currentUserId: string) =>
     return undefined;
 };
 
+// revokeOwnSession signs a session of the user's own out ("Disconnect" in the sign-in warning).
+export const revokeOwnSession = async (serverUrl: string, userId: string, sessionId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.revokeSession(userId, sessionId);
+        return {};
+    } catch (error) {
+        logDebug('error on revokeOwnSession', getFullErrorMessage(error));
+        return {error};
+    }
+};
+
+// acknowledgeOwnSession confirms a sign-in was the user ("It's me" in the sign-in warning), which takes its warning
+// off their other devices too.
+export const acknowledgeOwnSession = async (serverUrl: string, userId: string, sessionId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.acknowledgeSession(userId, sessionId);
+        return {};
+    } catch (error) {
+        logDebug('error on acknowledgeOwnSession', getFullErrorMessage(error));
+        return {error};
+    }
+};
+
 export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaToken, password, config, serverDisplayName}: LoginArgs): Promise<LoginActionResponse> => {
     let deviceToken;
     let user: UserProfile;

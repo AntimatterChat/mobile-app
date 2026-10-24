@@ -14,6 +14,7 @@ import {refetchCurrentUser} from '@actions/remote/user';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
+import SignInWarning from '@components/sign_in_warning';
 import TeamSidebar from '@components/team_sidebar';
 import {Screens} from '@constants';
 import {HOME_TAB_SCREENS} from '@constants/screens';
@@ -200,6 +201,7 @@ const ChannelListScreen = (props: ChannelProps) => {
             <Animated.View style={top}/>
             <ConnectionBanner/>
             <AnnouncementBanner/>
+            <SignInWarning/>
             <View style={styles.content}>
                 {canAddOtherServers && <Servers/>}
                 <Animated.View

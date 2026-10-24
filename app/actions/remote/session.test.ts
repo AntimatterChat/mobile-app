@@ -14,12 +14,14 @@ import TestHelper from '@test/test_helper';
 import {logWarning} from '@utils/log';
 
 import {
+    acknowledgeOwnSession,
     addPushProxyVerificationStateFromLogin,
     forceLogoutIfNecessary,
     fetchSessions,
     login,
     logout,
     nativeEntraLogin,
+    revokeOwnSession,
     scheduleSessionNotification,
     sendPasswordResetEmail,
     ssoLogin,
@@ -51,6 +53,8 @@ const mockClient = {
     setClientCredentials: jest.fn(),
     getClientConfigOld: jest.fn(() => ({})),
     getSessions: jest.fn(() => [session1]),
+    revokeSession: jest.fn(() => ({status: 'OK'})),
+    acknowledgeSession: jest.fn(() => ({status: 'OK'})),
     sendPasswordResetEmail: jest.fn(() => ({status: 200})),
     getMe: jest.fn(() => user1),
     logout: jest.fn(),
@@ -200,6 +204,32 @@ describe('Session Actions', () => {
             const result = await fetchSessions(serverUrl, user1.id);
             expect(result).toBeDefined();
             expect(result?.length).toBe(1);
+        });
+
+        it('revokeOwnSession - base case', async () => {
+            const result = await revokeOwnSession(serverUrl, user1.id, session1.id);
+            expect(mockClient.revokeSession).toHaveBeenCalledWith(user1.id, session1.id);
+            expect(result.error).toBeUndefined();
+        });
+
+        it('revokeOwnSession - handle client error', async () => {
+            jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+            const result = await revokeOwnSession(serverUrl, user1.id, session1.id);
+            expect(result.error).toBeDefined();
+        });
+
+        it('acknowledgeOwnSession - base case', async () => {
+            const result = await acknowledgeOwnSession(serverUrl, user1.id, session1.id);
+            expect(mockClient.acknowledgeSession).toHaveBeenCalledWith(user1.id, session1.id);
+            expect(result.error).toBeUndefined();
+        });
+
+        it('acknowledgeOwnSession - handle client error', async () => {
+            jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+            const result = await acknowledgeOwnSession(serverUrl, user1.id, session1.id);
+            expect(result.error).toBeDefined();
         });
 
         it('login - base case', async () => {
