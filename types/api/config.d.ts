@@ -22,6 +22,7 @@ interface ClientConfig {
     BuildNumber: string;
     BurnOnReadMaximumTimeToLiveSeconds: string;
     BurnOnReadDurationSeconds: string;
+    BurnOnReadMaximumDurationSeconds: string;
     CloseUnusedDirectMessages: string;
     CollapsedThreads: string;
     CustomBrandText: string;

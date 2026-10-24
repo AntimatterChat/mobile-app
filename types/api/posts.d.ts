@@ -240,6 +240,14 @@ type FetchPaginatedThreadOptions = {
 
 type PostBoRConfig = {
     enabled: boolean;
+
+    // The server's configured default (BurnOnReadDurationSeconds), used when the sender picks none.
     borDurationSeconds: number;
     borMaximumTimeToLiveSeconds: number;
+
+    // The longest the sender may pick (BurnOnReadMaximumDurationSeconds), for the duration picker.
+    borMaximumDurationSeconds?: number;
+
+    // What the sender picked in the duration picker for this draft; undefined uses borDurationSeconds.
+    durationSeconds?: number;
 }

@@ -5,8 +5,12 @@ import React, {useCallback} from 'react';
 
 import CompassIcon from '@components/compass_icon';
 import PressableOpacity from '@components/pressable_opacity';
+import {Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
+import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
+import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {changeOpacity} from '@utils/theme';
 
 import {style} from '../post_priority_action';
@@ -18,20 +22,26 @@ type Props = {
     defaultBorConfig: PostBoRConfig;
 }
 
+// BoRQuickAction opens the burn-on-read duration picker: off, a stepped duration, or a custom one, capped by the
+// administrator's maximum. One tap, one place, same pattern as the message priority picker.
 export default function BoRQuickAction({testId, defaultBorConfig, postBoRConfig, updatePostBoRStatus}: Props) {
     const theme = useTheme();
-    const iconColor = changeOpacity(theme.centerChannelColor, 0.64);
+    const {blurAndDismissKeyboard} = useKeyboardState();
+    const iconColor = postBoRConfig?.enabled ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.64);
 
-    const toggleEnabled = useCallback(() => {
-        const config = {...(postBoRConfig || defaultBorConfig)};
-        config.enabled = !config.enabled;
-        updatePostBoRStatus(config);
-    }, [defaultBorConfig, postBoRConfig, updatePostBoRStatus]);
+    const onPress = useCallback(async () => {
+        await blurAndDismissKeyboard();
+        CallbackStore.setCallback(updatePostBoRStatus);
+        navigateToScreen(Screens.BURN_DURATION_PICKER, {
+            postBoRConfig: postBoRConfig || defaultBorConfig,
+            defaultBorConfig,
+        });
+    }, [blurAndDismissKeyboard, defaultBorConfig, postBoRConfig, updatePostBoRStatus]);
 
     return (
         <PressableOpacity
             style={style.icon}
-            onPress={toggleEnabled}
+            onPress={onPress}
         >
             <CompassIcon
                 testID={testId}

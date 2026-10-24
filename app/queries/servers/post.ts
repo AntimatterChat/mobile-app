@@ -24,6 +24,7 @@ const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 
 const DEFAULT_BURN_ON_READ_DURATION_SECONDS = '600';
 const DEFAULT_BURN_ON_READ_MAXIMUM_TTL_SECONDS = '604800';
+const DEFAULT_BURN_ON_READ_MAXIMUM_DURATION_SECONDS = '86400';
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
@@ -292,14 +293,16 @@ export const observeIsBoREnabled = (database: Database) => {
 export const observeBoRConfig = (database: Database) => {
     const borDurationSecondsObservable = observeConfigIntValue(database, 'BurnOnReadDurationSeconds');
     const maxBoRDurationSecondsStringObservable = observeConfigIntValue(database, 'BurnOnReadMaximumTimeToLiveSeconds');
+    const maxBoRPerMessageDurationObservable = observeConfigIntValue(database, 'BurnOnReadMaximumDurationSeconds');
 
     // merge all observables and return single observable of object with both values
-    return combineLatest([borDurationSecondsObservable, maxBoRDurationSecondsStringObservable]).pipe(
-        switchMap(([borDurationSeconds, borMaximumTimeToLiveSeconds]) => {
+    return combineLatest([borDurationSecondsObservable, maxBoRDurationSecondsStringObservable, maxBoRPerMessageDurationObservable]).pipe(
+        switchMap(([borDurationSeconds, borMaximumTimeToLiveSeconds, borMaximumDurationSeconds]) => {
             const borConfig = {
                 enabled: false,
                 borDurationSeconds: borDurationSeconds || parseInt(DEFAULT_BURN_ON_READ_DURATION_SECONDS, 10),
                 borMaximumTimeToLiveSeconds: borMaximumTimeToLiveSeconds || parseInt(DEFAULT_BURN_ON_READ_MAXIMUM_TTL_SECONDS, 10),
+                borMaximumDurationSeconds: borMaximumDurationSeconds || parseInt(DEFAULT_BURN_ON_READ_MAXIMUM_DURATION_SECONDS, 10),
             };
             return of$(borConfig);
         }),

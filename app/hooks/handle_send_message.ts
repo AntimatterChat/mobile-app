@@ -142,6 +142,13 @@ export const useHandleSendMessage = ({
             post.props = {...postProps};
         }
 
+        if (postBoRConfig?.enabled) {
+            // read_duration is the duration picked in the burn-on-read picker, in milliseconds (the server clamps it
+            // to the administrator's maximum, and falls back to the configured default when there's none).
+            const durationSeconds = postBoRConfig.durationSeconds ?? postBoRConfig.borDurationSeconds;
+            post.props = {...post.props, read_duration: durationSeconds * 1000};
+        }
+
         let response: CreateResponse;
         if (schedulingInfo) {
             response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles));
@@ -194,7 +201,7 @@ export const useHandleSendMessage = ({
 
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
-    }, [files, currentUserId, channelId, rootId, value, postPriority, postBoRConfig?.enabled, postProps, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft, onPostCreated]);
+    }, [files, currentUserId, channelId, rootId, value, postPriority, postBoRConfig, postProps, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft, onPostCreated]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);

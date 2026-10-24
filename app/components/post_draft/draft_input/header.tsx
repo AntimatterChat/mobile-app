@@ -96,7 +96,7 @@ export default function DraftInputHeader({
             )}
             {hasBoR &&
                 <BoRLabel
-                    durationSeconds={postBoRConfig.borDurationSeconds}
+                    durationSeconds={postBoRConfig.durationSeconds ?? postBoRConfig.borDurationSeconds}
                 />
             }
             {isSpoiler &&

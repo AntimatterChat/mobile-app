@@ -713,4 +713,56 @@ describe('useHandleSendMessage', () => {
         expect(defaultProps.clearDraft).toHaveBeenCalled();
         expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_LIST_SCROLL_TO_BOTTOM, Screens.CHANNEL);
     });
+
+    it('should send the server-configured default read_duration when the picker set none', async () => {
+        const props = {
+            ...defaultProps,
+            postBoRConfig: {
+                enabled: true,
+                borDurationSeconds: 60,
+                borMaximumTimeToLiveSeconds: 3600,
+            } as PostBoRConfig,
+        };
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        await act(async () => {
+            result.current.handleSendMessage();
+        });
+
+        expect(createPost).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.objectContaining({
+                type: 'burn_on_read',
+                props: expect.objectContaining({read_duration: 60000}),
+            }),
+            [],
+        );
+    });
+
+    it('should send the duration picked in the burn-on-read picker as read_duration (milliseconds)', async () => {
+        const props = {
+            ...defaultProps,
+            postBoRConfig: {
+                enabled: true,
+                borDurationSeconds: 60,
+                borMaximumTimeToLiveSeconds: 3600,
+                borMaximumDurationSeconds: 86400,
+                durationSeconds: 900,
+            } as PostBoRConfig,
+        };
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        await act(async () => {
+            result.current.handleSendMessage();
+        });
+
+        expect(createPost).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.objectContaining({
+                type: 'burn_on_read',
+                props: expect.objectContaining({read_duration: 900000}),
+            }),
+            [],
+        );
+    });
 });

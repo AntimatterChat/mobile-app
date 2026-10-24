@@ -57,6 +57,13 @@ export enum PostPriorityType {
     IMPORTANT = 'important',
 }
 
+// Burn-on-read: how long a message lives once read, picked per message (the composer's duration picker), within the
+// administrator's maximum (config BurnOnReadMaximumDurationSeconds). The steps, in seconds: 1 min, 15 min, 30 min,
+// 1 h, 4 h, 1 day; the shortest matches the server's.
+export const BURN_DURATION_STEPS_SECONDS = [60, 15 * 60, 30 * 60, 60 * 60, 4 * 60 * 60, 24 * 60 * 60];
+export const BURN_MIN_DURATION_SECONDS = 60;
+export const BURN_DEFAULT_MAXIMUM_DURATION_SECONDS = 24 * 60 * 60;
+
 export const POST_TIME_TO_FAIL = toMilliseconds({seconds: 10});
 
 export const BOR_POST_CLEANUP_MIN_RUN_INTERVAL = toMilliseconds({minutes: 15});

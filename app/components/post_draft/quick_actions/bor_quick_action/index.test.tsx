@@ -1,26 +1,37 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent} from '@testing-library/react-native';
+import {fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
-import NetworkManager from '@managers/network_manager';
-import {renderWithEverything} from '@test/intl-test-helper';
-import TestHelper from '@test/test_helper';
+import {useKeyboardState} from '@context/keyboard_state';
+import {Screens} from '@constants';
+import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
+import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import BoRQuickAction from './index';
 
-import type ServerDataOperator from '@database/operator/server_data_operator';
-import type {Database} from '@nozbe/watermelondb';
+jest.mock('@context/keyboard_state', () => ({
+    useKeyboardState: jest.fn(),
+}));
 
-const SERVER_URL = 'https://appv1.mattermost.com';
+jest.mock('@screens/navigation', () => ({
+    navigateToScreen: jest.fn(),
+}));
 
-// this is needed to when using the useServerUrl hook
-jest.mock('@context/server', () => ({
-    useServerUrl: jest.fn(() => SERVER_URL),
+jest.mock('@store/callback_store', () => ({
+    setCallback: jest.fn(),
+    getCallback: jest.fn(),
+    removeCallback: jest.fn(),
 }));
 
 describe('BoRQuickAction', () => {
+    const mockBlurAndDismissKeyboard = jest.fn(() => Promise.resolve());
+    const mockUseKeyboardState = jest.mocked(useKeyboardState);
+    const mockNavigateToScreen = jest.mocked(navigateToScreen);
+    const mockSetCallback = jest.mocked(CallbackStore.setCallback);
+
     const baseProps = {
         testId: 'bor_quick_action',
         postBoRConfig: undefined,
@@ -29,109 +40,60 @@ describe('BoRQuickAction', () => {
             enabled: false,
             borDurationSeconds: 300,
             borMaximumTimeToLiveSeconds: 3600,
+            borMaximumDurationSeconds: 86400,
         } as PostBoRConfig,
     };
 
-    let database: Database;
-    let operator: ServerDataOperator;
-
-    beforeAll(async () => {
-        const server = await TestHelper.setupServerDatabase(SERVER_URL);
-        database = server.database;
-        operator = server.operator;
-
-        await operator.handleConfigs({
-            configs: [
-                {id: 'EnableBurnOnRead', value: 'true'},
-                {id: 'BurnOnReadDurationSeconds', value: '300'},
-                {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
-            ],
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
-    });
-
     beforeEach(() => {
         jest.clearAllMocks();
+        mockUseKeyboardState.mockReturnValue({
+            blurAndDismissKeyboard: mockBlurAndDismissKeyboard,
+        } as unknown as ReturnType<typeof useKeyboardState>);
     });
 
-    afterAll(async () => {
-        await TestHelper.tearDown();
-        NetworkManager.invalidateClient(SERVER_URL);
+    it('renders the BoR quick action button', () => {
+        const {getByTestId} = renderWithIntlAndTheme(<BoRQuickAction {...baseProps}/>);
+
+        expect(getByTestId('bor_quick_action')).toBeVisible();
     });
 
-    it('renders the BoR quick action button', async () => {
-        const {getByTestId} = renderWithEverything(<BoRQuickAction {...baseProps}/>, {database});
+    it('opens the duration picker with the default config when postBoRConfig is undefined', async () => {
+        const {getByTestId} = renderWithIntlAndTheme(<BoRQuickAction {...baseProps}/>);
 
-        const borButton = getByTestId('bor_quick_action');
-        expect(borButton).toBeVisible();
-    });
+        fireEvent.press(getByTestId('bor_quick_action'));
 
-    it('toggles BoR status from disabled to enabled when pressed', async () => {
-        const updatePostBoRStatusMock = jest.fn();
-        const props = {
-            ...baseProps,
-            updatePostBoRStatus: updatePostBoRStatusMock,
-            postBoRConfig: {
-                enabled: false,
-                borDurationSeconds: 300,
-                borMaximumTimeToLiveSeconds: 3600,
-            } as PostBoRConfig,
-        };
-
-        const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
-
-        const borButton = getByTestId('bor_quick_action');
-        fireEvent.press(borButton);
-
-        expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
-            enabled: true,
-            borDurationSeconds: 300,
-            borMaximumTimeToLiveSeconds: 3600,
+        await waitFor(() => {
+            expect(mockBlurAndDismissKeyboard).toHaveBeenCalledTimes(1);
+            expect(mockSetCallback).toHaveBeenCalledWith(baseProps.updatePostBoRStatus);
+            expect(mockNavigateToScreen).toHaveBeenCalledWith(Screens.BURN_DURATION_PICKER, {
+                postBoRConfig: baseProps.defaultBorConfig,
+                defaultBorConfig: baseProps.defaultBorConfig,
+            });
         });
     });
 
-    it('toggles BoR status from enabled to disabled when pressed', async () => {
-        const updatePostBoRStatusMock = jest.fn();
-        const props = {
-            ...baseProps,
-            updatePostBoRStatus: updatePostBoRStatusMock,
-            postBoRConfig: {
-                enabled: true,
-                borDurationSeconds: 300,
-                borMaximumTimeToLiveSeconds: 3600,
-            } as PostBoRConfig,
-        };
-
-        const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
-
-        const borButton = getByTestId('bor_quick_action');
-        fireEvent.press(borButton);
-
-        expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
-            enabled: false,
-            borDurationSeconds: 300,
-            borMaximumTimeToLiveSeconds: 3600,
-        });
-    });
-
-    it('uses default config when postBoRConfig is undefined', async () => {
-        const updatePostBoRStatusMock = jest.fn();
-        const props = {
-            ...baseProps,
-            updatePostBoRStatus: updatePostBoRStatusMock,
-            postBoRConfig: undefined,
-        };
-
-        const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
-
-        const borButton = getByTestId('bor_quick_action');
-        fireEvent.press(borButton);
-
-        expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
+    it('opens the duration picker with the draft config when postBoRConfig is set', async () => {
+        const postBoRConfig: PostBoRConfig = {
             enabled: true,
             borDurationSeconds: 300,
             borMaximumTimeToLiveSeconds: 3600,
+            borMaximumDurationSeconds: 86400,
+            durationSeconds: 900,
+        };
+        const {getByTestId} = renderWithIntlAndTheme(
+            <BoRQuickAction
+                {...baseProps}
+                postBoRConfig={postBoRConfig}
+            />,
+        );
+
+        fireEvent.press(getByTestId('bor_quick_action'));
+
+        await waitFor(() => {
+            expect(mockNavigateToScreen).toHaveBeenCalledWith(Screens.BURN_DURATION_PICKER, {
+                postBoRConfig,
+                defaultBorConfig: baseProps.defaultBorConfig,
+            });
         });
     });
 });
