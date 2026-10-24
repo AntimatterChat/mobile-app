@@ -20,14 +20,16 @@ describe('AssistantOption', () => {
         jest.clearAllMocks();
     });
 
-    it('opens the Assistant screen for the channel as a label (quick actions)', async () => {
-        const {getByTestId} = renderWithIntlAndTheme(
+    it('opens the Assistant screen for the channel as a label (quick actions), with a butler-like icon', async () => {
+        const {getByTestId, UNSAFE_getByProps: getByProps} = renderWithIntlAndTheme(
             <AssistantOption
                 channelId='channel1'
                 showAsLabel={true}
                 testID='channel.quick_actions.assistant'
             />,
         );
+
+        expect(getByProps({name: 'robot-happy'})).toBeTruthy();
 
         fireEvent.press(getByTestId('channel.quick_actions.assistant'));
         await Promise.resolve();
@@ -36,13 +38,15 @@ describe('AssistantOption', () => {
         expect(goToAssistant).toHaveBeenCalledWith('channel1');
     });
 
-    it('opens the Assistant screen for the channel as an option item', async () => {
-        const {getByTestId} = renderWithIntlAndTheme(
+    it('opens the Assistant screen for the channel as an option item, with a butler-like icon', async () => {
+        const {getByTestId, UNSAFE_getByProps: getByProps} = renderWithIntlAndTheme(
             <AssistantOption
                 channelId='channel1'
                 testID='channel_info.assistant'
             />,
         );
+
+        expect(getByProps({name: 'robot-happy'})).toBeTruthy();
 
         fireEvent.press(getByTestId('channel_info.assistant'));
         await Promise.resolve();

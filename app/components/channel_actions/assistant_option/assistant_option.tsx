@@ -41,7 +41,7 @@ const AssistantOption = ({
             <SlideUpPanelItem
                 onPress={openAssistant}
                 text={label}
-                leftIcon='creation-outline'
+                leftIcon='robot-happy'
                 testID={testID}
             />
         );
@@ -51,7 +51,7 @@ const AssistantOption = ({
         <OptionItem
             action={openAssistant}
             label={label}
-            icon='creation-outline'
+            icon='robot-happy'
             type={Platform.select({ios: 'arrow', default: 'default'})}
             testID={testID}
         />
