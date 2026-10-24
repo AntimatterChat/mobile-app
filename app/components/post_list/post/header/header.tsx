@@ -45,6 +45,7 @@ type HeaderProps = {
     author?: UserModel;
     commentCount: number;
     communityLook?: CommunityLook;
+    communityNickname?: string;
     currentUser?: UserModel;
     isAiGenerated: boolean;
     isAutoResponse: boolean;
@@ -93,7 +94,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = (props: HeaderProps) => {
     const {
-        author, commentCount = 0, communityLook = NO_LOOK, currentUser, isAiGenerated, isAutoResponse, isChannelAutotranslated, isCRTEnabled,
+        author, commentCount = 0, communityLook = NO_LOOK, communityNickname, currentUser, isAiGenerated, isAutoResponse, isChannelAutotranslated, isCRTEnabled,
         isEphemeral, isPendingOrFailed, isSystemPost, isWebHook,
         location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton,
     } = props;
@@ -103,7 +104,7 @@ const Header = (props: HeaderProps) => {
     const pendingPostStyle = isPendingOrFailed ? style.pendingPost : undefined;
     const isReplyPost = Boolean(post.rootId && !isEphemeral);
     const showReply = !isReplyPost && (location !== Screens.THREAD) && (shouldRenderReplyButton && (!rootPostAuthor && commentCount > 0));
-    const displayName = postUserDisplayName(post, author, postConfig.teammateNameDisplay, postConfig.enablePostUsernameOverride);
+    const displayName = postUserDisplayName(post, author, postConfig.teammateNameDisplay, postConfig.enablePostUsernameOverride, communityNickname);
     const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser?.locale, postConfig.teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
     const showCustomStatusEmoji = Boolean(

@@ -4,7 +4,8 @@
 import {act, fireEvent} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
-import {dismissBottomSheet} from '@screens/navigation';
+import {Screens} from '@constants';
+import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {confirmLeaveTeam, openJoinTeamModal} from '@utils/team_menu';
@@ -15,6 +16,7 @@ import type {Database} from '@nozbe/watermelondb';
 
 jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn().mockResolvedValue(undefined),
+    navigateToScreen: jest.fn(),
 }));
 
 jest.mock('@utils/team_menu', () => ({
@@ -106,5 +108,58 @@ describe('TeamMenu', () => {
         expect(passedServerUrl).toBe(serverUrl);
         expect(teamId).toBe('team-id');
         expect(displayName).toBe('My Team');
+    });
+
+    it('always shows the profile, privacy and notification rows, regardless of the flags', () => {
+        const {getByTestId} = renderWithEverything(
+            <TeamMenu {...getBaseProps({canJoinOtherTeams: false, hasMoreThanOneTeam: false})}/>,
+            {database, serverUrl},
+        );
+
+        expect(getByTestId('team_menu.your_profile')).toBeTruthy();
+        expect(getByTestId('team_menu.privacy_settings')).toBeTruthy();
+        expect(getByTestId('team_menu.notification_settings')).toBeTruthy();
+    });
+
+    it('dismisses the sheet and opens the community profile screen when Your profile is pressed', async () => {
+        const {getByTestId} = renderWithEverything(
+            <TeamMenu {...getBaseProps()}/>,
+            {database, serverUrl},
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('team_menu.your_profile'));
+        });
+
+        expect(dismissBottomSheet).toHaveBeenCalledTimes(1);
+        expect(navigateToScreen).toHaveBeenCalledWith(Screens.COMMUNITY_PROFILE, {teamId: 'team-id', communityName: 'My Team'});
+    });
+
+    it('dismisses the sheet and opens the privacy settings screen when Privacy settings is pressed', async () => {
+        const {getByTestId} = renderWithEverything(
+            <TeamMenu {...getBaseProps()}/>,
+            {database, serverUrl},
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('team_menu.privacy_settings'));
+        });
+
+        expect(dismissBottomSheet).toHaveBeenCalledTimes(1);
+        expect(navigateToScreen).toHaveBeenCalledWith(Screens.COMMUNITY_PRIVACY, {teamId: 'team-id'});
+    });
+
+    it('dismisses the sheet and opens the notification settings screen when Notification settings is pressed', async () => {
+        const {getByTestId} = renderWithEverything(
+            <TeamMenu {...getBaseProps()}/>,
+            {database, serverUrl},
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('team_menu.notification_settings'));
+        });
+
+        expect(dismissBottomSheet).toHaveBeenCalledTimes(1);
+        expect(navigateToScreen).toHaveBeenCalledWith(Screens.COMMUNITY_NOTIFICATIONS, {teamId: 'team-id'});
     });
 });

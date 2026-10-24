@@ -93,13 +93,13 @@ describe('components/channel_list/header', () => {
     });
 
     describe('team menu affordance', () => {
-        it('hides the chevron and does not open a sheet when no team menu items are available', () => {
+        it('always shows the chevron and opens a sheet, even with neither canJoinOtherTeams nor hasMoreThanOneTeam (the menu always has the profile, privacy and notification rows)', () => {
             const wrapper = renderWithIntl(<Header {...getBaseProps()}/>);
 
-            expect(wrapper.queryByTestId('channel_list_header.team.chevron')).toBeNull();
+            expect(wrapper.getByTestId('channel_list_header.team.chevron')).toBeTruthy();
 
             fireEvent.press(wrapper.getByTestId('channel_list_header.team.button'));
-            expect(bottomSheet).not.toHaveBeenCalled();
+            expect(bottomSheet).toHaveBeenCalledTimes(1);
         });
 
         it('shows the chevron and opens a sheet when canJoinOtherTeams is true', () => {

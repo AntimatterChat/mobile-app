@@ -6,6 +6,7 @@ import {of as of$} from 'rxjs';
 
 import {withServerUrl} from '@context/server';
 import {observeCommunityLook, observeCommunityOfChannel} from '@queries/servers/community_groups';
+import {observeCommunityNickname} from '@queries/servers/community_profile';
 
 import Header from './header';
 
@@ -22,6 +23,7 @@ type OwnProps = WithDatabaseArgs & {
 // The author's name shows in their role's colour and with their team's tag, of the conversation's community.
 const enhanced = withObservables(['author', 'post'], ({author, database, post, serverUrl}: OwnProps) => ({
     communityLook: post.userId ? observeCommunityLook(serverUrl, observeCommunityOfChannel(database, post.channelId), post.userId, author ? author.observe() : of$(undefined)) : of$({}),
+    communityNickname: post.userId ? observeCommunityNickname(database, serverUrl, post.channelId, post.userId) : of$(undefined),
 }));
 
 export default withDatabase(withServerUrl(enhanced(Header)));

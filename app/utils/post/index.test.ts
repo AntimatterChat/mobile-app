@@ -567,6 +567,21 @@ describe('post utils', () => {
             const result = postUserDisplayName(post, author, 'nickname', false);
             expect(result).toBe('user1');
         });
+
+        it("should show the author's community nickname when given one", () => {
+            const post = TestHelper.fakePostModel({props: {from_webhook: 'false'}});
+            const author = TestHelper.fakeUserModel({username: 'user1', locale: 'en'});
+
+            const result = postUserDisplayName(post, author, undefined, false, 'Nicky');
+            expect(result).toBe('Nicky');
+        });
+
+        it("should prefer a webhook's override username over a community nickname", () => {
+            const post = TestHelper.fakePostModel({props: {from_webhook: 'true', override_username: 'webhook_user'}});
+
+            const result = postUserDisplayName(post, undefined, undefined, true, 'Nicky');
+            expect(result).toBe('webhook_user');
+        });
     });
 
     describe('isNotificationSilenced', () => {

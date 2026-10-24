@@ -14,6 +14,7 @@ import {
     saveFavoriteChannel,
     savePostPreference,
     savePreference,
+    deletePreference,
     deleteSavedPost,
     openChannelIfNeeded,
     openAllUnreadChannels,
@@ -130,6 +131,31 @@ describe('preferences', () => {
         expect(result.error).toBeUndefined();
         expect(result.preferences).toBeDefined();
         expect(result.preferences?.length).toBe(0);
+    });
+
+    it('deletePreference - empty preferences', async () => {
+        const result = await deletePreference(serverUrl, []);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.preferences).toEqual([]);
+    });
+
+    it('deletePreference - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await deletePreference(serverUrl, [preference1]);
+
+        expect(result.error).toBeUndefined();
+        expect(result.preferences).toEqual([preference1]);
+        expect(mockClient.deletePreferences).toHaveBeenCalledWith(user1.id, [preference1]);
+    });
+
+    it('deletePreference - handle error', async () => {
+        mockClient.deletePreferences.mockImplementationOnce(jest.fn(throwFunc));
+
+        const result = await deletePreference(serverUrl, [preference1]);
+
+        expect(result.error).toBeDefined();
     });
 
     it('deleteSavedPost - handle not found database', async () => {

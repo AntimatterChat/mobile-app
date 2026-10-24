@@ -110,7 +110,10 @@ export function fromAutoResponder(post: PostModel): boolean {
     return Boolean(post.type && (post.type === Post.POST_TYPES.SYSTEM_AUTO_RESPONDER));
 }
 
-export function postUserDisplayName(post: PostModel, author?: UserModel, teammateNameDisplay?: string, enablePostUsernameOverride = false) {
+// communityNickname, when given, is the author's own nickname for the post's community (never set for direct or
+// group messages, which always show the global profile): it shows instead of their global display name, but a
+// webhook's own override_username still wins (that's the webhook's name, not the author's).
+export function postUserDisplayName(post: PostModel, author?: UserModel, teammateNameDisplay?: string, enablePostUsernameOverride = false, communityNickname?: string) {
     const overrideUsername = ensureString(post.props?.override_username);
     if (
         isFromWebhook(post) &&
@@ -118,6 +121,10 @@ export function postUserDisplayName(post: PostModel, author?: UserModel, teammat
         overrideUsername
     ) {
         return overrideUsername;
+    }
+
+    if (communityNickname) {
+        return communityNickname;
     }
 
     return displayUsername(author, author?.locale || DEFAULT_LOCALE, teammateNameDisplay, true);

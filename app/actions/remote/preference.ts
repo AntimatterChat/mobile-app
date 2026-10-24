@@ -11,7 +11,7 @@ import {getPreferenceAsBool} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
 import {queryAllUnreadDMsAndGMsIds, getChannelById} from '@queries/servers/channel';
 import {truncateCrtRelatedTables} from '@queries/servers/entry';
-import {queryPreferencesByCategoryAndName, querySavedPostsPreferences} from '@queries/servers/preference';
+import {deletePreferences as deletePreferencesLocal, queryPreferencesByCategoryAndName, querySavedPostsPreferences} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {isDMorGM} from '@utils/channel';
@@ -111,6 +111,30 @@ export const savePreference = async (serverUrl: string, preferences: PreferenceT
         return {preferences: preferenceModels};
     } catch (error) {
         logDebug('error on savePreference', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+// deletePreference removes preferences on the server and locally. Unlike savePreference, there is no server-wide
+// generic delete-preferences remote action yet, so callers (e.g. per-community privacy and notification settings)
+// use this one directly.
+export const deletePreference = async (serverUrl: string, preferences: PreferenceType[]) => {
+    try {
+        if (!preferences.length) {
+            return {preferences: []};
+        }
+
+        const client = NetworkManager.getClient(serverUrl);
+        const serverDatabase = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const userId = await getCurrentUserId(serverDatabase.database);
+
+        await client.deletePreferences(userId, preferences);
+        await deletePreferencesLocal(serverDatabase, preferences);
+
+        return {preferences};
+    } catch (error) {
+        logDebug('error on deletePreference', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

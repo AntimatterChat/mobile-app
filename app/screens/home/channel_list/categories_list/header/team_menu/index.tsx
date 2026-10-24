@@ -5,8 +5,9 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import {confirmLeaveTeam, openJoinTeamModal} from '@utils/team_menu';
 
 type Props = {
@@ -30,8 +31,41 @@ const TeamMenu = ({canJoinOtherTeams, hasMoreThanOneTeam, currentTeamId, current
         confirmLeaveTeam(intl, serverUrl, currentTeamId, currentTeamDisplayName);
     }, [intl, serverUrl, currentTeamId, currentTeamDisplayName]);
 
+    const onYourProfile = useCallback(async () => {
+        await dismissBottomSheet();
+        navigateToScreen(Screens.COMMUNITY_PROFILE, {teamId: currentTeamId, communityName: currentTeamDisplayName});
+    }, [currentTeamId, currentTeamDisplayName]);
+
+    const onPrivacySettings = useCallback(async () => {
+        await dismissBottomSheet();
+        navigateToScreen(Screens.COMMUNITY_PRIVACY, {teamId: currentTeamId});
+    }, [currentTeamId]);
+
+    const onNotificationSettings = useCallback(async () => {
+        await dismissBottomSheet();
+        navigateToScreen(Screens.COMMUNITY_NOTIFICATIONS, {teamId: currentTeamId});
+    }, [currentTeamId]);
+
     return (
         <>
+            <SlideUpPanelItem
+                leftIcon='account-outline'
+                onPress={onYourProfile}
+                testID='team_menu.your_profile'
+                text={intl.formatMessage({id: 'mobile.team_menu.your_profile', defaultMessage: 'Your profile in this community…'})}
+            />
+            <SlideUpPanelItem
+                leftIcon='shield-account-outline'
+                onPress={onPrivacySettings}
+                testID='team_menu.privacy_settings'
+                text={intl.formatMessage({id: 'mobile.team_menu.privacy_settings', defaultMessage: 'Privacy settings…'})}
+            />
+            <SlideUpPanelItem
+                leftIcon='bell-outline'
+                onPress={onNotificationSettings}
+                testID='team_menu.notification_settings'
+                text={intl.formatMessage({id: 'mobile.team_menu.notification_settings', defaultMessage: 'Notification settings…'})}
+            />
             {canJoinOtherTeams && (
                 <SlideUpPanelItem
                     leftIcon='account-multiple-plus-outline'

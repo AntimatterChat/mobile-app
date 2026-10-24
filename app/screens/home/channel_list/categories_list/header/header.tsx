@@ -166,7 +166,9 @@ const ChannelListHeader = ({
         marginLeft.value = iconPad ? 50 : 0;
     }, [iconPad, marginLeft]);
 
-    const hasTeamMenuItems = canJoinOtherTeams || hasMoreThanOneTeam;
+    // The team menu always has at least the profile, privacy and notification rows, so the header stays pressable
+    // regardless of canJoinOtherTeams/hasMoreThanOneTeam.
+    const hasTeamMenuItems = true;
 
     const onPress = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => {
@@ -199,7 +201,7 @@ const ChannelListHeader = ({
     }, [canCreateChannels, canInvitePeople, canJoinChannels]));
 
     const onTeamPress = usePreventDoubleTap(useCallback(() => {
-        const rowCount = (canJoinOtherTeams ? 1 : 0) + (hasMoreThanOneTeam ? 1 : 0);
+        const rowCount = 3 + (canJoinOtherTeams ? 1 : 0) + (hasMoreThanOneTeam ? 1 : 0);
 
         const renderContent = () => (
             <TeamMenu
