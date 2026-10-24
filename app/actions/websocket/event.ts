@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {handleAssistantCardAdded, handleAssistantCardUpdated, handleAssistantOfferUpdated} from '@assistant/actions/websocket';
 import {handleCalendarEvents} from '@calendar/actions/websocket';
 
 import * as bookmark from '@actions/local/channel_bookmark';
@@ -382,6 +383,19 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.AGENTS_CONVERSATION_UPDATED:
             handleAgentConversationUpdated(serverUrl, msg);
+            break;
+
+        // Assistant
+        case WebsocketEvents.ASSISTANT_CARD_ADDED:
+            handleAssistantCardAdded(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.ASSISTANT_CARD_UPDATED:
+            handleAssistantCardUpdated(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.ASSISTANT_OFFER_UPDATED:
+            handleAssistantOfferUpdated(serverUrl, msg);
             break;
 
         // Burn on Read Events

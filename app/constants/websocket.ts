@@ -120,6 +120,11 @@ const WebsocketEvents = {
     AGENTS_TOOL_CALL_STATUS: 'custom_mattermost-ai_tool_call_status_updated',
     AGENTS_CONVERSATION_UPDATED: 'custom_mattermost-ai_conversation_updated',
 
+    // Assistant (native, not a plugin)
+    ASSISTANT_CARD_ADDED: 'assistant_card_added',
+    ASSISTANT_CARD_UPDATED: 'assistant_card_updated',
+    ASSISTANT_OFFER_UPDATED: 'assistant_offer_updated',
+
     // Burn on Read
     BOR_POST_REVEALED: 'post_revealed',
     BOR_POST_BURNED: 'post_burned',

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {handleAssistantReconnect} from '@assistant/actions/websocket';
 import {handleCalendarReconnect} from '@calendar/actions/websocket';
 import RNUtils from '@mattermost/rnutils';
 
@@ -107,6 +108,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         handleAgentsReconnect(serverUrl);
         handleAmPluginsReconnect(serverUrl);
         handleCalendarReconnect(serverUrl);
+        handleAssistantReconnect(serverUrl);
         refreshOnTopPosts(serverUrl);
 
         if (isSupportedServerCalls(config?.Version)) {
