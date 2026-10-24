@@ -53,12 +53,6 @@ export type AssistantCard = {
     dedupe_key: string;
     result?: string;
 
-    // Optional: a short numeric series for insight cards backed by a time series tool
-    // (e.g. a Prometheus query). Not documented as a fixed field in ASSISTANT_API.md's
-    // examples (neither sample card carries one); drawn only when present and long
-    // enough to plot, per the request for a sparkline "when the result has data points".
-    data_points?: number[];
-
     status: AssistantCardStatus;
     pinned: boolean;
     offer_id?: string;

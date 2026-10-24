@@ -74,8 +74,8 @@ describe('InsightCard', () => {
         expect(getByText('Likely: card 91% · tool 88%')).toBeTruthy();
     });
 
-    it('draws a sparkline when the card has data points', () => {
-        const card = makeCard({data_points: [1, 5, 3, 8, 2]});
+    it('draws a sparkline when the result has a points line', () => {
+        const card = makeCard({result: 'www-1 CPU, last hour: 23% average\n  points: 1:1, 2:5, 3:3, 4:8, 5:2'});
         const {getByTestId} = renderWithIntlAndTheme(
             <InsightCard
                 card={card}
@@ -90,8 +90,8 @@ describe('InsightCard', () => {
         expect(getByTestId('insight_card.sparkline')).toBeTruthy();
     });
 
-    it('does not draw a sparkline without enough data points', () => {
-        const card = makeCard({data_points: [1]});
+    it('does not draw a sparkline when the result has no points line', () => {
+        const card = makeCard({result: 'www-1 CPU, last hour: 23% average'});
         const {queryByTestId} = renderWithIntlAndTheme(
             <InsightCard
                 card={card}

@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import Sparkline from '@assistant/components/sparkline';
-import {ASSISTANT_MIN_SPARKLINE_POINTS} from '@assistant/constants';
 import {sourceFromTool} from '@assistant/utils/source';
+import {extractDataPoints} from '@assistant/utils/sparkline_data';
 import React, {useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
@@ -115,7 +115,7 @@ const InsightCard = ({card, onPost, onPin, onDismiss, onMute, onGoToMessage, bus
         }
     }, [onGoToMessage, triggerPostId]));
 
-    const hasSparkline = (card.data_points?.length ?? 0) >= ASSISTANT_MIN_SPARKLINE_POINTS;
+    const dataPoints = useMemo(() => extractDataPoints(card.result), [card.result]);
     const isPosted = card.status === 'posted';
 
     return (
@@ -138,10 +138,10 @@ const InsightCard = ({card, onPost, onPin, onDismiss, onMute, onGoToMessage, bus
                     {card.result}
                 </Text>
             )}
-            {hasSparkline && (
+            {dataPoints && (
                 <View style={styles.sparklineRow}>
                     <Sparkline
-                        data={card.data_points!}
+                        data={dataPoints}
                         testID={`${testID}.sparkline`}
                     />
                 </View>
