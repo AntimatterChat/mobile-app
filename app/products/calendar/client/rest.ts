@@ -42,7 +42,8 @@ const ClientCalendar = (superclass: any) => class extends superclass {
     };
 
     cancelMeeting = async (meetingId: string, scope?: CancelScope) => {
-        return this.doFetch(`${this.getMeetingRoute(meetingId)}${buildQueryString({scope})}`, {method: 'delete'});
+        const query = scope ? buildQueryString({scope}) : '';
+        return this.doFetch(`${this.getMeetingRoute(meetingId)}${query}`, {method: 'delete'});
     };
 
     rsvpMeeting = async (meetingId: string, request: RsvpRequest) => {

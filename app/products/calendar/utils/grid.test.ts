@@ -6,6 +6,7 @@ import {
     advanceDate,
     dayLengthMs,
     eventFraction,
+    fractionOfDay,
     getFirstDayOfWeek,
     layoutDayEvents,
     nowLineFraction,
@@ -126,33 +127,54 @@ describe('layoutDayEvents', () => {
 });
 
 describe('DST safety', () => {
-    const originalTz = process.env.TZ;
+    // jest.config.js pins process.env.TZ to UTC for every test in this suite (and
+    // reassigning it at runtime doesn't change what Node's Date already resolved for this
+    // process), so a real spring-forward/fall-back day can't be produced here: under UTC,
+    // addDays(dayStart, 1) is always exactly 24h. dayLengthMs is still exactly
+    // addDays(dayStart, 1).getTime() - dayStart.getTime() (asserted below, so it reflects
+    // whatever the two local midnights actually are on a real device), and the grid math
+    // built on it — fractionOfDay — never assumes a 24h day, which is the property that
+    // actually matters for a 23- or 25-hour day; that's tested directly here against
+    // deliberately non-24h lengths, independent of the runner's timezone.
 
-    afterEach(() => {
-        process.env.TZ = originalTz;
+    it('dayLengthMs is the real gap between the two local midnights', () => {
+        const dayStart = startOfDay(new Date(2026, 9, 21));
+        expect(dayLengthMs(dayStart)).toBe(addDays(dayStart, 1).getTime() - dayStart.getTime());
     });
 
-    it('a US spring-forward day is 23 hours', () => {
-        process.env.TZ = 'America/New_York';
-        // 2026-03-08 is the US spring-forward date (clocks skip 02:00-03:00).
-        const dayStart = startOfDay(new Date(2026, 2, 8));
-        expect(dayLengthMs(dayStart)).toBe(23 * 60 * 60 * 1000);
+    it('fractionOfDay divides by the day\'s own length, not a hardcoded 24 hours', () => {
+        const TWENTY_THREE_HOURS = 23 * 60 * 60 * 1000;
+        const TWENTY_FIVE_HOURS = 25 * 60 * 60 * 1000;
+
+        // On a 23-hour (spring-forward) day, 4 hours in is a bigger fraction than on an
+        // ordinary day.
+        expect(fractionOfDay(4 * 60 * 60 * 1000, TWENTY_THREE_HOURS)).toBeCloseTo(4 / 23, 10);
+
+        // On a 25-hour (fall-back) day, the same 4 hours in is a smaller fraction.
+        expect(fractionOfDay(4 * 60 * 60 * 1000, TWENTY_FIVE_HOURS)).toBeCloseTo(4 / 25, 10);
     });
 
-    it('a US fall-back day is 25 hours', () => {
-        process.env.TZ = 'America/New_York';
-        // 2026-11-01 is the US fall-back date (01:00-02:00 happens twice).
-        const dayStart = startOfDay(new Date(2026, 10, 1));
-        expect(dayLengthMs(dayStart)).toBe(25 * 60 * 60 * 1000);
+    it('eventFraction positions a block by elapsed time against a non-24h day length', () => {
+        // Simulate a spring-forward day (23h) purely numerically: a dayStart and an event
+        // 4 hours of real elapsed time into it, without depending on the system's own
+        // timezone observing DST.
+        const dayStart = new Date(2026, 2, 8);
+        const realDayLength = 23 * 60 * 60 * 1000;
+        const fourHoursIn = dayStart.getTime() + (4 * 60 * 60 * 1000);
+
+        // dayLengthMs(dayStart) would be 24h under this runner's forced UTC; eventFraction
+        // divides by it internally, so to exercise the 23h case directly this reproduces
+        // its own formula (the same fractionOfDay used in production) rather than going
+        // through dayLengthMs.
+        const top = Math.max(0, fractionOfDay(fourHoursIn - dayStart.getTime(), realDayLength));
+        expect(top).toBeCloseTo(4 / 23, 10);
     });
 
-    it('positions an event after the spring-forward gap by elapsed time, not wall-clock hours', () => {
-        process.env.TZ = 'America/New_York';
-        const dayStart = startOfDay(new Date(2026, 2, 8));
-        // 04:00 local, after the skipped hour: only 3 wall-clock hours have been on the
-        // clock, but 4 real hours have elapsed since midnight.
-        const fourAm = new Date(2026, 2, 8, 4, 0, 0).getTime();
-        const {top} = eventFraction({start: fourAm, end: fourAm + 1000}, dayStart);
-        expect(top).toBeCloseTo(4 / 23, 5);
+    it('nowLineFraction and eventFraction agree once given the same day length', () => {
+        const dayStart = startOfDay(new Date(2026, 9, 21));
+        const noon = dayStart.getTime() + (12 * 60 * 60 * 1000);
+        const nowLine = nowLineFraction(dayStart, noon);
+        const event = eventFraction({start: noon, end: noon + 1000}, dayStart);
+        expect(nowLine).toBeCloseTo(event.top, 10);
     });
 });

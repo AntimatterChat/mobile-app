@@ -41,7 +41,8 @@ type PostType = PostTypesUserCreatable
     | 'custom_antimatter_note'
     | 'custom_am_whiteboard'
     | 'custom_todo'
-    | 'custom_antimatter_gif';
+    | 'custom_antimatter_gif'
+    | 'custom_calendar_meeting';
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph' | 'permalink';
 

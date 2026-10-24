@@ -55,9 +55,18 @@ export function weekDays(weekStart: Date): Date[] {
 }
 
 // dayLengthMs is 24h, except on a DST transition day (23h or 25h), computed from the two
-// local midnights rather than assumed.
+// local midnights (two real Date objects, via addDays) rather than assumed.
 export function dayLengthMs(dayStart: Date): number {
     return addDays(dayStart, 1).getTime() - dayStart.getTime();
+}
+
+// fractionOfDay is the grid math both nowLineFraction and eventFraction are built on: a
+// moment's position down a day of `length` milliseconds — never a hardcoded 24h, so a
+// 23- or 25-hour DST transition day positions correctly. Pulled out on its own so it can be
+// tested directly against a deliberately non-24h length, independent of the test runner's
+// own timezone (which jest.config.js pins to UTC, where no day actually has a transition).
+export function fractionOfDay(offsetMs: number, length: number): number {
+    return offsetMs / length;
 }
 
 // nowLineFraction is the now-line's position (0..1 down the day), or null when `now` isn't
@@ -68,7 +77,7 @@ export function nowLineFraction(dayStart: Date, now: number): number | null {
     if (offset < 0 || offset >= length) {
         return null;
     }
-    return offset / length;
+    return fractionOfDay(offset, length);
 }
 
 export type EventSpan = {
@@ -80,8 +89,8 @@ export type EventSpan = {
 // (an occurrence can't cross midnight server-side, but this stays safe if one ever did).
 export function eventFraction(span: EventSpan, dayStart: Date): {top: number; height: number} {
     const length = dayLengthMs(dayStart);
-    const top = Math.max(0, (span.start - dayStart.getTime()) / length);
-    const bottom = Math.min(1, (span.end - dayStart.getTime()) / length);
+    const top = Math.max(0, fractionOfDay(span.start - dayStart.getTime(), length));
+    const bottom = Math.min(1, fractionOfDay(span.end - dayStart.getTime(), length));
     return {top, height: Math.max(0, bottom - top)};
 }
 

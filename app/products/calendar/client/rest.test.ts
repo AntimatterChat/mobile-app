@@ -3,6 +3,8 @@
 
 import ClientCalendar from './rest';
 
+import type {MeetingRequest} from '../types/calendar';
+
 describe('ClientCalendar', () => {
     const mockDoFetch = jest.fn();
     const mockGetPluginRoute = jest.fn(() => '/plugins/com.antimatterchat.calendar');
@@ -26,7 +28,7 @@ describe('ClientCalendar', () => {
     });
 
     it('editMeeting', async () => {
-        const request = {summary: 'Sync', description: '', start: 1, end: 2, time_zone: 'UTC', recurrence_rule: '', reminder_minutes: 10};
+        const request: MeetingRequest = {summary: 'Sync', description: '', start: 1, end: 2, time_zone: 'UTC', recurrence_rule: '', reminder_minutes: 10};
         await client.editMeeting('m1', request);
         expect(mockDoFetch).toHaveBeenCalledWith(`${ROUTE}/meetings/m1`, {method: 'put', body: request});
     });
