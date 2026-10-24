@@ -10,7 +10,10 @@ import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import BoRQuickAction from './index';
+// The presentational component, not the connected './index': these tests cover BoRQuickAction's own behaviour
+// (callbacks, navigation), not the live config it's wired to via withObservables/withDatabase in index.ts, so they
+// render it without a database and pass defaultBorConfig directly, the way the connected component would supply it.
+import BoRQuickAction from './bor_quick_action';
 
 jest.mock('@context/keyboard_state', () => ({
     useKeyboardState: jest.fn(),
