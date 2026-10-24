@@ -439,6 +439,79 @@ describe('ClientUsers', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
+    test('revokeSession', async () => {
+        const userId = 'user1';
+        const sessionId = 'session1';
+        const expectedUrl = `${client.getUserRoute(userId)}/sessions/revoke`;
+        const expectedOptions = {method: 'post', body: {session_id: sessionId}};
+
+        await client.revokeSession(userId, sessionId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('acknowledgeSession', async () => {
+        const userId = 'user1';
+        const sessionId = 'session1';
+        const expectedUrl = `${client.getUserRoute(userId)}/sessions/acknowledge`;
+        const expectedOptions = {method: 'post', body: {session_id: sessionId}};
+
+        await client.acknowledgeSession(userId, sessionId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('getFocus', async () => {
+        const userId = 'user1';
+        const expectedUrl = `${client.getUserRoute(userId)}/focus`;
+        const expectedOptions = {method: 'get'};
+
+        await client.getFocus(userId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('startFocus', async () => {
+        const userId = 'user1';
+        const request = {duration: '1h', reason: 'Working'};
+        const expectedUrl = `${client.getUserRoute(userId)}/focus`;
+        const expectedOptions = {method: 'post', body: request};
+
+        await client.startFocus(userId, request);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('endFocus', async () => {
+        const userId = 'user1';
+        const expectedUrl = `${client.getUserRoute(userId)}/focus`;
+        const expectedOptions = {method: 'delete'};
+
+        await client.endFocus(userId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('getFocusSummary', async () => {
+        const userId = 'user1';
+        const expectedUrl = `${client.getUserRoute(userId)}/focus/summary?since=1000&until=2000`;
+        const expectedOptions = {method: 'get'};
+
+        await client.getFocusSummary(userId, 1000, 2000);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('markFocusSummaryRead', async () => {
+        const userId = 'user1';
+        const expectedUrl = `${client.getUserRoute(userId)}/focus/summary/read`;
+        const expectedOptions = {method: 'post', body: {since: 1000, until: 2000}};
+
+        await client.markFocusSummaryRead(userId, 1000, 2000);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
     test('getSessionAttributesManifest', async () => {
         const expectedUrl = `${client.getUsersRoute()}/sessions/attributes/manifest`;
         const expectedOptions = {method: 'get'};

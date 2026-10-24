@@ -11,6 +11,7 @@ import {Events, Launch, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useAppState} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
+import {useFocusSummaryEffect} from '@hooks/focus';
 import {useTimedMuteExpiry} from '@hooks/timed_mute';
 import SecurityManager from '@managers/security_manager';
 import {getAllServers} from '@queries/app/servers';
@@ -43,6 +44,9 @@ export function useHomeScreenEffects(props: LaunchProps) {
 
     // Antimatter's timed mutes end on the client.
     useTimedMuteExpiry(serverUrl, appState);
+
+    // Focus mode: the summary of what was missed, shown once.
+    useFocusSummaryEffect(serverUrl, appState);
 
     useDidMount(() => {
         SecurityManager.start();

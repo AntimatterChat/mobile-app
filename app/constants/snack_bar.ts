@@ -37,6 +37,7 @@ export const SNACK_BAR_TYPE = keyMirror({
     PLAYBOOK_ERROR: null,
     ENABLE_TRANSLATION: null,
     BOR_POST_EXPIRED: null,
+    FOCUS_ENDED_NOTHING: null,
     EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE: null,
     EPHEMERAL_MODE_ENABLED: null,
     EPHEMERAL_MODE_SETTINGS_UPDATED: null,
@@ -157,6 +158,10 @@ const messages = defineMessages({
     BOR_POST_EXPIRED: {
         id: 'snack.bar.bor_post_expired.error',
         defaultMessage: 'This burn-on-read post has expired and can no longer be revealed.',
+    },
+    FOCUS_ENDED_NOTHING: {
+        id: 'snack.bar.focus_ended_nothing',
+        defaultMessage: 'Focus ended: nothing new came in',
     },
     EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE: {
         id: 'snack.bar.ephemeral_mode.zero_persistence_active',
@@ -332,6 +337,11 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         iconName: 'alert-outline',
         hasAction: false,
         type: MESSAGE_TYPE.ERROR,
+    },
+    FOCUS_ENDED_NOTHING: {
+        message: messages.FOCUS_ENDED_NOTHING,
+        iconName: 'check',
+        hasAction: false,
     },
     EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE: {
         message: messages.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE,

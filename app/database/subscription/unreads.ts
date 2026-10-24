@@ -10,6 +10,7 @@ import DatabaseManager from '@database/manager';
 import {observeAllMyChannelNotifyProps} from '@queries/servers/channel';
 import {queryMyTeams} from '@queries/servers/team';
 import {getIsCRTEnabled, observeThreadMentionCount, queryThreads, observeUnreadsAndMentions} from '@queries/servers/thread';
+import {observeHideUnreads} from '@utils/focus';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
@@ -30,6 +31,11 @@ type UnreadObserver = {
     ({myChannels, settings, threadMentionCount, threadUnreads}: UnreadObserverArgs): void;
 }
 
+// Focus mode (Antimatter): own unread marks hide while focusing, and until the summary of what was missed is seen.
+// Unread state itself is kept (nothing here writes to the database); only what these subscriptions hand to their
+// badge observers is hidden, as an empty myChannels and zero thread counts.
+const hiddenArgs: UnreadObserverArgs = {myChannels: [], settings: {}, threadUnreads: false, threadMentionCount: 0};
+
 export const subscribeServerUnreadAndMentions = (serverUrl: string, observer: UnreadObserver) => {
     const server = DatabaseManager.serverDatabases[serverUrl];
     let subscription: Subscription|undefined;
@@ -43,6 +49,8 @@ export const subscribeServerUnreadAndMentions = (serverUrl: string, observer: Un
                 combineLatestWith(observeAllMyChannelNotifyProps(server.database)),
                 combineLatestWith(observeUnreadsAndMentions(server.database, {includeDmGm: true})),
                 map$(([[myChannels, settings], {unreads, mentions}]) => ({myChannels, settings, threadUnreads: unreads, threadMentionCount: mentions})),
+                combineLatestWith(observeHideUnreads(server.database, serverUrl)),
+                map$(([args, hide]) => (hide ? hiddenArgs : args)),
             ).
             subscribe(observer);
     }
@@ -65,6 +73,8 @@ export const subscribeMentionsByServer = (serverUrl: string, observer: ServerUnr
             pipe(
                 combineLatestWith(observeThreadMentionCount(server.database, {includeDmGm: true})),
                 map$(([myChannels, threadMentionCount]) => ({myChannels, threadMentionCount})),
+                combineLatestWith(observeHideUnreads(server.database, serverUrl)),
+                map$(([args, hide]) => (hide ? {myChannels: [], threadMentionCount: 0} : args)),
             ).
             subscribe(observer.bind(undefined, serverUrl));
     }
@@ -84,6 +94,8 @@ export const subscribeUnreadAndMentionsByServer = (serverUrl: string, observer: 
                 combineLatestWith(observeAllMyChannelNotifyProps(server.database)),
                 combineLatestWith(observeUnreadsAndMentions(server.database, {includeDmGm: true})),
                 map$(([[myChannels, settings], {unreads, mentions}]) => ({myChannels, settings, threadUnreads: unreads, threadMentionCount: mentions})),
+                combineLatestWith(observeHideUnreads(server.database, serverUrl)),
+                map$(([args, hide]) => (hide ? hiddenArgs : args)),
             ).
             subscribe(observer.bind(undefined, serverUrl));
     }

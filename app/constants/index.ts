@@ -14,6 +14,7 @@ import Device from './device';
 import Emoji from './emoji';
 import Events from './events';
 import Files from './files';
+import Focus from './focus';
 import General from './general';
 import Integrations from './integrations';
 import Launch from './launch';
@@ -53,6 +54,7 @@ export {
     Emoji,
     Events,
     Files,
+    Focus,
     General,
     Integrations,
     Launch,

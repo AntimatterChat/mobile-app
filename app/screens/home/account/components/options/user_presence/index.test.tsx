@@ -4,9 +4,11 @@
 import {fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
+import {endFocus} from '@actions/remote/focus';
 import {setStatus} from '@actions/remote/user';
-import {General} from '@constants';
-import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
+import {General, Screens} from '@constants';
+import {FOCUS_UNTIL_PROP} from '@constants/focus';
+import {bottomSheet, dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -17,10 +19,15 @@ import type UserModel from '@typings/database/models/servers/user';
 jest.mock('@screens/navigation', () => ({
     bottomSheet: jest.fn(),
     dismissBottomSheet: jest.fn().mockResolvedValue(undefined),
+    navigateToScreen: jest.fn(),
 }));
 
 jest.mock('@actions/remote/user', () => ({
     setStatus: jest.fn(),
+}));
+
+jest.mock('@actions/remote/focus', () => ({
+    endFocus: jest.fn(),
 }));
 
 const currentUser = TestHelper.fakeUserModel({id: 'user-1', status: General.ONLINE});
@@ -68,5 +75,36 @@ describe('UserPresence', () => {
         expect(jest.mocked(setStatus).mock.calls[0][1]).toEqual(
             expect.objectContaining({user_id: 'user-1', status: expectedStatus, manual: true}),
         );
+    });
+
+    it('opens the focus mode dialog when not focusing', async () => {
+        const {getByTestId} = renderStatusSheet();
+
+        fireEvent.press(getByTestId('user_status.focus.option'));
+
+        await waitFor(() => expect(navigateToScreen).toHaveBeenCalledWith(Screens.FOCUS_MODE));
+        expect(dismissBottomSheet).toHaveBeenCalled();
+    });
+
+    it('shows "Focusing" and ends it in one tap while focusing', async () => {
+        const focusingUser = TestHelper.fakeUserModel({
+            id: 'user-1',
+            status: General.DND,
+            props: {[FOCUS_UNTIL_PROP]: Date.now() + 60000},
+        });
+        const {getByTestId} = renderWithIntlAndTheme(
+            <UserPresence currentUser={focusingUser as UserModel}/>,
+        );
+
+        expect(getByTestId('account.user_presence.focusing')).toBeVisible();
+
+        fireEvent.press(getByTestId('account.user_presence.option'));
+        const renderContent = jest.mocked(bottomSheet).mock.calls[0][0] as () => React.ReactElement;
+        const sheet = renderWithIntlAndTheme(renderContent());
+
+        fireEvent.press(sheet.getByTestId('user_status.focus.option'));
+
+        await waitFor(() => expect(endFocus).toHaveBeenCalled());
+        expect(dismissBottomSheet).toHaveBeenCalled();
     });
 });

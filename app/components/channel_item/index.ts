@@ -4,7 +4,7 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {of as of$} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged, combineLatestWith, map} from 'rxjs/operators';
 
 import {observeChannelsWithCalls, observeIsVoiceChannel} from '@calls/state';
 import {General} from '@constants';
@@ -13,6 +13,7 @@ import {observeIsMutedSetting, observeMyChannel, queryChannelMembers} from '@que
 import {queryDraft} from '@queries/servers/drafts';
 import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeam} from '@queries/servers/team';
+import {observeHideUnreads} from '@utils/focus';
 
 import ChannelItem from './channel_item';
 
@@ -78,19 +79,29 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
 
     const membersCount = channel.type === General.GM_CHANNEL ?queryChannelMembers(database, channel.id).observeCount(false) :of$(0);
 
+    // Focus mode (Antimatter): own unread marks hide while focusing, and until the summary of what was missed is
+    // seen. The channel stays in its "Group unread channels" section; only the bold and badge hide.
+    const hideUnreads = observeHideUnreads(database, serverUrl || '');
+
     const isUnread = shouldHighlightState ?myChannel.pipe(
         switchMap((mc) => of$(mc?.isUnread)),
         distinctUntilChanged(),
+        combineLatestWith(hideUnreads),
+        map(([unread, hide]) => (hide ? false : unread)),
     ) : of$(false);
 
     const mentionsCount = shouldHighlightState ?myChannel.pipe(
         switchMap((mc) => of$(mc?.mentionsCount)),
         distinctUntilChanged(),
+        combineLatestWith(hideUnreads),
+        map(([count, hide]) => (hide ? 0 : count)),
     ) : of$(0);
 
     const urgentMentionCount = shouldHighlightState ?myChannel.pipe(
         switchMap((mc) => of$(mc?.urgentMentionCount)),
         distinctUntilChanged(),
+        combineLatestWith(hideUnreads),
+        map(([count, hide]) => (hide ? 0 : count)),
     ) : of$(0);
 
     const hasCall = observeChannelsWithCalls(serverUrl || '').pipe(

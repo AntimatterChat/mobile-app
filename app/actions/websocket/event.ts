@@ -7,7 +7,9 @@ import {
     handleBoRPostBurnedEvent,
     handleBoRPostRevealedEvent,
 } from '@actions/websocket/burn_on_read';
+import {handleFocusEndedEvent} from '@actions/websocket/focus';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
+import {handleSessionAcknowledgedEvent, handleSessionCreatedEvent, handleSessionRevokedEvent} from '@actions/websocket/session';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentConversationUpdated, handleAgentPostUpdate} from '@agents/actions/websocket';
 import {handleAgentsEvents} from '@agents/actions/websocket/events';
@@ -393,6 +395,22 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.SHOW_TOAST:
             files.handleShowToast(serverUrl, msg);
 
+            break;
+
+        // Focus mode
+        case WebsocketEvents.FOCUS_ENDED:
+            handleFocusEndedEvent(serverUrl, msg);
+            break;
+
+        // Sign-in warnings
+        case WebsocketEvents.SESSION_CREATED:
+            handleSessionCreatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.SESSION_REVOKED:
+            handleSessionRevokedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.SESSION_ACKNOWLEDGED:
+            handleSessionAcknowledgedEvent(serverUrl, msg);
             break;
     }
     handlePlaybookEvents(serverUrl, msg);

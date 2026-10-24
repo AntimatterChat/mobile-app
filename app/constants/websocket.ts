@@ -128,6 +128,14 @@ const WebsocketEvents = {
     // File access control
     FILE_DOWNLOAD_REJECTED: 'file_download_rejected',
     SHOW_TOAST: 'show_toast',
+
+    // Focus mode
+    FOCUS_ENDED: 'focus_ended',
+
+    // Sign-in warnings
+    SESSION_CREATED: 'session_created',
+    SESSION_REVOKED: 'session_revoked',
+    SESSION_ACKNOWLEDGED: 'session_acknowledged',
 };
 
 export default WebsocketEvents;

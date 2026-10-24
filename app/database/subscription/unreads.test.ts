@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {General} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {FOCUS_UNTIL_PROP} from '@constants/focus';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 import {enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
@@ -229,6 +232,40 @@ describe('subscribeServerUnreadAndMentions', () => {
         const args = observer.mock.calls[0][0];
         expect(args).toHaveProperty('myChannels');
         expect(args).toHaveProperty('threadMentionCount');
+
+        sub?.unsubscribe();
+    });
+
+    it('should hide unread marks while the current user is focusing (Antimatter)', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const channel = TestHelper.fakeChannel({id: 'focus-channel', team_id: 'team1'});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({
+            channels: [channel],
+            myChannels: [TestHelper.fakeMyChannel({channel_id: channel.id, mention_count: 3, is_unread: true})],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleUsers({
+            users: [TestHelper.fakeUser({
+                id: 'focusing-user',
+                status: General.DND,
+                props: {[FOCUS_UNTIL_PROP]: Date.now() + 60000},
+            })],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'focusing-user'}],
+            prepareRecordsOnly: false,
+        });
+
+        const observer = jest.fn();
+        const sub = subscribeServerUnreadAndMentions(serverUrl, observer);
+
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        const lastArgs = observer.mock.calls[observer.mock.calls.length - 1][0];
+        expect(lastArgs.myChannels).toEqual([]);
+        expect(lastArgs.threadMentionCount).toBe(0);
 
         sub?.unsubscribe();
     });

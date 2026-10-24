@@ -5,6 +5,7 @@ import React, {useMemo} from 'react';
 import {Platform, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import UserStatus from '@components/user_status';
+import {isFocusing} from '@utils/focus';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -53,6 +54,7 @@ const Status = ({author, statusSize, statusStyle, theme}: Props) => {
                 <UserStatus
                     size={statusSize}
                     status={author.status}
+                    focusing={isFocusing(author)}
                 />
             </View>
         );

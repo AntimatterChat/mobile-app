@@ -39,8 +39,15 @@ export interface ClientUsersMix {
     getDefaultProfilePictureUrl: (userId: string) => string;
     autocompleteUsers: (name: string, teamId: string, channelId?: string, options?: Record<string, any>) => Promise<{users: UserProfile[]; out_of_channel?: UserProfile[]; agents?: UserProfile[]}>;
     getSessions: (userId: string) => Promise<Session[]>;
+    revokeSession: (userId: string, sessionId: string) => Promise<any>;
+    acknowledgeSession: (userId: string, sessionId: string) => Promise<any>;
     getSessionAttributesManifest: () => Promise<SAField[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
+    getFocus: (userId: string) => Promise<FocusState>;
+    startFocus: (userId: string, request: FocusRequest) => Promise<FocusState>;
+    endFocus: (userId: string) => Promise<FocusState>;
+    getFocusSummary: (userId: string, since: number, until: number) => Promise<FocusSummary>;
+    markFocusSummaryRead: (userId: string, since: number, until: number) => Promise<any>;
     setExtraSessionProps: (deviceId: string, notificationsEnabled: boolean, version: string | null, voipDeviceId?: string, groupLabel?: RequestGroupLabel) => Promise<{}>;
     searchUsers: (term: string, options: SearchUserOptions) => Promise<UserProfile[]>;
     getStatusesByIds: (userIds: string[]) => Promise<UserStatus[]>;
@@ -372,6 +379,64 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
                 method: 'get',
                 headers: {'Cache-Control': 'no-store'},
             },
+        );
+    };
+
+    // Antimatter: signs a session of the user's own out ("Disconnect" in the sign-in warning).
+    revokeSession = async (userId: string, sessionId: string) => {
+        return this.doFetch(
+            `${this.getUserRoute(userId)}/sessions/revoke`,
+            {method: 'post', body: {session_id: sessionId}},
+        );
+    };
+
+    // Antimatter: confirms that a sign-in (a session of the user's own) was them, which takes its warning off their
+    // other sessions ("It's me").
+    acknowledgeSession = async (userId: string, sessionId: string) => {
+        return this.doFetch(
+            `${this.getUserRoute(userId)}/sessions/acknowledge`,
+            {method: 'post', body: {session_id: sessionId}},
+        );
+    };
+
+    // Antimatter: your focus mode, current or last.
+    getFocus = async (userId: string) => {
+        return this.doFetch(
+            `${this.getUserRoute(userId)}/focus`,
+            {method: 'get'},
+        );
+    };
+
+    // Antimatter: starts focus mode (Do not disturb until the end, the reason as your custom status), or changes
+    // its end and reason while you focus.
+    startFocus = async (userId: string, request: FocusRequest) => {
+        return this.doFetch(
+            `${this.getUserRoute(userId)}/focus`,
+            {method: 'post', body: request},
+        );
+    };
+
+    // Antimatter: ends focus mode now.
+    endFocus = async (userId: string) => {
+        return this.doFetch(
+            `${this.getUserRoute(userId)}/focus`,
+            {method: 'delete'},
+        );
+    };
+
+    // Antimatter: what you missed between since and until (milliseconds).
+    getFocusSummary = async (userId: string, since: number, until: number) => {
+        return this.doFetch(
+            `${this.getUserRoute(userId)}/focus/summary${buildQueryString({since, until})}`,
+            {method: 'get'},
+        );
+    };
+
+    // Antimatter: marks what you missed between since and until read, up to until only.
+    markFocusSummaryRead = async (userId: string, since: number, until: number) => {
+        return this.doFetch(
+            `${this.getUserRoute(userId)}/focus/summary/read`,
+            {method: 'post', body: {since, until}},
         );
     };
 

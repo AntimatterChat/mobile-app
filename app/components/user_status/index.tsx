@@ -5,15 +5,19 @@ import React from 'react';
 
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {General} from '@constants';
+import {FOCUS_COLOR} from '@constants/focus';
 import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
 
 type UserStatusProps = {
     size?: number;
     status?: string;
+
+    // Focus mode (Antimatter): while focusing, Do not disturb shows as the purple dot instead of the usual one.
+    focusing?: boolean;
 };
 
-const UserStatus = ({size = 6, status = General.OFFLINE}: UserStatusProps) => {
+const UserStatus = ({size = 6, status = General.OFFLINE, focusing = false}: UserStatusProps) => {
     const theme = useTheme();
     let iconName: CompassIconName;
     let iconColor;
@@ -24,7 +28,7 @@ const UserStatus = ({size = 6, status = General.OFFLINE}: UserStatusProps) => {
             break;
         case General.DND:
             iconName = 'minus-circle';
-            iconColor = theme.dndIndicator;
+            iconColor = focusing ? FOCUS_COLOR : theme.dndIndicator;
             break;
         case General.ONLINE:
             iconName = 'check-circle';
@@ -40,7 +44,7 @@ const UserStatus = ({size = 6, status = General.OFFLINE}: UserStatusProps) => {
         <CompassIcon
             name={iconName}
             style={{fontSize: size, color: iconColor}}
-            testID={`user_status.indicator.${status}`}
+            testID={`user_status.indicator.${focusing ? 'focus' : status}`}
         />
     );
 };

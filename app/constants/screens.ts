@@ -39,6 +39,9 @@ const EDIT_PROFILE = 'edit_profile';
 const EDIT_SERVER = 'edit_server';
 const EMOJI_PICKER = 'emoji_picker';
 const FIND_CHANNELS = 'find_channels';
+const FOCUS_MODE = 'focus_mode';
+const FOCUS_SUMMARY = 'focus_summary';
+const BURN_DURATION_PICKER = 'burn_duration_picker';
 const FORGOT_PASSWORD = 'forgot_password';
 const GALLERY = 'gallery';
 const GLOBAL_DRAFTS = 'global_drafts';
@@ -125,6 +128,9 @@ export default {
     EDIT_SERVER,
     EMOJI_PICKER,
     FIND_CHANNELS,
+    FOCUS_MODE,
+    FOCUS_SUMMARY,
+    BURN_DURATION_PICKER,
     FORGOT_PASSWORD,
     GALLERY,
     GLOBAL_DRAFTS,
@@ -224,6 +230,9 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     TERMS_OF_SERVICE,
     THREAD_OPTIONS,
     USER_PROFILE,
+    FOCUS_MODE,
+    FOCUS_SUMMARY,
+    BURN_DURATION_PICKER,
     AGENTS_SCREENS.AGENTS_REWRITE_OPTIONS,
     AGENTS_SCREENS.AGENTS_SELECTOR,
 ]);

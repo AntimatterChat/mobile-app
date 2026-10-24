@@ -53,4 +53,28 @@ describe('UserStatus', () => {
 
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
+
+    test('should show the purple dot while focusing', () => {
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <UserStatus
+                {...baseProps}
+                status={General.DND}
+                focusing={true}
+            />,
+        );
+
+        expect(getByTestId('user_status.indicator.focus')).toBeVisible();
+        expect(queryByTestId('user_status.indicator.dnd')).toBeNull();
+    });
+
+    test('should show the usual Do not disturb dot when not focusing', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <UserStatus
+                {...baseProps}
+                status={General.DND}
+            />,
+        );
+
+        expect(getByTestId('user_status.indicator.dnd')).toBeVisible();
+    });
 });

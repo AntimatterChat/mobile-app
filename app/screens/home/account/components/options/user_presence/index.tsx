@@ -3,19 +3,22 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 
+import {endFocus} from '@actions/remote/focus';
 import {setStatus} from '@actions/remote/user';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import StatusLabel from '@components/status_label';
 import UserStatusIndicator from '@components/user_status';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
+import {FOCUS_COLOR} from '@constants/focus';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet';
-import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, navigateToScreen} from '@screens/navigation';
+import {useMyFocusUntil} from '@utils/focus';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -60,9 +63,22 @@ const UserStatus = ({currentUser}: Props) => {
     const intl = useIntl();
     const styles = getStyleSheet(theme);
 
+    // Focus mode (Antimatter): started and ended from here, and nowhere else.
+    const focusUntilMs = useMyFocusUntil(currentUser);
+    const focusing = focusUntilMs > 0;
+
     const dismiss = useCallback(async () => {
         await dismissBottomSheet();
     }, []);
+
+    const handleFocusPress = usePreventDoubleTap(useCallback(async () => {
+        await dismiss();
+        if (focusing) {
+            endFocus(serverUrl);
+        } else {
+            navigateToScreen(Screens.FOCUS_MODE);
+        }
+    }, [dismiss, focusing, serverUrl]));
 
     const updateStatus = useCallback((status: string) => {
         const userStatus = {
@@ -137,6 +153,20 @@ const UserStatus = ({currentUser}: Props) => {
                     textStyles={styles.label}
                 />
                 <SlideUpPanelItem
+                    leftIcon='clock-outline'
+                    leftIconStyles={{color: FOCUS_COLOR}}
+                    onPress={handleFocusPress}
+                    testID='user_status.focus.option'
+                    text={focusing ? intl.formatMessage({
+                        id: 'user_status.focus.end',
+                        defaultMessage: 'End focus mode',
+                    }) : intl.formatMessage({
+                        id: 'user_status.focus.start',
+                        defaultMessage: 'Focus mode…',
+                    })}
+                    textStyles={styles.label}
+                />
+                <SlideUpPanelItem
                     leftIcon='circle-outline'
                     leftIconStyles={{color: changeOpacity('#B8B8B8', 0.64)}}
                     onPress={() => setUserStatus(OFFLINE)}
@@ -150,11 +180,11 @@ const UserStatus = ({currentUser}: Props) => {
             </>
         );
 
-        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT);
+        const snapPoint = bottomSheetSnapPoint(5, ITEM_HEIGHT);
         const snapPoints = [1, (snapPoint + TITLE_HEIGHT)];
 
         bottomSheet(renderContent, snapPoints);
-    }, [intl, setUserStatus, styles.label, styles.listHeader, styles.listHeaderText, theme.awayIndicator, theme.dndIndicator, theme.onlineIndicator]));
+    }, [focusing, handleFocusPress, intl, setUserStatus, styles.label, styles.listHeader, styles.listHeaderText, theme.awayIndicator, theme.dndIndicator, theme.onlineIndicator]));
 
     return (
         <TouchableOpacity
@@ -165,11 +195,24 @@ const UserStatus = ({currentUser}: Props) => {
                 <UserStatusIndicator
                     size={24}
                     status={currentUser.status}
+                    focusing={focusing}
                 />
-                <StatusLabel
-                    labelStyle={[styles.label, styles.spacer]}
-                    status={currentUser.status}
-                />
+                {focusing ? (
+                    <Text
+                        style={[styles.label, styles.spacer]}
+                        testID='account.user_presence.focusing'
+                    >
+                        {intl.formatMessage({
+                            id: 'user_status.focus.label',
+                            defaultMessage: 'Focusing · until {time}',
+                        }, {time: intl.formatTime(focusUntilMs)})}
+                    </Text>
+                ) : (
+                    <StatusLabel
+                        labelStyle={[styles.label, styles.spacer]}
+                        status={currentUser.status}
+                    />
+                )}
             </View>
         </TouchableOpacity>
     );
