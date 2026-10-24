@@ -25,6 +25,10 @@ const CHANNEL_NOTIFICATION_PREFERENCES = 'channel_notification_preferences';
 const CHANNEL_SHARE = 'channel_share';
 const CHANNEL_SETTINGS = 'channel_settings';
 const CODE = 'code';
+const COMMUNITY_RULES = 'community_rules';
+const COMMUNITY_PROFILE = 'community_profile';
+const COMMUNITY_PRIVACY = 'community_privacy';
+const COMMUNITY_NOTIFICATIONS = 'community_notifications';
 const CONVERT_GM_TO_CHANNEL = 'convert_gm_to_channel';
 const CREATE_DIRECT_MESSAGE = 'create_direct_message';
 const CREATE_OR_EDIT_CHANNEL = 'create_or_edit_channel';
@@ -115,6 +119,10 @@ export default {
     CHANNEL_SETTINGS,
     CHANNEL_SHARE,
     CODE,
+    COMMUNITY_RULES,
+    COMMUNITY_PROFILE,
+    COMMUNITY_PRIVACY,
+    COMMUNITY_NOTIFICATIONS,
     CONVERT_GM_TO_CHANNEL,
     COMPONENT_LIBRARY,
     CREATE_DIRECT_MESSAGE,
@@ -219,6 +227,7 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     BOTTOM_SHEET,
     CALL_PARTICIPANTS,
     CALL_HOST_CONTROLS,
+    COMMUNITY_RULES,
     DRAFT_SCHEDULED_POST_OPTIONS,
     EMOJI_PICKER,
     GALLERY,

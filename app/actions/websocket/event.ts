@@ -21,6 +21,8 @@ import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
 import * as category from './category';
 import * as channel from './channel';
+import * as communityProfile from './community_profile';
+import * as communityRules from './community_rules';
 import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
@@ -88,6 +90,16 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.RESTORE_TEAM:
             teams.handleTeamRestored(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.COMMUNITY_RULES_UPDATED:
+            communityRules.handleCommunityRulesUpdatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.COMMUNITY_RULES_ACCEPTED:
+            communityRules.handleCommunityRulesAcceptedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.COMMUNITY_PROFILE_UPDATED:
+            communityProfile.handleCommunityProfileUpdatedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.USER_ADDED:

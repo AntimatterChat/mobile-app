@@ -136,6 +136,11 @@ const WebsocketEvents = {
     SESSION_CREATED: 'session_created',
     SESSION_REVOKED: 'session_revoked',
     SESSION_ACKNOWLEDGED: 'session_acknowledged',
+
+    // Community rules and per-community profiles
+    COMMUNITY_RULES_UPDATED: 'community_rules_updated',
+    COMMUNITY_RULES_ACCEPTED: 'community_rules_accepted',
+    COMMUNITY_PROFILE_UPDATED: 'community_profile_updated',
 };
 
 export default WebsocketEvents;

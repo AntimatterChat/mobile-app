@@ -10,6 +10,7 @@ import Animated, {FadeIn, useAnimatedStyle, withTiming} from 'react-native-reani
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedTeamIdAndServer} from '@actions/app/global';
+import {fetchCommunityRules} from '@actions/remote/community_rules';
 import {refetchCurrentUser} from '@actions/remote/user';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
@@ -24,6 +25,7 @@ import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateToScreen} from '@screens/navigation';
+import {getCommunityRules} from '@store/community_rules_store';
 import {NavigationStore, useCurrentScreen} from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
 import {tryRunAppReview} from '@utils/reviews';
@@ -47,6 +49,7 @@ type ChannelProps = {
     currentTeamId: string;
     hasCurrentUser: boolean;
     showIncomingCalls: boolean;
+    mustAcceptCommunityRules: boolean;
 };
 
 const styles = StyleSheet.create({
@@ -163,6 +166,20 @@ const ChannelListScreen = (props: ChannelProps) => {
             navigateToScreen(Screens.TERMS_OF_SERVICE);
         }
     }, [props.showToS]);
+
+    // Loads the current community's rules once per team switch, so mustAcceptCommunityRules below has something to
+    // read; it's a no-op once they're cached (the community_rules_updated/accepted websocket events keep them fresh).
+    useEffect(() => {
+        if (props.currentTeamId && getCommunityRules(serverUrl, props.currentTeamId) === undefined) {
+            fetchCommunityRules(serverUrl, props.currentTeamId);
+        }
+    }, [serverUrl, props.currentTeamId]);
+
+    useEffect(() => {
+        if (props.mustAcceptCommunityRules && props.currentTeamId && !NavigationStore.isScreenInStack(Screens.COMMUNITY_RULES)) {
+            navigateToScreen(Screens.COMMUNITY_RULES, {teamId: props.currentTeamId});
+        }
+    }, [props.mustAcceptCommunityRules, props.currentTeamId]);
 
     useEffect(() => {
         if (!props.hasCurrentUser || !props.currentUserId) {

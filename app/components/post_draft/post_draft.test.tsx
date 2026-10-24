@@ -20,6 +20,11 @@ jest.mock('./draft_handler', () => {
     return MockDraftHandler;
 });
 jest.mock('@components/autocomplete', () => () => null);
+jest.mock('./community_rules_banner', () => {
+    const {Text} = require('react-native');
+    const MockCommunityRulesBanner = () => <Text testID='community_rules_banner'/>;
+    return MockCommunityRulesBanner;
+});
 
 describe('PostDraft timeouts', () => {
     const serverUrl = 'postdraft.test.com';
@@ -89,5 +94,70 @@ describe('PostDraft timeouts', () => {
         );
 
         expect(getByTestId('draft_handler')).toBeTruthy();
+    });
+});
+
+describe('PostDraft community rules', () => {
+    const serverUrl = 'postdraft.rules.test.com';
+    let database: Database;
+
+    const props = {
+        testID: 'post_draft',
+        canPost: true,
+        channelId: 'c1',
+        channelIsReadOnly: false,
+        deactivatedChannel: false,
+        containerHeight: 600,
+        isChannelScreen: true,
+        location: Screens.CHANNEL,
+        teamId: 't1',
+    };
+
+    beforeAll(async () => {
+        database = (await TestHelper.setupServerDatabase(serverUrl)).database;
+    });
+
+    afterAll(async () => {
+        await TestHelper.tearDown();
+    });
+
+    it('shows the rules banner instead of the composer while the member must agree to the rules', () => {
+        const {getByTestId, queryByTestId} = renderWithEverything(
+            <PostDraft
+                {...props}
+                mustAcceptCommunityRules={true}
+            />,
+            {database, serverUrl},
+        );
+
+        expect(getByTestId('community_rules_banner')).toBeTruthy();
+        expect(queryByTestId('draft_handler')).toBeNull();
+    });
+
+    it('shows the composer once the member has agreed', () => {
+        const {getByTestId, queryByTestId} = renderWithEverything(
+            <PostDraft
+                {...props}
+                mustAcceptCommunityRules={false}
+            />,
+            {database, serverUrl},
+        );
+
+        expect(getByTestId('draft_handler')).toBeTruthy();
+        expect(queryByTestId('community_rules_banner')).toBeNull();
+    });
+
+    it('shows the composer in a conversation outside a team, even if mustAcceptCommunityRules is set', () => {
+        const {getByTestId, queryByTestId} = renderWithEverything(
+            <PostDraft
+                {...props}
+                teamId={undefined}
+                mustAcceptCommunityRules={true}
+            />,
+            {database, serverUrl},
+        );
+
+        expect(getByTestId('draft_handler')).toBeTruthy();
+        expect(queryByTestId('community_rules_banner')).toBeNull();
     });
 });

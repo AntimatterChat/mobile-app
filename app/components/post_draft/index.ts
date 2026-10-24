@@ -7,11 +7,13 @@ import {combineLatest, of as of$} from 'rxjs';
 import {filter, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
+import {withServerUrl} from '@context/server';
 import {observeChannel, observeIsReadOnlyChannel} from '@queries/servers/channel';
 import {queryDraft, observeFirstDraft} from '@queries/servers/drafts';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeCurrentChannelId} from '@queries/servers/system';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
+import {observeCommunityRulesStore} from '@store/community_rules_store';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import PostDraft from './post_draft';
@@ -22,10 +24,11 @@ type OwnProps = {
     channelId: string;
     channelIsArchived?: boolean;
     rootId?: string;
+    serverUrl: string;
 }
 
 const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (ownProps: WithDatabaseArgs & OwnProps) => {
-    const {database, rootId = ''} = ownProps;
+    const {database, rootId = '', serverUrl} = ownProps;
     let channelId = of$(ownProps.channelId);
     if (!ownProps.channelId) {
         channelId = observeCurrentChannelId(database);
@@ -78,9 +81,14 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
     // Antimatter's timeouts are by team.
     const teamId = channel.pipe(switchMap((c) => of$(c?.teamId || undefined)));
 
+    const mustAcceptCommunityRules = combineLatest([teamId, observeCommunityRulesStore(serverUrl)]).pipe(
+        switchMap(([tId, all]) => of$(Boolean(tId && all[tId]?.must_accept))),
+    );
+
     return {
         canPost,
         teamId,
+        mustAcceptCommunityRules,
         channelIsArchived,
         channelIsReadOnly,
         deactivatedChannel,
@@ -89,4 +97,4 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
     };
 });
 
-export default React.memo(withDatabase(enhanced(PostDraft)));
+export default React.memo(withDatabase(withServerUrl(enhanced(PostDraft))));

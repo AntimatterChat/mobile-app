@@ -11,6 +11,7 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {useMyTeamTimeout} from '@hooks/member_timeout';
 
 import Archived from './archived';
+import CommunityRulesBanner from './community_rules_banner';
 import DraftHandler from './draft_handler';
 import ReadOnly from './read_only';
 import TimedOut from './timed_out';
@@ -36,6 +37,7 @@ type Props = {
     onPostCreated?: (postId: string) => void;
     portalName?: string;
     teamId?: string;
+    mustAcceptCommunityRules?: boolean;
 }
 
 function PostDraft({
@@ -56,6 +58,7 @@ function PostDraft({
     onPostCreated,
     portalName,
     teamId,
+    mustAcceptCommunityRules,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
@@ -107,6 +110,15 @@ function PostDraft({
         return (
             <ReadOnly
                 testID={readOnlyTestID}
+            />
+        );
+    }
+
+    if (mustAcceptCommunityRules && teamId) {
+        return (
+            <CommunityRulesBanner
+                testID={`${testID}.community_rules`}
+                teamId={teamId}
             />
         );
     }

@@ -13,9 +13,11 @@ export const CERTIFICATE_ERRORS = keyMirror({
 export const DOWNLOAD_TIMEOUT = toMilliseconds({minutes: 10});
 
 export const HTTP_UNAUTHORIZED = 401;
+export const HTTP_CONFLICT = 409;
 
 export default {
     CERTIFICATE_ERRORS,
     DOWNLOAD_TIMEOUT,
     HTTP_UNAUTHORIZED,
+    HTTP_CONFLICT,
 };
