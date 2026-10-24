@@ -345,6 +345,7 @@ export default function ManageChannelMembers({
                         tutorialWatched={tutorialWatched}
                         fetchMore={handleReachedBottom}
                         location={Screens.MANAGE_CHANNEL_MEMBERS}
+                        channelId={channelId}
                     />
                 </View>
             </TutorialProvider>

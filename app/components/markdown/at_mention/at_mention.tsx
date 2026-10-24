@@ -37,6 +37,7 @@ type AtMentionProps = {
     groups: GroupModel[];
     groupMemberships: GroupMembershipModel[];
     theme: Theme;
+    communityNickname?: string;
 }
 
 const style = StyleSheet.create({
@@ -58,6 +59,7 @@ const AtMention = ({
     groups,
     groupMemberships,
     theme,
+    communityNickname,
 }: AtMentionProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -162,7 +164,7 @@ const AtMention = ({
     if (user?.username) {
         suffix = mentionName.substring(user.username.length);
         highlighted = userMentionKeys.some((item) => item.key.includes(user.username));
-        mention = displayUsername(user, user.locale, teammateNameDisplay);
+        mention = communityNickname || displayUsername(user, user.locale, teammateNameDisplay);
         isMention = true;
         canPress = true;
     } else if (group?.name) {

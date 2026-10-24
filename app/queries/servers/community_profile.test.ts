@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetworkManager from '@managers/network_manager';
 import {setCommunityProfile} from '@store/community_profile_store';
 import TestHelper from '@test/test_helper';
 
-import {observeCommunityNickname} from './community_profile';
+import {observeCommunityAvatarSource, observeCommunityNickname} from './community_profile';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -50,5 +51,51 @@ describe('observeCommunityNickname', () => {
         });
 
         expect(nickname).toBeUndefined();
+    });
+});
+
+describe('observeCommunityAvatarSource', () => {
+    let database: Database;
+    const serverUrl = 'community-profile-query-avatar.test.com';
+    const mockClient = {
+        getCommunityAvatarUrl: jest.fn((teamId: string, userId: string, avatarUpdateAt: number) => `https://example.com/${teamId}/${userId}?_=${avatarUpdateAt}`),
+    } as any;
+
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase(serverUrl);
+        database = server.database;
+        NetworkManager.getClient = () => mockClient;
+    });
+
+    afterAll(async () => {
+        await TestHelper.tearDown();
+    });
+
+    it('should build the community avatar URL when a picture is set', async () => {
+        const teamId = TestHelper.basicTeam!.id;
+        const channelId = TestHelper.basicChannel!.id;
+        setCommunityProfile(serverUrl, {team_id: teamId, user_id: 'user1', avatar_update_at: 42, update_at: 42});
+
+        const source = await new Promise((resolve) => {
+            const sub = observeCommunityAvatarSource(database, serverUrl, channelId, 'user1').subscribe((value) => {
+                resolve(value);
+                sub.unsubscribe();
+            });
+        });
+
+        expect(source).toEqual({uri: `https://example.com/${teamId}/user1?_=42`});
+    });
+
+    it('should be undefined when no community picture is set', async () => {
+        const channelId = TestHelper.basicChannel!.id;
+
+        const source = await new Promise((resolve) => {
+            const sub = observeCommunityAvatarSource(database, serverUrl, channelId, 'user-with-no-profile').subscribe((value) => {
+                resolve(value);
+                sub.unsubscribe();
+            });
+        });
+
+        expect(source).toBeUndefined();
     });
 });

@@ -45,6 +45,7 @@ const Reactor = ({channelId, location, reaction, user}: Props) => {
             user={user}
             testID='reactions.reactor_item'
             onUserPress={openProfile}
+            channelId={channelId}
         />
     );
 };

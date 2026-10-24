@@ -191,9 +191,10 @@ const AtMention = ({
                 user={item}
                 onPress={completeMention}
                 testID='autocomplete.at_mention_item'
+                channelId={channelId}
             />
         );
-    }, [completeMention]);
+    }, [completeMention, channelId]);
 
     const renderAgentMentions = useCallback((item: UserProfile | UserModel) => {
         return (
@@ -203,9 +204,10 @@ const AtMention = ({
                 showBadges={true}
                 onPress={completeMention}
                 testID='autocomplete.at_mention_item'
+                channelId={channelId}
             />
         );
-    }, [completeMention]);
+    }, [completeMention, channelId]);
 
     const renderItem = useCallback(({item, section}: SectionListRenderItemInfo<SpecialMention | GroupModel | UserProfile>) => {
         switch (section.key) {

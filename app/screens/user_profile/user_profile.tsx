@@ -32,6 +32,8 @@ type Props = {
     channelId?: string;
     communityLook: CommunityLook;
     communityRoles: CommunityGroup[];
+    communityNickname?: string;
+    communityAvatarSource?: {uri: string};
     currentUserId: string;
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
@@ -95,6 +97,8 @@ const UserProfile = ({
     channelId,
     communityLook,
     communityRoles,
+    communityNickname,
+    communityAvatarSource,
     currentUserId,
     enablePostIconOverride,
     enablePostUsernameOverride,
@@ -228,6 +232,8 @@ const UserProfile = ({
                     user={user}
                     userIconOverride={userIconOverride}
                     usernameOverride={usernameOverride}
+                    communityNickname={override ? undefined : communityNickname}
+                    communityAvatarSource={override ? undefined : communityAvatarSource}
                     hideGuestTags={hideGuestTags}
                 />
                 {showUserProfileOptions &&
@@ -253,10 +259,14 @@ const UserProfile = ({
                 {manageMode && channelId && (canManageAndRemoveMembers || canChangeMemberRoles) &&
                     <ManageUserOptions
                         canChangeMemberRoles={canChangeMemberRoles}
+                        canManageAndRemoveMembers={canManageAndRemoveMembers}
                         channelId={channelId}
                         isDefaultChannel={isDefaultChannel}
                         isChannelAdmin={isChannelAdmin}
                         userId={user.id}
+                        teamId={teamId}
+                        hasCommunityNickname={Boolean(communityNickname)}
+                        hasCommunityAvatar={Boolean(communityAvatarSource)}
                     />
                 }
             </>

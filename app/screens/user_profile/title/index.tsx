@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -44,10 +44,19 @@ type Props = {
     userIconOverride?: string;
     usernameOverride?: string;
     hideGuestTags: boolean;
+    communityNickname?: string;
+    communityAvatarSource?: {uri: string};
 }
 
 export const HEADER_TEXT_HEIGHT = 30;
 const NO_ROLES: CommunityGroup[] = [];
+
+const messages = defineMessages({
+    outsideThisCommunity: {
+        id: 'user_profile.outside_this_community',
+        defaultMessage: 'Outside this community: {name}',
+    },
+});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -76,6 +85,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.64),
         ...typography('Body', 200),
     },
+    outsideThisCommunity: {
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        ...typography('Body', 75),
+    },
     heading: {
         height: HEADER_TEXT_HEIGHT,
         color: theme.centerChannelColor,
@@ -91,6 +104,7 @@ const UserProfileTitle = ({
     enablePostIconOverride, enablePostUsernameOverride, headerText,
     imageSize, isChannelAdmin, isSystemAdmin, isTeamAdmin, nameColor, roles = NO_ROLES, teamBadge,
     teammateDisplayName, user, userIconOverride, usernameOverride, hideGuestTags,
+    communityNickname, communityAvatarSource,
 }: Props) => {
     const galleryIdentifier = `${user.id}-avatarPreview`;
     const intl = useIntl();
@@ -100,17 +114,25 @@ const UserProfileTitle = ({
     const styles = getStyleSheet(theme);
     const override = enablePostUsernameOverride && usernameOverride;
 
+    // The global display name shows separately ("Outside this community: …") whenever the community one takes its
+    // place below.
+    const globalDisplayName = displayUsername(user, intl.locale, teammateDisplayName, false);
+
     let displayName: string;
     if (override) {
         displayName = usernameOverride;
+    } else if (communityNickname) {
+        displayName = communityNickname;
     } else {
-        displayName = displayUsername(user, intl.locale, teammateDisplayName, false);
+        displayName = globalDisplayName;
     }
 
     const onPress = () => {
         let imageUrl: string|undefined;
         if (enablePostIconOverride && userIconOverride) {
             imageUrl = userIconOverride;
+        } else if (communityAvatarSource) {
+            imageUrl = communityAvatarSource.uri;
         } else {
             const pictureUrl = buildProfileImageUrlFromUser(serverUrl, user);
             imageUrl = buildAbsoluteUrl(serverUrl, pictureUrl);
@@ -121,6 +143,8 @@ const UserProfileTitle = ({
             let cacheKey;
             if (enablePostIconOverride && userIconOverride) {
                 cacheKey = `user-override-icon-${urlSafeBase64Encode(userIconOverride)}`;
+            } else if (communityAvatarSource) {
+                cacheKey = `user-community-avatar-${urlSafeBase64Encode(communityAvatarSource.uri)}`;
             } else {
                 cacheKey = `user-${user.id}-${user.lastPictureUpdate}`;
             }
@@ -170,6 +194,7 @@ const UserProfileTitle = ({
                                 imageSize={imageSize || undefined}
                                 user={user}
                                 userIconOverride={userIconOverride}
+                                communityAvatarSource={communityAvatarSource}
                             />
                         </TouchableOpacity>
                     </Animated.View>
@@ -206,6 +231,15 @@ const UserProfileTitle = ({
                         {`@${user.username}`}
                     </Text>
                     }
+                    {!override && Boolean(communityNickname || communityAvatarSource) && (
+                        <Text
+                            numberOfLines={1}
+                            style={styles.outsideThisCommunity}
+                            testID='user_profile.outside_this_community'
+                        >
+                            {intl.formatMessage(messages.outsideThisCommunity, {name: globalDisplayName})}
+                        </Text>
+                    )}
                     {roles.length > 0 && <RoleChips roles={roles}/>}
                 </View>
             </View>

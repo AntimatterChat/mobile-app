@@ -36,6 +36,12 @@ export type UserItemProps = {
     disabled?: boolean;
     viewRef?: React.LegacyRef<View>;
     hideGuestTags: boolean;
+
+    // channelId picks which community's own nickname/picture to show instead of the global profile (resolved by
+    // index.ts into the two props below); omit it, or use it for a direct/group message, to keep the global one.
+    channelId?: string;
+    communityNickname?: string;
+    communityAvatarSource?: {uri: string};
 }
 
 const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
@@ -103,6 +109,8 @@ const UserItem = ({
     disabled = false,
     viewRef,
     hideGuestTags,
+    communityNickname,
+    communityAvatarSource,
 }: UserItemProps) => {
     const theme = useTheme();
     const style = getThemedStyles(theme);
@@ -117,7 +125,7 @@ const UserItem = ({
     const customStatus = getUserCustomStatus(user);
     const customStatusExpired = isCustomStatusExpired(user);
 
-    let displayName = displayUsername(user, locale, teammateNameDisplay);
+    let displayName = communityNickname || displayUsername(user, locale, teammateNameDisplay);
     const showTeammateDisplay = displayName !== user?.username;
     if (isCurrentUser) {
         displayName = intl.formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
@@ -164,6 +172,7 @@ const UserItem = ({
                     showStatus={false}
                     testID={`${userItemTestId}.profile_picture`}
                     containerStyle={nonThemedStyles.profile}
+                    source={communityAvatarSource}
                 />
                 <View style={nonThemedStyles.rowInfoBaseContainer}>
                     <View style={nonThemedStyles.rowInfoContainer}>

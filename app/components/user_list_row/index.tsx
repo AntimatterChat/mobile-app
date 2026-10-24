@@ -36,6 +36,7 @@ type Props = {
     testID: string;
     tutorialWatched?: boolean;
     user: UserProfile;
+    channelId?: string;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -91,6 +92,7 @@ function UserListRow({
     testID,
     tutorialWatched = false,
     user,
+    channelId,
 }: Props) {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -179,6 +181,7 @@ function UserListRow({
                 disabled={!(selectable || selected || !disabled)}
                 viewRef={viewRef}
                 onLayout={onLayout}
+                channelId={channelId}
             />
             {showTutorial &&
             <TutorialHighlight

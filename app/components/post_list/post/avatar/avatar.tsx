@@ -24,6 +24,7 @@ type AvatarProps = {
     isAutoReponse: boolean;
     location: AvailableScreens;
     post: PostModel;
+    communityAvatarSource?: {uri: string};
 }
 
 const style = StyleSheet.create({
@@ -32,7 +33,7 @@ const style = StyleSheet.create({
     },
 });
 
-const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}: AvatarProps) => {
+const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post, communityAvatarSource}: AvatarProps) => {
     const serverUrl = useServerUrl();
 
     const fromWebHook = post.props?.from_webhook === 'true';
@@ -105,6 +106,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
             iconSize={24}
             showStatus={!isAutoReponse || author?.isBot}
             testID={`post_avatar.${author?.id}.profile_picture`}
+            source={communityAvatarSource}
         />
     );
 

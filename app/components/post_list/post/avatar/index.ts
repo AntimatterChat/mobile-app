@@ -2,7 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {of as of$} from 'rxjs';
 
+import {withServerUrl} from '@context/server';
+import {observeCommunityAvatarSource} from '@queries/servers/community_profile';
 import {observePostAuthor} from '@queries/servers/post';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 
@@ -11,13 +14,19 @@ import Avatar from './avatar';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 
-const withPost = withObservables(['post'], ({database, post}: {post: PostModel} & WithDatabaseArgs) => {
+type OwnProps = WithDatabaseArgs & {
+    post: PostModel;
+    serverUrl: string;
+};
+
+const withPost = withObservables(['post'], ({database, post, serverUrl}: OwnProps) => {
     const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
 
     return {
         author: observePostAuthor(database, post),
         enablePostIconOverride,
+        communityAvatarSource: post.userId ? observeCommunityAvatarSource(database, serverUrl, post.channelId, post.userId) : of$(undefined),
     };
 });
 
-export default withDatabase(withPost(Avatar));
+export default withDatabase(withServerUrl(withPost(Avatar)));

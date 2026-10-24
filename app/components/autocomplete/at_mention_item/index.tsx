@@ -13,6 +13,7 @@ type AtMentionItemProps = {
     showBadges?: boolean;
     onPress?: (username: string) => void;
     testID?: string;
+    channelId?: string;
 }
 
 const AtMentionItem = ({
@@ -21,6 +22,7 @@ const AtMentionItem = ({
     showBadges,
     onPress,
     testID,
+    channelId,
 }: AtMentionItemProps) => {
     const completeMention = useCallback((u: UserModel | UserProfile) => {
         onPress?.(u.username);
@@ -33,6 +35,7 @@ const AtMentionItem = ({
             showBadges={showBadges}
             testID={testID}
             onUserPress={completeMention}
+            channelId={channelId}
         />
     );
 };

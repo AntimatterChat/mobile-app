@@ -9,7 +9,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export const DIVIDER_MARGIN = 8;
-const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER, REMOVE_USER} = Members.ManageOptions;
+const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER, REMOVE_USER, RESET_NICKNAME, RESET_AVATAR} = Members.ManageOptions;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -29,10 +29,20 @@ type Props = {
     isDefaultChannel: boolean;
     isChannelAdmin: boolean;
     canChangeMemberRoles: boolean;
+    canManageAndRemoveMembers?: boolean;
     userId: string;
+
+    // teamId, hasCommunityNickname and hasCommunityAvatar are only for the Reset nickname/picture rows: the
+    // member's own community profile, shown only when they have actually set one there.
+    teamId?: string;
+    hasCommunityNickname?: boolean;
+    hasCommunityAvatar?: boolean;
 }
 
-const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId, canChangeMemberRoles}: Props) => {
+const ManageUserOptions = ({
+    channelId, isChannelAdmin, isDefaultChannel, userId, canChangeMemberRoles, canManageAndRemoveMembers,
+    teamId, hasCommunityNickname, hasCommunityAvatar,
+}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -55,6 +65,24 @@ const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId,
                 testID='channel.remove_member'
                 userId={userId}
             />
+            {canManageAndRemoveMembers && teamId && hasCommunityNickname &&
+                <ManageMembersLabel
+                    channelId={channelId}
+                    manageOption={RESET_NICKNAME}
+                    teamId={teamId}
+                    testID='channel.reset_community_nickname'
+                    userId={userId}
+                />
+            }
+            {canManageAndRemoveMembers && teamId && hasCommunityAvatar &&
+                <ManageMembersLabel
+                    channelId={channelId}
+                    manageOption={RESET_AVATAR}
+                    teamId={teamId}
+                    testID='channel.reset_community_avatar'
+                    userId={userId}
+                />
+            }
         </>
     );
 };

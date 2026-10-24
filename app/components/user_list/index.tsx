@@ -185,6 +185,10 @@ type Props = {
     tutorialWatched: boolean;
     location: AvailableScreens;
     customSection?: (profiles: UserProfile[]) => Array<SectionListData<UserProfile>>;
+
+    // channelId, when this is a channel's own member list, shows each member's nickname/picture for that
+    // channel's community instead of their global profile.
+    channelId?: string;
 }
 
 export default function UserList({
@@ -202,6 +206,7 @@ export default function UserList({
     tutorialWatched,
     location,
     customSection,
+    channelId,
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
@@ -243,8 +248,9 @@ export default function UserList({
         openUserProfile({
             userId: user.id,
             location,
+            channelId,
         });
-    }, [location, serverUrl]);
+    }, [location, serverUrl, channelId]);
     const renderItem = useCallback(({item, index, section}: RenderItemType) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = selectedIds.has(item.id);
@@ -268,9 +274,10 @@ export default function UserList({
                 testID={`${testID}.user_item`}
                 tutorialWatched={tutorialWatched}
                 user={item}
+                channelId={channelId}
             />
         );
-    }, [selectedIds, manageMode, handleSelectProfile, openProfile, showManageMode, testID, tutorialWatched]);
+    }, [selectedIds, manageMode, handleSelectProfile, openProfile, showManageMode, testID, tutorialWatched, channelId]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {

@@ -10,6 +10,7 @@ import {withServerUrl} from '@context/server';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCommunityLook, observeCommunityRoles} from '@queries/servers/community_groups';
+import {observeCommunityAvatarSource, observeCommunityNickname} from '@queries/servers/community_profile';
 import {observeCustomProfileAttributesByUserId, observeCustomProfileFields} from '@queries/servers/custom_profile';
 import {observeCustomProfileAttributesEnabled} from '@queries/servers/features';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
@@ -64,6 +65,12 @@ const enhanced = withObservables([], ({channelId, database, serverUrl, userId}: 
     const teamId = channel.pipe(switchMap((c) => (c?.teamId ? of$(c.teamId) : observeCurrentTeamId(database))));
     const communityLook = observeCommunityLook(serverUrl, teamId, userId, user);
     const communityRoles = observeCommunityRoles(serverUrl, teamId, userId);
+
+    // Unlike communityLook/communityRoles above, the nickname and picture never fall back to the current team for
+    // a direct/group message (no channelId, or a channel with no team of its own): they stay the global profile
+    // there, so these are keyed on channelId directly rather than the already-defaulted teamId.
+    const communityNickname = channelId ? observeCommunityNickname(database, serverUrl, channelId, userId) : of$(undefined);
+    const communityAvatarSource = channelId ? observeCommunityAvatarSource(database, serverUrl, channelId, userId) : of$(undefined);
     const isTeamAdmin = teamId.pipe(switchMap((id) => observeUserIsTeamAdmin(database, userId, id)));
     const systemAdmin = user.pipe(switchMap((u) => of$(u?.roles ? isSystemAdmin(u.roles) : false)));
     const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
@@ -101,6 +108,8 @@ const enhanced = withObservables([], ({channelId, database, serverUrl, userId}: 
         canManageAndRemoveMembers,
         communityLook,
         communityRoles,
+        communityNickname,
+        communityAvatarSource,
         currentUserId,
         enablePostIconOverride,
         enablePostUsernameOverride,

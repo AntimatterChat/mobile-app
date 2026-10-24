@@ -16,6 +16,7 @@ type Props = {
     imageSize?: number;
     user: UserModel;
     userIconOverride?: string;
+    communityAvatarSource?: {uri: string};
 }
 
 const DEFAULT_IMAGE_SIZE = 96;
@@ -30,7 +31,7 @@ const getStyles = (size?: number) => {
     });
 };
 
-const UserProfileAvatar = ({enablePostIconOverride, forwardRef, imageSize, user, userIconOverride}: Props) => {
+const UserProfileAvatar = ({enablePostIconOverride, forwardRef, imageSize, user, userIconOverride, communityAvatarSource}: Props) => {
     const styles = useMemo(() => getStyles(imageSize), [imageSize]);
 
     if (enablePostIconOverride && userIconOverride) {
@@ -54,6 +55,7 @@ const UserProfileAvatar = ({enablePostIconOverride, forwardRef, imageSize, user,
             size={imageSize || DEFAULT_IMAGE_SIZE}
             statusSize={24}
             testID={`user_profile_avatar.${user.id}.profile_picture`}
+            source={communityAvatarSource}
         />
     );
 };
