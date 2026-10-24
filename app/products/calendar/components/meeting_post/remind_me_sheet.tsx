@@ -11,7 +11,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import {setMeetingReminder} from '../../actions/remote/meetings';

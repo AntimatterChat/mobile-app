@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import ClientCalendar, {type ClientCalendarMix} from '@calendar/client/rest';
+
 import ClientAgents, {type ClientAgentsMix} from '@agents/client/rest';
 import ClientAmPlugins, {type ClientAmPluginsMix} from '@am_plugins/client/rest';
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
-import ClientCalendar, {type ClientCalendarMix} from '@calendar/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
 import ClientPlaybooks, {type ClientPlaybooksMix} from '@playbooks/client/rest';
 import mix from '@utils/mix';

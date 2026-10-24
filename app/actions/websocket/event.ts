@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {handleCalendarEvents} from '@calendar/actions/websocket';
+
 import * as bookmark from '@actions/local/channel_bookmark';
 import {
     handleBoRPostAllRevealed,
@@ -14,7 +16,6 @@ import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentConversationUpdated, handleAgentPostUpdate} from '@agents/actions/websocket';
 import {handleAgentsEvents} from '@agents/actions/websocket/events';
 import {handleAmPluginsEvents} from '@am_plugins/actions/websocket';
-import {handleCalendarEvents} from '@calendar/actions/websocket';
 import * as voice from '@calls/actions/voice';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';

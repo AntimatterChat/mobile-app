@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import MeetingPost, {isCalendarMeetingPost} from '@calendar/components/meeting_post';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import AmPluginPost, {isAmPluginPost} from '@am_plugins/components/plugin_post';
-import MeetingPost, {isCalendarMeetingPost} from '@calendar/components/meeting_post';
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';

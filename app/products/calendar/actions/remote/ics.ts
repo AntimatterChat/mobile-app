@@ -6,8 +6,8 @@ import Share from 'react-native-share';
 
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import NetworkManager from '@managers/network_manager';
-import {pathWithPrefix} from '@utils/file';
 import {getFullErrorMessage} from '@utils/errors';
+import {pathWithPrefix} from '@utils/file';
 import {logDebug} from '@utils/log';
 
 // downloadAndShareMeetingIcs is the post's "Add to calendar": it fetches the call's current

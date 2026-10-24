@@ -78,7 +78,7 @@ type FlatItem =
     | {type: 'header'; key: string; group: ScheduleGroup}
     | {type: 'row'; key: string; occurrence: MeetingOccurrence};
 
-function flatten(groups: ScheduleGroup[], intl: ReturnType<typeof useIntl>): FlatItem[] {
+function flatten(groups: ScheduleGroup[]): FlatItem[] {
     const items: FlatItem[] = [];
     for (const group of groups) {
         items.push({type: 'header', key: `h-${group.key}`, group});
@@ -87,6 +87,16 @@ function flatten(groups: ScheduleGroup[], intl: ReturnType<typeof useIntl>): Fla
         }
     }
     return items;
+}
+
+function groupLabel(group: ScheduleGroup, intl: ReturnType<typeof useIntl>): string {
+    if (group.label === 'today') {
+        return intl.formatMessage(messages.today);
+    }
+    if (group.label === 'tomorrow') {
+        return intl.formatMessage(messages.tomorrow);
+    }
+    return intl.formatDate(group.date, {weekday: 'long', month: 'short', day: 'numeric'});
 }
 
 type Props = {
@@ -104,7 +114,7 @@ const ScheduleList = ({occurrences, loading, onRefresh, onLoadMore}: Props) => {
     const [now] = useState(() => Date.now());
 
     const groups = useMemo(() => groupOccurrencesByDay(occurrences, new Date(now)), [occurrences, now]);
-    const items = useMemo(() => flatten(groups, intl), [groups, intl]);
+    const items = useMemo(() => flatten(groups), [groups]);
 
     const onOpenPost = useCallback((occurrence: MeetingOccurrence) => {
         showPermalink(serverUrl, '', occurrence.post_id);
@@ -116,11 +126,7 @@ const ScheduleList = ({occurrences, loading, onRefresh, onLoadMore}: Props) => {
 
     const renderItem: ListRenderItem<FlatItem> = useCallback(({item}) => {
         if (item.type === 'header') {
-            const label = item.group.label === 'today' ?
-                intl.formatMessage(messages.today) :
-                item.group.label === 'tomorrow' ?
-                    intl.formatMessage(messages.tomorrow) :
-                    intl.formatDate(item.group.date, {weekday: 'long', month: 'short', day: 'numeric'});
+            const label = groupLabel(item.group, intl);
             return (
                 <Text
                     style={styles.sectionHeader}
@@ -195,14 +201,14 @@ const ScheduleList = ({occurrences, loading, onRefresh, onLoadMore}: Props) => {
                     onRefresh={onRefresh}
                 />
             )}
-            ListEmptyComponent={!loading ? (
+            ListEmptyComponent={loading ? null : (
                 <FormattedText
                     id={messages.empty.id}
                     defaultMessage={messages.empty.defaultMessage}
                     style={styles.empty}
                     testID='calendar.schedule.empty'
                 />
-            ) : null}
+            )}
             testID='calendar.schedule.list'
         />
     );

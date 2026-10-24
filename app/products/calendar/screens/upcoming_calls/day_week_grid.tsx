@@ -27,6 +27,10 @@ import type {MeetingOccurrence} from '../../types/calendar';
 export const HOUR_HEIGHT = 56;
 const HOURS = 24;
 
+function occurrencesOnDay(occurrences: MeetingOccurrence[], dayStartMs: number, dayEndMs: number): MeetingOccurrence[] {
+    return occurrences.filter((o) => o.start < dayEndMs && o.end > dayStartMs);
+}
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     page: {
         flexDirection: 'row',
@@ -116,8 +120,8 @@ const DayWeekGrid = ({mode, date, occurrences, columnDates, onDateChange, onOpen
 
     const columns = useMemo(() => columnDates.map((d) => {
         const dayStart = startOfDay(d);
-        const dayEndMs = dayStart.getTime() + 24 * 60 * 60 * 1000;
-        const dayOccurrences = occurrences.filter((o) => o.start < dayEndMs && o.end > dayStart.getTime());
+        const dayEndMs = dayStart.getTime() + (24 * 60 * 60 * 1000);
+        const dayOccurrences = occurrencesOnDay(occurrences, dayStart.getTime(), dayEndMs);
         return {
             date: d,
             dayStart,

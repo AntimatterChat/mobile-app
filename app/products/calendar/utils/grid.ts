@@ -46,7 +46,7 @@ export function getFirstDayOfWeek(countryCode: string | undefined): DayOfWeek {
 
 export function startOfWeek(date: Date, firstDay: DayOfWeek): Date {
     const d = startOfDay(date);
-    const diff = (d.getDay() - firstDay + 7) % 7;
+    const diff = ((d.getDay() - firstDay) + 7) % 7;
     return addDays(d, -diff);
 }
 

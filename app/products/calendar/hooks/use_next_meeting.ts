@@ -44,7 +44,7 @@ export function useNextMeeting(channelId: string | undefined, enabled: boolean) 
     useEffect(() => {
         if (!channelId || !enabled) {
             setNext(undefined);
-            return;
+            return undefined;
         }
         setNext(calendarStore.getNextMeeting(serverUrl, channelId));
         lastFetchRef.current = 0;

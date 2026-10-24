@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import MeetingEdit, {meetingEditTitle, type MeetingEditProps} from '@calendar/screens/meeting_edit/meeting_edit';
 import {useIntl} from 'react-intl';
 
-import MeetingEdit, {meetingEditTitle, type MeetingEditProps} from '@calendar/screens/meeting_edit/meeting_edit';
 import {useTheme} from '@context/theme';
 import {getModalHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';

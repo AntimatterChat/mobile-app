@@ -4,8 +4,8 @@
 import {useIsFocused} from '@react-navigation/native';
 import React, {useEffect, useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {getLocales} from 'react-native-localize';
 import {Text, TouchableOpacity, View} from 'react-native';
+import {getLocales} from 'react-native-localize';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

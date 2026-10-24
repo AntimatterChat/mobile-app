@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import UpcomingCallsScreen from '@calendar/screens/upcoming_calls';
 import {useIntl} from 'react-intl';
 
-import UpcomingCallsScreen from '@calendar/screens/upcoming_calls';
 import {useTheme} from '@context/theme';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 

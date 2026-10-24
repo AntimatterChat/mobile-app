@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent} from '@testing-library/react-native';
 import {useIsFocused} from '@react-navigation/native';
+import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';

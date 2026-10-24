@@ -18,8 +18,8 @@ import {getFullErrorMessage} from '@utils/errors';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {cancelMeeting, fetchMeeting, rsvpMeeting} from '../../actions/remote/meetings';
 import {downloadAndShareMeetingIcs} from '../../actions/remote/ics';
+import {cancelMeeting, fetchMeeting, rsvpMeeting} from '../../actions/remote/meetings';
 import {CALENDAR_MEETING_POST_TYPE} from '../../constants';
 import {calendarStore} from '../../store';
 import {formatMeetingTimeRange} from '../../utils/format';
@@ -232,7 +232,10 @@ const MeetingPost = ({post, currentUserId}: Props) => {
 
     if (meeting === undefined) {
         return (
-            <View style={styles.card} testID='calendar.meeting_post.loading'>
+            <View
+                style={styles.card}
+                testID='calendar.meeting_post.loading'
+            >
                 <FormattedText
                     id={messages.loading.id}
                     defaultMessage={messages.loading.defaultMessage}
@@ -244,7 +247,10 @@ const MeetingPost = ({post, currentUserId}: Props) => {
 
     if (meeting === null) {
         return (
-            <Text style={styles.sub} testID='calendar.meeting_post.unavailable'>
+            <Text
+                style={styles.sub}
+                testID='calendar.meeting_post.unavailable'
+            >
                 {post.message || intl.formatMessage(messages.unavailable)}
             </Text>
         );

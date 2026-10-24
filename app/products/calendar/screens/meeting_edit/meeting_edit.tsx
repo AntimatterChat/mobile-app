@@ -118,6 +118,30 @@ function withTime(base: Date, time: Date): Date {
     return next;
 }
 
+function removeDay(byDay: string[], code: string): string[] {
+    return byDay.filter((d) => d !== code);
+}
+
+function pickerValue(stage: PickerStage, start: Date, end: Date, until: number | undefined): Date {
+    if (stage?.startsWith('start')) {
+        return start;
+    }
+    if (stage?.startsWith('end')) {
+        return end;
+    }
+    return until ? new Date(until) : new Date();
+}
+
+function everyMessage(freq: RecurrenceFormFields['freq']) {
+    if (freq === 'DAILY') {
+        return messages.everyDays;
+    }
+    if (freq === 'WEEKLY') {
+        return messages.everyWeeks;
+    }
+    return messages.everyMonths;
+}
+
 const MeetingEdit = ({meetingId}: MeetingEditProps) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -128,7 +152,7 @@ const MeetingEdit = ({meetingId}: MeetingEditProps) => {
     const [summary, setSummary] = useState('');
     const [description, setDescription] = useState('');
     const [start, setStart] = useState(() => new Date());
-    const [end, setEnd] = useState(() => new Date(Date.now() + 30 * 60 * 1000));
+    const [end, setEnd] = useState(() => new Date(Date.now() + (30 * 60 * 1000)));
     const [recurrence, setRecurrence] = useState<RecurrenceFormFields>({freq: 'NONE', interval: 1, byDay: [], endType: 'never', count: 10});
     const [reminderMinutes, setReminderMinutes] = useState<number>(DEFAULT_REMINDER_MINUTES);
     const [pickerStage, setPickerStage] = useState<PickerStage>(undefined);
@@ -179,10 +203,10 @@ const MeetingEdit = ({meetingId}: MeetingEditProps) => {
     }, [pickerStage]);
 
     const toggleByDay = useCallback((code: string) => {
-        setRecurrence((r) => ({
-            ...r,
-            byDay: r.byDay.includes(code) ? r.byDay.filter((d) => d !== code) : [...r.byDay, code],
-        }));
+        setRecurrence((r) => {
+            const byDay = r.byDay.includes(code) ? removeDay(r.byDay, code) : [...r.byDay, code];
+            return {...r, byDay};
+        });
     }, []);
 
     const onSave = useCallback(async () => {
@@ -193,7 +217,7 @@ const MeetingEdit = ({meetingId}: MeetingEditProps) => {
         }
         setSaving(true);
         try {
-            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
             const request = {
                 summary,
                 description,
@@ -229,7 +253,10 @@ const MeetingEdit = ({meetingId}: MeetingEditProps) => {
 
     if (!meeting) {
         return (
-            <View style={styles.container} testID='calendar.meeting_edit.loading'>
+            <View
+                style={styles.container}
+                testID='calendar.meeting_edit.loading'
+            >
                 <FormattedText
                     id={messages.loading.id}
                     defaultMessage={messages.loading.defaultMessage}
@@ -301,7 +328,10 @@ const MeetingEdit = ({meetingId}: MeetingEditProps) => {
             </View>
 
             {recurrence.freq === 'WEEKLY' && (
-                <View style={styles.row} testID='calendar.meeting_edit.byday'>
+                <View
+                    style={styles.row}
+                    testID='calendar.meeting_edit.byday'
+                >
                     {WEEKDAY_CODES.map((code) => (
                         <Button
                             key={code}
@@ -318,7 +348,7 @@ const MeetingEdit = ({meetingId}: MeetingEditProps) => {
 
             {recurrence.freq !== 'NONE' && (
                 <FloatingTextInputLabel
-                    label={intl.formatMessage(recurrence.freq === 'DAILY' ? messages.everyDays : recurrence.freq === 'WEEKLY' ? messages.everyWeeks : messages.everyMonths)}
+                    label={intl.formatMessage(everyMessage(recurrence.freq))}
                     keyboardType='number-pad'
                     onChangeText={(v) => setRecurrence((r) => ({...r, interval: Math.max(1, parseInt(v, 10) || 1)}))}
                     theme={theme}
@@ -408,11 +438,7 @@ const MeetingEdit = ({meetingId}: MeetingEditProps) => {
 
             {pickerStage && (
                 <DateTimePicker
-                    value={
-                        pickerStage.startsWith('start') ? start :
-                            pickerStage.startsWith('end') ? end :
-                                recurrence.until ? new Date(recurrence.until) : new Date()
-                    }
+                    value={pickerValue(pickerStage, start, end, recurrence.until)}
                     mode={pickerStage.endsWith('time') ? 'time' : 'date'}
                     display={Platform.select({ios: 'spinner', default: pickerStage.endsWith('time') ? 'clock' : 'calendar'})}
                     onChange={onChangeDate}

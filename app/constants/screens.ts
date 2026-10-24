@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import CALENDAR_SCREENS from '@calendar/constants/screens';
+
 import AGENTS_SCREENS from '@agents/constants/screens';
 import AM_PLUGINS_SCREENS from '@am_plugins/constants/screens';
-import CALENDAR_SCREENS from '@calendar/constants/screens';
 import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 
 const ABOUT = 'about';

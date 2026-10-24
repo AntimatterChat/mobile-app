@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NextCallChip from '@calendar/components/next_call_chip/next_call_chip';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 
 import {useAgentsConfig} from '@agents/store/agents_config';
-import NextCallChip from '@calendar/components/next_call_chip/next_call_chip';
 import {useNavigationHeaderCallButtonForDM} from '@calls/hooks';
 import {getCallsConfig} from '@calls/state';
 import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channel_actions';

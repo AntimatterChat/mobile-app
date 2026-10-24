@@ -63,11 +63,18 @@ export function recurrenceFormFromRule(rule: string | undefined): RecurrenceForm
 
     const freq: RecurrenceFormFreq = parsed.freq === 'YEARLY' ? 'MONTHLY' : parsed.freq;
 
+    let endType: RecurrenceEndType = 'never';
+    if (parsed.until) {
+        endType = 'on_date';
+    } else if (parsed.count) {
+        endType = 'after_n';
+    }
+
     return {
         freq,
         interval: parsed.interval,
         byDay: parsed.byDay ?? [],
-        endType: parsed.until ? 'on_date' : parsed.count ? 'after_n' : 'never',
+        endType,
         until: parsed.until,
         count: parsed.count ?? DEFAULT_RECURRENCE_FORM.count,
     };

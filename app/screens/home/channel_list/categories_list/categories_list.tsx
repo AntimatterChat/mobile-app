@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import UpcomingCallsButton from '@calendar/components/upcoming_calls_button';
+import {CALENDAR_PLUGIN_ID} from '@calendar/constants';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, FlatList, useWindowDimensions, type LayoutChangeEvent} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -9,8 +11,6 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import {handleTeamChange} from '@actions/remote/team';
 import AgentsButton from '@agents/components/agents_button';
 import {usePluginEnabled} from '@am_plugins/hooks/composer_actions';
-import UpcomingCallsButton from '@calendar/components/upcoming_calls_button';
-import {CALENDAR_PLUGIN_ID} from '@calendar/constants';
 import {ROW_HEIGHT} from '@components/channel_item/channel_item';
 import DraftsButton from '@components/drafts_buttton';
 import Loading from '@components/loading';

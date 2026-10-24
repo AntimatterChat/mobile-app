@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import ClientCalendar from './rest';
+import clientCalendar from './rest';
 
 import type {MeetingRequest} from '../types/calendar';
 
@@ -13,7 +13,7 @@ describe('ClientCalendar', () => {
         doFetch = mockDoFetch;
         getPluginRoute = mockGetPluginRoute;
     };
-    const Client = ClientCalendar(BaseClass);
+    const Client = clientCalendar(BaseClass);
     const client = new Client();
 
     const ROUTE = '/plugins/com.antimatterchat.calendar/api/v1';

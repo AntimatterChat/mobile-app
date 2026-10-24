@@ -11,7 +11,6 @@ import type {
     MeetingRequest,
     MeetingsResponse,
     NextMeetingResponse,
-    ReminderRequest,
     RsvpRequest,
 } from '../types/calendar';
 

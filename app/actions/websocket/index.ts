@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {handleCalendarReconnect} from '@calendar/actions/websocket';
 import RNUtils from '@mattermost/rnutils';
 
 import {markChannelAsViewed} from '@actions/local/channel';
@@ -22,7 +23,6 @@ import {autoUpdateTimezone} from '@actions/remote/user';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentsReconnect} from '@agents/actions/websocket/reconnect';
 import {handleAmPluginsReconnect} from '@am_plugins/actions/websocket';
-import {handleCalendarReconnect} from '@calendar/actions/websocket';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';

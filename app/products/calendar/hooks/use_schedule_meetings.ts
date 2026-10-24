@@ -7,8 +7,8 @@ import {AppState, type AppStateStatus} from 'react-native';
 import {useServerUrl} from '@context/server';
 
 import {fetchCommunityMeetings} from '../actions/remote/meetings';
-import {calendarStore} from '../store';
 import {UPCOMING_CALLS_PAGE_DAYS} from '../constants';
+import {calendarStore} from '../store';
 
 import type {MeetingOccurrence} from '../types/calendar';
 

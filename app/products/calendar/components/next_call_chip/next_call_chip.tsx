@@ -3,15 +3,15 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Pressable, Text, View} from 'react-native';
+import {Pressable, Text} from 'react-native';
 
+import {showPermalink} from '@actions/remote/permalink';
 import {usePluginEnabled} from '@am_plugins/hooks/composer_actions';
 import {joinCallAndOpenCallScreen} from '@calls/actions/calls';
 import CompassIcon from '@components/compass_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {showPermalink} from '@actions/remote/permalink';
 import {isTypeDMorGM} from '@utils/channel';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
