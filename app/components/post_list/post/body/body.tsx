@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import AmPluginPost, {isAmPluginPost} from '@am_plugins/components/plugin_post';
+import MeetingPost, {isCalendarMeetingPost} from '@calendar/components/meeting_post';
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
@@ -182,6 +183,13 @@ const Body = ({
     } else if (isAmPluginPost(post)) {
         message = (
             <AmPluginPost
+                isReplyPost={isReplyPost}
+                post={post}
+            />
+        );
+    } else if (isCalendarMeetingPost(post)) {
+        message = (
+            <MeetingPost
                 isReplyPost={isReplyPost}
                 post={post}
             />
