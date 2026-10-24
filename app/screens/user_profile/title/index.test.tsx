@@ -22,14 +22,14 @@ function getBaseProps() {
 }
 
 describe('UserProfileTitle community nickname', () => {
-    it("should show the global display name when there is no community nickname", () => {
+    it('should show the global display name when there is no community nickname', () => {
         const {getByTestId, queryByTestId} = renderWithIntlAndTheme(<UserProfileTitle {...getBaseProps()}/>);
 
         expect(getByTestId('user_profile.display_name')).toHaveTextContent('@user1');
         expect(queryByTestId('user_profile.outside_this_community')).toBeNull();
     });
 
-    it("should show the community nickname, with a note of the global name, when given one", () => {
+    it('should show the community nickname, with a note of the global name, when given one', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <UserProfileTitle
                 {...getBaseProps()}

@@ -10,9 +10,10 @@ import ManageUserOptions from './manage_user_options';
 
 jest.mock('@components/channel_actions/manage_members_label', () => {
     const {Text} = require('react-native');
-    return (props: {manageOption: string; testID: string}) => (
-        <Text testID={`${props.testID}.${props.manageOption}`}/>
-    );
+    function MockManageMembersLabel(props: {manageOption: string; testID: string}) {
+        return <Text testID={`${props.testID}.${props.manageOption}`}/>;
+    }
+    return MockManageMembersLabel;
 });
 
 const {RESET_NICKNAME, RESET_AVATAR} = Members.ManageOptions;

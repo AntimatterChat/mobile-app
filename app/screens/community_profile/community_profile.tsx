@@ -5,8 +5,8 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Image, Text, View} from 'react-native';
 
-import {buildProfileImageUrlFromUser} from '@actions/remote/user';
 import {patchCommunityProfile, resetCommunityProfile, uploadCommunityAvatar} from '@actions/remote/community_profile';
+import {buildProfileImageUrlFromUser} from '@actions/remote/user';
 import Button from '@components/button';
 import SettingContainer from '@components/settings/container';
 import TextSetting from '@components/settings/text_setting';

@@ -28,6 +28,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database, serverUrl
         combineLatestWith(currentUser, observeCommunityGroups(serverUrl)),
         switchMap(([ch, u, groups]) => {
             const isDC = isDefaultChannel(ch);
+
             // In a guild (all-channels-membership) community, everyone belongs to every eligible channel: leaving
             // one isn't a personal choice there, so the action is hidden (the server refuses it regardless).
             const staysForCommunity = Boolean(ch?.teamId) && isAllChannelsCommunity(groups, ch!.teamId) && isCommunityWideChannel(ch);

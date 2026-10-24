@@ -158,7 +158,7 @@ const CommunityPrivacy = ({teamId, communityName, currentUser, dmPrivacy}: Props
                     type='toggle'
                     label={intl.formatMessage(fieldLabel[field])}
                     selected={!hidden.includes(field)}
-                    action={(value) => onToggleField(field, Boolean(value))}
+                    action={(value: string | boolean) => onToggleField(field, Boolean(value))}
                     testID={`community_privacy.field.${field}.option`}
                 />
             ))}

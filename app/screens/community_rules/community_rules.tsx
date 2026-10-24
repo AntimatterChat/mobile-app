@@ -207,7 +207,10 @@ const CommunityRulesScreen = ({teamId, communityName, rules}: Props) => {
         content = (
             <>
                 {changed && (
-                    <Text style={styles.changedNotice} testID='community_rules.changed_notice'>
+                    <Text
+                        style={styles.changedNotice}
+                        testID='community_rules.changed_notice'
+                    >
                         {intl.formatMessage(messages.changed)}
                     </Text>
                 )}
@@ -242,10 +245,16 @@ const CommunityRulesScreen = ({teamId, communityName, rules}: Props) => {
     }
 
     return (
-        <View style={styles.root} testID='community_rules.screen'>
+        <View
+            style={styles.root}
+            testID='community_rules.screen'
+        >
             <View style={containerStyle}>
                 <View style={styles.wrapper}>
-                    <Text style={styles.title} testID='community_rules.title'>
+                    <Text
+                        style={styles.title}
+                        testID='community_rules.title'
+                    >
                         {intl.formatMessage(messages.title, {communityName: communityName || ''})}
                     </Text>
                     {content}

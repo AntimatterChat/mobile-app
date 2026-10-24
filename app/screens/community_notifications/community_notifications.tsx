@@ -139,19 +139,39 @@ const CommunityNotifications = ({teamId, communityName, notifyProps}: Props) => 
     return (
         <SettingContainer testID='community_notifications'>
             <Text style={styles.sectionTitle}>{intl.formatMessage(messages.desktopTitle)}</Text>
-            <LevelRow communityId={teamId} propKey='desktop' value={notifyProps.desktop} testIDPrefix='community_notifications.desktop'/>
+            <LevelRow
+                communityId={teamId}
+                propKey='desktop'
+                value={notifyProps.desktop}
+                testIDPrefix='community_notifications.desktop'
+            />
 
             <Text style={styles.sectionTitle}>{intl.formatMessage(messages.mobileTitle)}</Text>
-            <LevelRow communityId={teamId} propKey='push' value={notifyProps.push} testIDPrefix='community_notifications.mobile'/>
+            <LevelRow
+                communityId={teamId}
+                propKey='push'
+                value={notifyProps.push}
+                testIDPrefix='community_notifications.mobile'
+            />
 
             <Text style={styles.sectionTitle}>{intl.formatMessage(messages.emailTitle)}</Text>
-            <OnOffRow communityId={teamId} propKey='email' value={notifyProps.email} testIDPrefix='community_notifications.email'/>
+            <OnOffRow
+                communityId={teamId}
+                propKey='email'
+                value={notifyProps.email}
+                testIDPrefix='community_notifications.email'
+            />
 
             <Text style={styles.sectionTitle}>{intl.formatMessage(messages.mentionsTitle)}</Text>
             <Text style={styles.description}>
                 {intl.formatMessage(messages.mentionsDescription, {communityName: communityName || ''})}
             </Text>
-            <OnOffRow communityId={teamId} propKey='channel' value={notifyProps.channel} testIDPrefix='community_notifications.mentions'/>
+            <OnOffRow
+                communityId={teamId}
+                propKey='channel'
+                value={notifyProps.channel}
+                testIDPrefix='community_notifications.mentions'
+            />
 
             {!isCommunityNotifyEmpty(notifyProps) && (
                 <View style={styles.buttonRow}>

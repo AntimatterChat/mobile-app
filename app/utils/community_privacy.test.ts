@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PROFILE_DEFAULT, hiddenIn, parseProfilePrivacy, withHiddenFields} from './community_privacy';
+import {PROFILE_DEFAULT, hiddenIn, parseProfilePrivacy, withHiddenFields, type ProfilePrivacy} from './community_privacy';
 
 describe('parseProfilePrivacy', () => {
     it('should parse the stored map of scope to hidden fields', () => {
@@ -19,12 +19,12 @@ describe('parseProfilePrivacy', () => {
 
 describe('hiddenIn', () => {
     it("should use a community's own choice when it has one", () => {
-        const privacy = {default: ['email'], team1: ['position']};
+        const privacy: ProfilePrivacy = {default: ['email'], team1: ['position']};
         expect(hiddenIn(privacy, 'team1')).toEqual(['position']);
     });
 
     it('should fall back to the default when the community has no choice of its own', () => {
-        const privacy = {default: ['email']};
+        const privacy: ProfilePrivacy = {default: ['email']};
         expect(hiddenIn(privacy, 'team1')).toEqual(['email']);
     });
 
@@ -40,14 +40,14 @@ describe('withHiddenFields', () => {
     });
 
     it("should clear a community's own choice, falling back to the default", () => {
-        const privacy = {[PROFILE_DEFAULT]: ['email'], team1: ['position']};
+        const privacy: ProfilePrivacy = {[PROFILE_DEFAULT]: ['email'], team1: ['position']};
         const next = withHiddenFields(privacy, 'team1', null);
         expect(next).toEqual({[PROFILE_DEFAULT]: ['email']});
         expect(hiddenIn(next, 'team1')).toEqual(['email']);
     });
 
     it('should keep a deliberate choice to hide nothing, distinct from clearing it', () => {
-        const privacy = {[PROFILE_DEFAULT]: ['email']};
+        const privacy: ProfilePrivacy = {[PROFILE_DEFAULT]: ['email']};
         const next = withHiddenFields(privacy, 'team1', []);
         expect(next.team1).toEqual([]);
         expect(hiddenIn(next, 'team1')).toEqual([]);

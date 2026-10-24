@@ -5,17 +5,18 @@ import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import UserItem from './user_item';
-
-import type {UserItemProps} from './user_item';
+import UserItem, {type UserItemProps} from './user_item';
 
 jest.mock('@components/profile_picture', () => {
     const {View} = require('react-native');
-    return (props: {source?: {uri: string}; testID?: string}) => (
-        <View
-            testID={`${props.testID}.source.${props.source?.uri || 'none'}`}
-        />
-    );
+    function MockProfilePicture(props: {source?: {uri: string}; testID?: string}) {
+        return (
+            <View
+                testID={`${props.testID}.source.${props.source?.uri || 'none'}`}
+            />
+        );
+    }
+    return MockProfilePicture;
 });
 
 function getBaseProps(): UserItemProps {
@@ -30,7 +31,7 @@ function getBaseProps(): UserItemProps {
 }
 
 describe('UserItem', () => {
-    it("should show the global display name when there is no community nickname", () => {
+    it('should show the global display name when there is no community nickname', () => {
         const {getByTestId} = renderWithIntlAndTheme(<UserItem {...getBaseProps()}/>);
 
         expect(getByTestId('user_item.user1.display_name')).toHaveTextContent('user1');
@@ -47,7 +48,7 @@ describe('UserItem', () => {
         expect(getByTestId('user_item.user1.display_name')).toHaveTextContent('Nicky');
     });
 
-    it("should pass the community avatar source to ProfilePicture when given one", () => {
+    it('should pass the community avatar source to ProfilePicture when given one', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <UserItem
                 {...getBaseProps()}
