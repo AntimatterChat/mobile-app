@@ -125,8 +125,12 @@ const UserItem = ({
     const customStatus = getUserCustomStatus(user);
     const customStatusExpired = isCustomStatusExpired(user);
 
-    let displayName = communityNickname || displayUsername(user, locale, teammateNameDisplay);
-    const showTeammateDisplay = displayName !== user?.username;
+    const globalDisplayName = displayUsername(user, locale, teammateNameDisplay);
+    let displayName = communityNickname || globalDisplayName;
+
+    // The separate "@username" only backs up the global display name (full name vs. handle); a community
+    // nickname already stands on its own, so it doesn't get one.
+    const showTeammateDisplay = !communityNickname && globalDisplayName !== user?.username;
     if (isCurrentUser) {
         displayName = intl.formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }

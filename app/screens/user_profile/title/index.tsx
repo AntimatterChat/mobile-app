@@ -115,8 +115,10 @@ const UserProfileTitle = ({
     const override = enablePostUsernameOverride && usernameOverride;
 
     // The global display name shows separately ("Outside this community: …") whenever the community one takes its
-    // place below.
+    // place below. It gets the same '@' handle treatment as the main name below when it is itself just the
+    // username (teammateDisplayName === username, or no full name/nickname set).
     const globalDisplayName = displayUsername(user, intl.locale, teammateDisplayName, false);
+    const globalDisplayNameWithHandle = globalDisplayName === user.username ? `@${globalDisplayName}` : globalDisplayName;
 
     let displayName: string;
     if (override) {
@@ -172,7 +174,10 @@ const UserProfileTitle = ({
     );
 
     const hideUsername = override || (displayName && displayName === user.username);
-    const prefix = hideUsername ? '@' : '';
+
+    // A webhook/plugin override is its own name, not the person's handle: unlike the person's own username
+    // showing as their display name, it never gets the '@' treatment.
+    const prefix = (!override && hideUsername) ? '@' : '';
 
     return (
         <>
@@ -237,7 +242,7 @@ const UserProfileTitle = ({
                             style={styles.outsideThisCommunity}
                             testID='user_profile.outside_this_community'
                         >
-                            {intl.formatMessage(messages.outsideThisCommunity, {name: globalDisplayName})}
+                            {intl.formatMessage(messages.outsideThisCommunity, {name: globalDisplayNameWithHandle})}
                         </Text>
                     )}
                     {roles.length > 0 && <RoleChips roles={roles}/>}

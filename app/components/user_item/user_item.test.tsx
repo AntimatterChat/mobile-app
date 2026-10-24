@@ -20,7 +20,7 @@ jest.mock('@components/profile_picture', () => {
 
 function getBaseProps(): UserItemProps {
     return {
-        user: {id: 'user1', username: 'user1'} as UserProfile,
+        user: {id: 'user1', username: 'user1', roles: ''} as UserProfile,
         currentUserId: 'current-user-id',
         testID: 'user_item',
         isCustomStatusEnabled: false,

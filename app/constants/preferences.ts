@@ -25,6 +25,12 @@ export const CATEGORIES_TO_KEEP = {
 
     // Antimatter: when timed mutes end (see utils/timed_mute).
     MUTE_UNTIL: 'fusion_mute_until',
+
+    // Antimatter: a member's own notification overrides, per community (see utils/community_notify).
+    COMMUNITY_NOTIFY: 'community_notify',
+
+    // Antimatter: a member's own direct-message privacy, per community or default (see actions/remote/community_privacy).
+    DM_PRIVACY: 'dm_privacy',
 };
 
 const CATEGORIES = {
