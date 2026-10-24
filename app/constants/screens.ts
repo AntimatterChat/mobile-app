@@ -4,6 +4,7 @@
 import CALENDAR_SCREENS from '@calendar/constants/screens';
 
 import AGENTS_SCREENS from '@agents/constants/screens';
+import ASSISTANT_SCREENS from '@assistant/constants/screens';
 import AM_PLUGINS_SCREENS from '@am_plugins/constants/screens';
 import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 
@@ -198,6 +199,7 @@ export default {
     SHOW_TRANSLATION,
     ...PLAYBOOKS_SCREENS,
     ...AGENTS_SCREENS,
+    ...ASSISTANT_SCREENS,
     ...AM_PLUGINS_SCREENS,
     ...CALENDAR_SCREENS,
 } as const;

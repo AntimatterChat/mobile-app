@@ -4,6 +4,7 @@
 import ClientCalendar, {type ClientCalendarMix} from '@calendar/client/rest';
 
 import ClientAgents, {type ClientAgentsMix} from '@agents/client/rest';
+import ClientAssistant, {type ClientAssistantMix} from '@assistant/client/rest';
 import ClientAmPlugins, {type ClientAmPluginsMix} from '@am_plugins/client/rest';
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
@@ -40,6 +41,7 @@ import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
 interface Client extends ClientBase,
     ClientAgentsMix,
+    ClientAssistantMix,
     ClientAmPluginsMix,
     ClientAppsMix,
     ClientCategoriesMix,
@@ -75,6 +77,7 @@ interface Client extends ClientBase,
 
 class Client extends mix(ClientBase).with(
     ClientAgents,
+    ClientAssistant,
     ClientAmPlugins,
     ClientApps,
     ClientCategories,

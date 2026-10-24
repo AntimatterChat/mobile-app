@@ -19,6 +19,7 @@ module.exports = {
                 '@agents': './app/products/agents',
                 '@am_plugins': './app/products/am_plugins',
                 '@assets': './dist/assets/',
+                '@assistant': './app/products/assistant',
                 '@boards': './app/products/boards',
                 '@calendar': './app/products/calendar',
                 '@calls': './app/products/calls',
