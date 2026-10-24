@@ -16,9 +16,9 @@ import MutedToolsSheet from '@assistant/components/muted_tools_sheet';
 import {useAssistantFeed} from '@assistant/hooks/use_assistant_feed';
 import {useAssistantPresence} from '@assistant/hooks/use_assistant_presence';
 import {useOfferHolderNames} from '@assistant/hooks/use_offer_holder_names';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {FlatList, Pressable, View} from 'react-native';
+import {FlatList, Pressable, View, type NativeScrollEvent, type NativeSyntheticEvent} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {showPermalink} from '@actions/remote/permalink';
@@ -40,7 +40,12 @@ const messages = defineMessages({
     turnOn: {id: 'assistant.screen.turn_on', defaultMessage: 'Turn the assistant on for this channel'},
     turnOff: {id: 'assistant.screen.turn_off', defaultMessage: 'Turn the assistant off for this channel'},
     settings: {id: 'assistant.screen.settings', defaultMessage: 'Assistant settings'},
+    newCard: {id: 'assistant.screen.new_card', defaultMessage: 'New card ↓'},
 });
+
+// How close to the bottom (in density-independent pixels) counts as "there": a reader need
+// not be pinned to the exact last pixel to be considered caught up.
+const BOTTOM_THRESHOLD = 32;
 
 export type AssistantScreenProps = {
     channelId: string;
@@ -83,6 +88,34 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         padding: 12,
         gap: 12,
     },
+    listWrapper: {
+        flex: 1,
+    },
+    jumpChip: {
+        position: 'absolute',
+        alignSelf: 'center',
+        bottom: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 16,
+        backgroundColor: theme.buttonBg,
+        shadowColor: theme.centerChannelColor,
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.16,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    jumpChipIcon: {
+        color: theme.buttonColor,
+        fontSize: 16,
+    },
+    jumpChipText: {
+        color: theme.buttonColor,
+        ...typography('Body', 75, 'SemiBold'),
+    },
     centered: {
         flex: 1,
         alignItems: 'center',
@@ -111,6 +144,51 @@ const AssistantScreen = ({channelId}: AssistantScreenProps) => {
     const {enabled, on, cards, loaded} = useAssistantFeed(serverUrl, channelId);
     const {following} = useAssistantPresence(serverUrl, channelId);
     const holderNames = useOfferHolderNames(serverUrl, cards);
+
+    // The feed reads like a chat: oldest at the top (the store already sorts that way),
+    // newest at the bottom, scrolled there on open. A new card keeps the reader pinned to
+    // the bottom if they're already there; otherwise it shows a "New card ↓" chip instead of
+    // yanking the list (ASSISTANT_DISPLAY.md), the same contract the channel's own post list
+    // uses for its "new messages" indicator.
+    const listRef = useRef<FlatList<AssistantCard>>(null);
+    const [stuckToBottom, setStuckToBottom] = useState(true);
+    const [showJumpChip, setShowJumpChip] = useState(false);
+    const prevCardCount = useRef(0);
+
+    const scrollToBottom = useCallback((animated: boolean) => {
+        listRef.current?.scrollToEnd({animated});
+    }, []);
+
+    useEffect(() => {
+        const hadCards = prevCardCount.current > 0;
+        if (cards.length > prevCardCount.current) {
+            if (stuckToBottom) {
+                setShowJumpChip(false);
+                requestAnimationFrame(() => scrollToBottom(hadCards));
+            } else {
+                setShowJumpChip(true);
+            }
+        } else if (cards.length <= prevCardCount.current && stuckToBottom) {
+            setShowJumpChip(false);
+        }
+        prevCardCount.current = cards.length;
+    }, [cards.length, stuckToBottom, scrollToBottom]);
+
+    const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const {contentOffset, contentSize, layoutMeasurement} = e.nativeEvent;
+        const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
+        const nowAtBottom = distanceFromBottom <= BOTTOM_THRESHOLD;
+        setStuckToBottom(nowAtBottom);
+        if (nowAtBottom) {
+            setShowJumpChip(false);
+        }
+    }, []);
+
+    const onJumpToBottom = usePreventDoubleTap(useCallback(() => {
+        scrollToBottom(true);
+        setStuckToBottom(true);
+        setShowJumpChip(false);
+    }, [scrollToBottom]));
 
     const onToggle = usePreventDoubleTap(useCallback(() => {
         setAssistantChannelEnabled(serverUrl, channelId, !on);
@@ -252,23 +330,47 @@ const AssistantScreen = ({channelId}: AssistantScreenProps) => {
                     />
                 </View>
             ) : (
-                <FlatList
-                    data={cards}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderItem}
-                    contentContainerStyle={styles.content}
-                    testID='assistant.screen.list'
-                    ListEmptyComponent={loaded ? (
-                        <View style={styles.centered}>
-                            <FormattedText
-                                id={messages.empty.id}
-                                defaultMessage={messages.empty.defaultMessage}
-                                style={styles.message}
-                                testID='assistant.screen.empty'
+                <View style={styles.listWrapper}>
+                    <FlatList
+                        ref={listRef}
+                        data={cards}
+                        keyExtractor={(item) => item.id}
+                        renderItem={renderItem}
+                        contentContainerStyle={styles.content}
+                        onScroll={onScroll}
+                        scrollEventThrottle={16}
+                        testID='assistant.screen.list'
+                        ListEmptyComponent={loaded ? (
+                            <View style={styles.centered}>
+                                <FormattedText
+                                    id={messages.empty.id}
+                                    defaultMessage={messages.empty.defaultMessage}
+                                    style={styles.message}
+                                    testID='assistant.screen.empty'
+                                />
+                            </View>
+                        ) : null}
+                    />
+                    {showJumpChip && (
+                        <Pressable
+                            accessibilityRole='button'
+                            accessibilityLabel={intl.formatMessage(messages.newCard)}
+                            onPress={onJumpToBottom}
+                            style={styles.jumpChip}
+                            testID='assistant.screen.jump_to_bottom'
+                        >
+                            <CompassIcon
+                                name='arrow-down'
+                                style={styles.jumpChipIcon}
                             />
-                        </View>
-                    ) : null}
-                />
+                            <FormattedText
+                                id={messages.newCard.id}
+                                defaultMessage={messages.newCard.defaultMessage}
+                                style={styles.jumpChipText}
+                            />
+                        </Pressable>
+                    )}
+                </View>
             )}
         </SafeAreaView>
     );

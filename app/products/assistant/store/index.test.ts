@@ -40,7 +40,7 @@ describe('assistantStore', () => {
         expect(feed.cards).toEqual([]);
     });
 
-    it('setFeed stores the response, pinned first then newest', () => {
+    it('setFeed stores the response, oldest first like a chat, pinned cards keeping their place', () => {
         const response: AssistantFeedResponse = {
             channel_id: CHANNEL_ID,
             enabled: true,
@@ -57,10 +57,10 @@ describe('assistantStore', () => {
         const feed = assistantStore.getFeed(SERVER_URL, CHANNEL_ID);
         expect(feed.loaded).toBe(true);
         expect(feed.enabled).toBe(true);
-        expect(feed.cards.map((c) => c.id)).toEqual(['pinned', 'newer', 'older']);
+        expect(feed.cards.map((c) => c.id)).toEqual(['pinned', 'older', 'newer']);
     });
 
-    it('upsertCard adds a new card and removes a dismissed one', () => {
+    it('upsertCard adds a new card at the bottom and removes a dismissed one', () => {
         assistantStore.setFeed(SERVER_URL, CHANNEL_ID, {
             channel_id: CHANNEL_ID,
             enabled: true,
@@ -70,7 +70,7 @@ describe('assistantStore', () => {
         });
 
         assistantStore.upsertCard(SERVER_URL, CHANNEL_ID, makeCard({id: 'card2', create_at: 2000}));
-        expect(assistantStore.getFeed(SERVER_URL, CHANNEL_ID).cards.map((c) => c.id)).toEqual(['card2', 'card1']);
+        expect(assistantStore.getFeed(SERVER_URL, CHANNEL_ID).cards.map((c) => c.id)).toEqual(['card1', 'card2']);
 
         assistantStore.upsertCard(SERVER_URL, CHANNEL_ID, makeCard({id: 'card1', status: 'dismissed'}));
         expect(assistantStore.getFeed(SERVER_URL, CHANNEL_ID).cards.map((c) => c.id)).toEqual(['card2']);

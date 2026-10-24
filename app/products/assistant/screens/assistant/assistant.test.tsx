@@ -51,6 +51,15 @@ jest.mock('@assistant/hooks/use_offer_holder_names', () => ({
     useOfferHolderNames: jest.fn(),
 }));
 
+// InsightCard's MessageAttachments pulls in Markdown (mentions, config lookups, ...), which
+// needs a real watermelondb database and a working '@context/server' (this file's own mock
+// above only stubs useServerUrl): mocked out here, same reasoning as insight_card.test.tsx.
+jest.mock('@components/post_list/post/body/content/message_attachments', () => {
+    return function MockMessageAttachments() {
+        return null;
+    };
+});
+
 function makeInsight(overrides: Partial<AssistantCard> = {}): AssistantCard {
     return {
         id: 'insight1',
@@ -180,5 +189,71 @@ describe('AssistantScreen', () => {
         jest.mocked(useAssistantFeed).mockReturnValue({enabled: true, on: true, engine: 'rules', cards: [], loaded: true});
         const {getByTestId} = renderWithIntlAndTheme(<AssistantScreen channelId={CHANNEL_ID}/>);
         expect(getByTestId('assistant.screen.empty')).toBeTruthy();
+    });
+
+    describe('chat order and the jump-to-bottom chip', () => {
+        function scroll(getByTestId: (id: string) => any, distanceFromBottom: number) {
+            act(() => {
+                getByTestId('assistant.screen.list').props.onScroll({
+                    nativeEvent: {
+                        contentOffset: {y: 0},
+                        contentSize: {height: 1000, width: 400},
+                        layoutMeasurement: {height: 1000 - distanceFromBottom, width: 400},
+                    },
+                });
+            });
+        }
+
+        it('renders oldest at the top and newest at the bottom', () => {
+            const cards = [
+                makeInsight({id: 'oldest', create_at: 1}),
+                makeInsight({id: 'middle', create_at: 2}),
+                makeInsight({id: 'newest', create_at: 3}),
+            ];
+            jest.mocked(useAssistantFeed).mockReturnValue({enabled: true, on: true, engine: 'rules', cards, loaded: true});
+            const {getAllByTestId} = renderWithIntlAndTheme(<AssistantScreen channelId={CHANNEL_ID}/>);
+
+            const order = getAllByTestId(/^assistant\.card\.\w+$/).map((node: any) => node.props.testID);
+            expect(order).toEqual(['assistant.card.oldest', 'assistant.card.middle', 'assistant.card.newest']);
+        });
+
+        it('stays pinned to the bottom for a new card when the reader is already there', () => {
+            const cards = [makeInsight({id: 'one', create_at: 1}), makeInsight({id: 'two', create_at: 2})];
+            jest.mocked(useAssistantFeed).mockReturnValue({enabled: true, on: true, engine: 'rules', cards, loaded: true});
+            const {rerender, queryByTestId} = renderWithIntlAndTheme(<AssistantScreen channelId={CHANNEL_ID}/>);
+
+            expect(queryByTestId('assistant.screen.jump_to_bottom')).toBeNull();
+
+            const withNewCard = [...cards, makeInsight({id: 'three', create_at: 3})];
+            jest.mocked(useAssistantFeed).mockReturnValue({enabled: true, on: true, engine: 'rules', cards: withNewCard, loaded: true});
+            act(() => {
+                rerender(<AssistantScreen channelId={CHANNEL_ID}/>);
+            });
+
+            // Still at the bottom: no chip, the list just scrolls there itself.
+            expect(queryByTestId('assistant.screen.jump_to_bottom')).toBeNull();
+        });
+
+        it('shows the chip for a new card when the reader has scrolled away, and jumping down dismisses it', () => {
+            const cards = [makeInsight({id: 'one', create_at: 1}), makeInsight({id: 'two', create_at: 2})];
+            jest.mocked(useAssistantFeed).mockReturnValue({enabled: true, on: true, engine: 'rules', cards, loaded: true});
+            const {rerender, getByTestId, queryByTestId} = renderWithIntlAndTheme(<AssistantScreen channelId={CHANNEL_ID}/>);
+
+            // Scroll away from the bottom.
+            scroll(getByTestId, 600);
+            expect(queryByTestId('assistant.screen.jump_to_bottom')).toBeNull();
+
+            const withNewCard = [...cards, makeInsight({id: 'three', create_at: 3})];
+            jest.mocked(useAssistantFeed).mockReturnValue({enabled: true, on: true, engine: 'rules', cards: withNewCard, loaded: true});
+            act(() => {
+                rerender(<AssistantScreen channelId={CHANNEL_ID}/>);
+            });
+
+            const chip = getByTestId('assistant.screen.jump_to_bottom');
+            expect(chip).toBeTruthy();
+
+            fireEvent.press(chip);
+            expect(queryByTestId('assistant.screen.jump_to_bottom')).toBeNull();
+        });
     });
 });

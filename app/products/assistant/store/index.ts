@@ -28,13 +28,9 @@ const EMPTY_FEED: AssistantFeedState = {
 };
 
 function sortCards(cards: AssistantCard[]): AssistantCard[] {
-    // Pinned cards first, then the newest, matching the feed's own order (ASSISTANT_API.md).
-    return [...cards].sort((a, b) => {
-        if (a.pinned !== b.pinned) {
-            return a.pinned ? -1 : 1;
-        }
-        return b.create_at - a.create_at;
-    });
+    // Oldest first, newest last, like a chat (ASSISTANT_DISPLAY.md). Pinned cards keep their
+    // place in that order; they're marked with a pin, not pulled to the top.
+    return [...cards].sort((a, b) => a.create_at - b.create_at);
 }
 
 class ServerSubjects<T> {
