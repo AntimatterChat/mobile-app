@@ -4,11 +4,25 @@
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import {Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import InsightCard from './insight_card';
 
 import type {AssistantCard} from '@assistant/types/assistant';
+
+// MessageAttachments pulls in Markdown (mentions, config lookups, ...), which needs a real
+// watermelondb database the way the channel's own post list wires one up for its tests
+// (post_list.test.tsx). A card's own tests only need to know it's given the right,
+// action-stripped attachments, not that Markdown renders — so it's mocked out here the same
+// way message_attachment.test.tsx mocks its own children "to focus on testing Boolean checks".
+const mockMessageAttachments = jest.fn().mockReturnValue(null);
+jest.mock('@components/post_list/post/body/content/message_attachments', () => {
+    return function MockMessageAttachments(props: {attachments: MessageAttachment[]; channelId: string; location: string; postId: string; theme: Theme}) {
+        mockMessageAttachments(props);
+        return null;
+    };
+});
 
 function makeCard(overrides: Partial<AssistantCard> = {}): AssistantCard {
     return {
@@ -54,6 +68,7 @@ describe('InsightCard', () => {
 
         expect(getByTestId('insight_card.title')).toHaveTextContent('Query Prometheus');
         expect(getByTestId('insight_card.summary')).toHaveTextContent('www-1 CPU, last hour: 23% average, 61% peak at 14:05');
+        expect(getByTestId('insight_card')).toHaveProp('accessibilityLabel', 'Query Prometheus');
         expect(getByText('Matched: cpu on www-1')).toBeTruthy();
     });
 
@@ -104,6 +119,79 @@ describe('InsightCard', () => {
             />,
         );
         expect(queryByTestId('insight_card.sparkline')).toBeNull();
+    });
+
+    it('renders attachments and the summary as the subtitle and accessibility label, dropping actions', () => {
+        const attachment = {
+            fallback: 'CPU on www-1',
+            color: '#3E8EDE',
+            title: 'CPU on www-1 (last hour)',
+            text: '4.1% now · peak 5.8% · average 3.8%',
+            chart: {values: [3.1, 3.4, 4.0, 4.1], threshold: 80, label: 'CPU %'},
+            actions: [{id: 'a1', name: 'Approve', type: 'button'}],
+        };
+        const card = makeCard({
+            result: JSON.stringify({
+                summary: 'CPU on www-1: 4% now, 6% peak in the last hour',
+                attachments: [attachment],
+            }),
+        });
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <InsightCard
+                card={card}
+                onPost={noop}
+                onPin={noop}
+                onDismiss={noop}
+                onMute={noop}
+                onGoToMessage={noop}
+                testID='insight_card'
+            />,
+        );
+
+        expect(getByTestId('insight_card.summary')).toHaveTextContent('CPU on www-1: 4% now, 6% peak in the last hour');
+        expect(getByTestId('insight_card')).toHaveProp('accessibilityLabel', 'CPU on www-1: 4% now, 6% peak in the last hour');
+
+        expect(mockMessageAttachments).toHaveBeenCalledWith(expect.objectContaining({
+            attachments: [{...attachment, actions: undefined}],
+            channelId: card.channel_id,
+            location: Screens.ASSISTANT,
+            postId: card.id,
+        }));
+
+        // The legacy text sparkline is not used once the result carries attachments.
+        expect(queryByTestId('insight_card.sparkline')).toBeNull();
+    });
+
+    it('marks a pinned card', () => {
+        const card = makeCard({pinned: true});
+        const {getByTestId} = renderWithIntlAndTheme(
+            <InsightCard
+                card={card}
+                onPost={noop}
+                onPin={noop}
+                onDismiss={noop}
+                onMute={noop}
+                onGoToMessage={noop}
+                testID='insight_card'
+            />,
+        );
+        expect(getByTestId('insight_card.pinned')).toBeTruthy();
+    });
+
+    it('does not mark an unpinned card', () => {
+        const card = makeCard({pinned: false});
+        const {queryByTestId} = renderWithIntlAndTheme(
+            <InsightCard
+                card={card}
+                onPost={noop}
+                onPin={noop}
+                onDismiss={noop}
+                onMute={noop}
+                onGoToMessage={noop}
+                testID='insight_card'
+            />,
+        );
+        expect(queryByTestId('insight_card.pinned')).toBeNull();
     });
 
     it('shows the "Post to channel" warning naming the source', () => {

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Sparkline from '@assistant/components/sparkline';
+import {parseAssistantResult} from '@assistant/utils/result_attachments';
 import {sourceFromTool} from '@assistant/utils/source';
 import {extractDataPoints} from '@assistant/utils/sparkline_data';
 import React, {useMemo} from 'react';
@@ -9,6 +10,9 @@ import {defineMessages, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import Button from '@components/button';
+import CompassIcon from '@components/compass_icon';
+import MessageAttachments from '@components/post_list/post/body/content/message_attachments';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -27,6 +31,7 @@ const messages = defineMessages({
     dismiss: {id: 'assistant.insight.dismiss', defaultMessage: 'Dismiss'},
     mute: {id: 'assistant.insight.mute', defaultMessage: 'Don\'t suggest this kind again'},
     postWarning: {id: 'assistant.insight.post_warning', defaultMessage: 'Some people in this channel may not have access to {source}.'},
+    pinned: {id: 'mobile.post_pre_header.pinned', defaultMessage: 'Pinned'},
 });
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -41,6 +46,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
         color: theme.centerChannelColor,
         ...typography('Heading', 200, 'SemiBold'),
+    },
+    pinnedRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    pinnedIcon: {
+        color: theme.linkColor,
+        fontSize: 14,
+    },
+    pinnedText: {
+        color: theme.linkColor,
+        ...typography('Body', 75, 'SemiBold'),
     },
     summary: {
         color: theme.centerChannelColor,
@@ -115,14 +133,22 @@ const InsightCard = ({card, onPost, onPin, onDismiss, onMute, onGoToMessage, bus
         }
     }, [onGoToMessage, triggerPostId]));
 
-    const dataPoints = useMemo(() => extractDataPoints(card.result), [card.result]);
+    // A tool's result may carry the message-attachment format (ASSISTANT_DISPLAY.md): a
+    // plain-text `summary`, used here as the card's subtitle and its accessibility label,
+    // and `attachments` drawn with the same component bot posts use (actions dropped: a
+    // card never has buttons). A tool that returns anything else keeps today's rendering,
+    // including the sparkline read from a points line in the raw text.
+    const parsedResult = useMemo(() => parseAssistantResult(card.result), [card.result]);
+    const attachments = parsedResult?.attachments;
+    const subtitle = parsedResult?.summary ?? (attachments ? undefined : card.result);
+    const dataPoints = useMemo(() => (attachments ? null : extractDataPoints(card.result)), [attachments, card.result]);
     const isPosted = card.status === 'posted';
 
     return (
         <View
             style={styles.card}
             testID={testID}
-            accessibilityLabel={card.tool_title}
+            accessibilityLabel={parsedResult?.summary ?? card.tool_title}
         >
             <Text
                 style={styles.title}
@@ -130,13 +156,36 @@ const InsightCard = ({card, onPost, onPin, onDismiss, onMute, onGoToMessage, bus
             >
                 {card.tool_title}
             </Text>
-            {Boolean(card.result) && (
+            {card.pinned && (
+                <View
+                    style={styles.pinnedRow}
+                    testID={`${testID}.pinned`}
+                >
+                    <CompassIcon
+                        name='pin'
+                        style={styles.pinnedIcon}
+                    />
+                    <Text style={styles.pinnedText}>
+                        {intl.formatMessage(messages.pinned)}
+                    </Text>
+                </View>
+            )}
+            {Boolean(subtitle) && (
                 <Text
                     style={styles.summary}
                     testID={`${testID}.summary`}
                 >
-                    {card.result}
+                    {subtitle}
                 </Text>
+            )}
+            {attachments && attachments.length > 0 && (
+                <MessageAttachments
+                    attachments={attachments}
+                    channelId={card.channel_id}
+                    location={Screens.ASSISTANT}
+                    postId={card.id}
+                    theme={theme}
+                />
             )}
             {dataPoints && (
                 <View style={styles.sparklineRow}>
