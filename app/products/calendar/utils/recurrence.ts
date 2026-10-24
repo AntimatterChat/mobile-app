@@ -90,7 +90,12 @@ export const WEEKDAY_CODES = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const
 
 type MessageDescriptor = {id: string; defaultMessage: string};
 
-export const DAY_NAME_IDS: Record<string, MessageDescriptor> = {
+// defineMessages (not a plain object literal) so the extractor's static analysis picks
+// these up: a dynamic DAY_NAME_IDS[code] lookup is fine at runtime, but a literal object
+// outside defineMessages/formatMessage is invisible to it. Widened to Record<string, ...>
+// so that dynamic lookup (by an RRULE BYDAY code, not always one of the known literals)
+// still type-checks.
+export const DAY_NAME_IDS: Record<string, MessageDescriptor> = defineMessages({
     MO: {id: 'calendar.recurrence.day.monday', defaultMessage: 'Monday'},
     TU: {id: 'calendar.recurrence.day.tuesday', defaultMessage: 'Tuesday'},
     WE: {id: 'calendar.recurrence.day.wednesday', defaultMessage: 'Wednesday'},
@@ -98,9 +103,9 @@ export const DAY_NAME_IDS: Record<string, MessageDescriptor> = {
     FR: {id: 'calendar.recurrence.day.friday', defaultMessage: 'Friday'},
     SA: {id: 'calendar.recurrence.day.saturday', defaultMessage: 'Saturday'},
     SU: {id: 'calendar.recurrence.day.sunday', defaultMessage: 'Sunday'},
-};
+});
 
-export const DAY_SHORT_NAME_IDS: Record<string, MessageDescriptor> = {
+export const DAY_SHORT_NAME_IDS: Record<string, MessageDescriptor> = defineMessages({
     MO: {id: 'calendar.recurrence.day_short.monday', defaultMessage: 'Mon'},
     TU: {id: 'calendar.recurrence.day_short.tuesday', defaultMessage: 'Tue'},
     WE: {id: 'calendar.recurrence.day_short.wednesday', defaultMessage: 'Wed'},
@@ -108,7 +113,7 @@ export const DAY_SHORT_NAME_IDS: Record<string, MessageDescriptor> = {
     FR: {id: 'calendar.recurrence.day_short.friday', defaultMessage: 'Fri'},
     SA: {id: 'calendar.recurrence.day_short.saturday', defaultMessage: 'Sat'},
     SU: {id: 'calendar.recurrence.day_short.sunday', defaultMessage: 'Sun'},
-};
+});
 
 export function describeWeekdayShort(code: string, intl: IntlShape): string {
     return DAY_SHORT_NAME_IDS[code] ? intl.formatMessage(DAY_SHORT_NAME_IDS[code]) : code;
