@@ -3,6 +3,7 @@
 
 import AGENTS_SCREENS from '@agents/constants/screens';
 import AM_PLUGINS_SCREENS from '@am_plugins/constants/screens';
+import CALENDAR_SCREENS from '@calendar/constants/screens';
 import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 
 const ABOUT = 'about';
@@ -197,11 +198,13 @@ export default {
     ...PLAYBOOKS_SCREENS,
     ...AGENTS_SCREENS,
     ...AM_PLUGINS_SCREENS,
+    ...CALENDAR_SCREENS,
 } as const;
 
 export const MODAL_SCREENS = new Set<string>([
     AM_PLUGINS_SCREENS.AM_CREATE_POLL,
     AM_PLUGINS_SCREENS.AM_GIF_PICKER,
+    CALENDAR_SCREENS.CALENDAR_MEETING_EDIT,
     BROWSE_CHANNELS,
     CHANNEL_INFO,
     CHANNEL_ADD_MEMBERS,

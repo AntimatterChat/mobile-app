@@ -4,6 +4,7 @@
 import ClientAgents, {type ClientAgentsMix} from '@agents/client/rest';
 import ClientAmPlugins, {type ClientAmPluginsMix} from '@am_plugins/client/rest';
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
+import ClientCalendar, {type ClientCalendarMix} from '@calendar/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
 import ClientPlaybooks, {type ClientPlaybooksMix} from '@playbooks/client/rest';
 import mix from '@utils/mix';
@@ -61,6 +62,7 @@ interface Client extends ClientBase,
     ClientTosMix,
     ClientUsersMix,
     ClientCallsMix,
+    ClientCalendarMix,
     ClientPluginsMix,
     ClientNPSMix,
     ClientCustomAttributesMix,
@@ -95,6 +97,7 @@ class Client extends mix(ClientBase).with(
     ClientTos,
     ClientUsers,
     ClientCalls,
+    ClientCalendar,
     ClientPlugins,
     ClientNPS,
     ClientCustomAttributes,

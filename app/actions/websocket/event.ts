@@ -14,6 +14,7 @@ import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentConversationUpdated, handleAgentPostUpdate} from '@agents/actions/websocket';
 import {handleAgentsEvents} from '@agents/actions/websocket/events';
 import {handleAmPluginsEvents} from '@am_plugins/actions/websocket';
+import {handleCalendarEvents} from '@calendar/actions/websocket';
 import * as voice from '@calls/actions/voice';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
@@ -428,5 +429,6 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
     handlePlaybookEvents(serverUrl, msg);
     handleAgentsEvents(serverUrl, msg);
     handleAmPluginsEvents(serverUrl, msg);
+    handleCalendarEvents(serverUrl, msg);
     handleModerationEvents(serverUrl, msg);
 }

@@ -102,6 +102,7 @@ export const GLOBAL_IDENTIFIERS = {
     CACHE_MIGRATION: 'cacheMigration',
     PUSH_SIGNING_KEY: 'pushSigningKey',
     EPHEMERAL_MODE_AUDIT_QUEUE: 'ephemeralModeAuditQueue',
+    CALENDAR_UPCOMING_CALLS_VIEW: 'calendarUpcomingCallsView',
 };
 
 export enum OperationType {
