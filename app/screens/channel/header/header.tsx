@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 
 import {useAgentsConfig} from '@agents/store/agents_config';
+import NextCallChip from '@calendar/components/next_call_chip/next_call_chip';
 import {useNavigationHeaderCallButtonForDM} from '@calls/hooks';
 import {getCallsConfig} from '@calls/state';
 import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channel_actions';
@@ -350,6 +351,13 @@ const ChannelHeader = ({
             <View style={contextStyle}>
                 <RoundedHeaderContext/>
             </View>
+            {!isDMorGM &&
+            <NextCallChip
+                channelId={channelId}
+                channelType={channelType}
+                canJoinCalls={callsAvailable}
+            />
+            }
             {showBookmarkBar &&
             <ChannelHeaderBookmarks
                 canAddBookmarks={canAddBookmarks}
