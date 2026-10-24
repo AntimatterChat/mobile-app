@@ -8,6 +8,9 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {handleTeamChange} from '@actions/remote/team';
 import AgentsButton from '@agents/components/agents_button';
+import {usePluginEnabled} from '@am_plugins/hooks/composer_actions';
+import UpcomingCallsButton from '@calendar/components/upcoming_calls_button';
+import {CALENDAR_PLUGIN_ID} from '@calendar/constants';
 import {ROW_HEIGHT} from '@components/channel_item/channel_item';
 import DraftsButton from '@components/drafts_buttton';
 import Loading from '@components/loading';
@@ -41,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-type ScreenType = typeof Screens.GLOBAL_DRAFTS | typeof Screens.GLOBAL_THREADS | typeof Screens.CHANNEL | typeof Screens.PARTICIPANT_PLAYBOOKS | typeof Screens.AGENT_CHAT;
+type ScreenType = typeof Screens.GLOBAL_DRAFTS | typeof Screens.GLOBAL_THREADS | typeof Screens.CHANNEL | typeof Screens.PARTICIPANT_PLAYBOOKS | typeof Screens.AGENT_CHAT | typeof Screens.CALENDAR_UPCOMING_CALLS;
 
 type ChannelListProps = {
     hasChannels: boolean;
@@ -121,9 +124,11 @@ const CategoriesList = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isTablet, moreThanOneTeam]);
 
+    const calendarEnabled = usePluginEnabled(CALENDAR_PLUGIN_ID);
+
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
-            if (screen === Screens.GLOBAL_DRAFTS || screen === Screens.GLOBAL_THREADS || screen === Screens.PARTICIPANT_PLAYBOOKS || screen === Screens.AGENT_CHAT) {
+            if (screen === Screens.GLOBAL_DRAFTS || screen === Screens.GLOBAL_THREADS || screen === Screens.PARTICIPANT_PLAYBOOKS || screen === Screens.AGENT_CHAT || screen === Screens.CALENDAR_UPCOMING_CALLS) {
                 setActiveScreen(screen);
             } else {
                 setActiveScreen(Screens.CHANNEL);
@@ -173,6 +178,18 @@ const CategoriesList = ({
         return null;
     }, [activeScreen, draftsCount, isTablet, scheduledPostCount, scheduledPostHasError, scheduledPostsEnabled]);
 
+    const upcomingCallsButtonComponent = useMemo(() => {
+        if (!calendarEnabled) {
+            return null;
+        }
+
+        return (
+            <UpcomingCallsButton
+                shouldHighlightActive={activeScreen === Screens.CALENDAR_UPCOMING_CALLS}
+            />
+        );
+    }, [calendarEnabled, activeScreen]);
+
     const agentsButtonComponent = useMemo(() => {
         if (!agentsEnabled) {
             return null;
@@ -200,11 +217,11 @@ const CategoriesList = ({
 
     const onListLayout = useCallback((event: LayoutChangeEvent) => {
         const {height} = event.nativeEvent.layout;
-        const items = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent].reduce((result, item) => {
+        const items = [threadButtonComponent, draftsButtonComponent, upcomingCallsButtonComponent, agentsButtonComponent, playbooksButtonComponent].reduce((result, item) => {
             return result + (Boolean(item) ? 1 : 0);
         }, 0);
         setListHeight(height - (items * ROW_HEIGHT));
-    }, [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent]);
+    }, [threadButtonComponent, draftsButtonComponent, upcomingCallsButtonComponent, agentsButtonComponent, playbooksButtonComponent]);
 
     const content = useMemo(() => {
         if (!hasChannels && !isInitialSync) {
@@ -219,7 +236,7 @@ const CategoriesList = ({
             return (<LoadChannelsError/>);
         }
 
-        const components = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent,
+        const components = [threadButtonComponent, draftsButtonComponent, upcomingCallsButtonComponent, agentsButtonComponent, playbooksButtonComponent,
             <Categories
                 key='categories'
                 isTablet={isTablet}
@@ -242,7 +259,7 @@ const CategoriesList = ({
                 />
             </SafeAreaView>
         );
-    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isInitialSync, isTablet, isTeamLoading, listHeight, onListLayout, playbooksButtonComponent, styles.flex, threadButtonComponent]);
+    }, [agentsButtonComponent, draftsButtonComponent, upcomingCallsButtonComponent, hasChannels, isInitialSync, isTablet, isTeamLoading, listHeight, onListLayout, playbooksButtonComponent, styles.flex, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
