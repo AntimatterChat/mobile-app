@@ -6,7 +6,6 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import FocusStore from '@store/focus_store';
-import TestHelper from '@test/test_helper';
 
 import {endFocus, fetchFocus, fetchFocusSummary, markFocusSummaryRead, markFocusSummarySeen, startFocus} from './focus';
 import {savePreference} from './preference';

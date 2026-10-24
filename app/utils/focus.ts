@@ -5,8 +5,8 @@ import moment from 'moment-timezone';
 import {useEffect, useState} from 'react';
 import {combineLatest, map, distinctUntilChanged} from 'rxjs';
 
-import {FOCUS_UNTIL_PROP} from '@constants/focus';
 import {General} from '@constants';
+import {FOCUS_UNTIL_PROP} from '@constants/focus';
 import {observeCurrentUser} from '@queries/servers/user';
 import FocusStore from '@store/focus_store';
 
@@ -14,6 +14,8 @@ import type {Database} from '@nozbe/watermelondb';
 
 // The longest a timer may wait (setTimeout's limit).
 const MAX_TIMEOUT = (2 ** 31) - 1;
+
+const incrementTick = (n: number) => n + 1;
 
 type FocusUser = {
     status?: string;
@@ -40,7 +42,7 @@ function useBefore(at: number): boolean {
         if (!at || left <= 0) {
             return undefined;
         }
-        const timer = setTimeout(() => tick((n) => n + 1), Math.min(left + 50, MAX_TIMEOUT));
+        const timer = setTimeout(() => tick(incrementTick), Math.min(left + 50, MAX_TIMEOUT));
         return () => clearTimeout(timer);
     }, [at]);
     return at > Date.now();

@@ -4,8 +4,8 @@
 import {fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
-import {useKeyboardState} from '@context/keyboard_state';
 import {Screens} from '@constants';
+import {useKeyboardState} from '@context/keyboard_state';
 import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';

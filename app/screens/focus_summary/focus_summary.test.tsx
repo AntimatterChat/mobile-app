@@ -52,7 +52,12 @@ describe('FocusSummary', () => {
     });
 
     it('fetches and shows what was missed', async () => {
-        renderWithIntl(<FocusSummary startAt={1000} endAt={2000}/>);
+        renderWithIntl(
+            <FocusSummary
+                startAt={1000}
+                endAt={2000}
+            />,
+        );
 
         await waitFor(() => {
             expect(fetchFocusSummary).toHaveBeenCalledWith('focus_summary.test.com', 1000, 2000);
@@ -63,7 +68,12 @@ describe('FocusSummary', () => {
     });
 
     it('marks everything read and seen on "Mark all as read"', async () => {
-        renderWithIntl(<FocusSummary startAt={1000} endAt={2000}/>);
+        renderWithIntl(
+            <FocusSummary
+                startAt={1000}
+                endAt={2000}
+            />,
+        );
 
         fireEvent.press(await screen.findByTestId('focus_summary.mark_all_read.button'));
 
@@ -74,7 +84,12 @@ describe('FocusSummary', () => {
     });
 
     it('marks seen without marking read on "Show unread badges"', async () => {
-        renderWithIntl(<FocusSummary startAt={1000} endAt={2000}/>);
+        renderWithIntl(
+            <FocusSummary
+                startAt={1000}
+                endAt={2000}
+            />,
+        );
 
         fireEvent.press(await screen.findByTestId('focus_summary.show_badges.button'));
 
@@ -85,7 +100,12 @@ describe('FocusSummary', () => {
     });
 
     it('opens the channel when a channel row is pressed', async () => {
-        renderWithIntl(<FocusSummary startAt={1000} endAt={2000}/>);
+        renderWithIntl(
+            <FocusSummary
+                startAt={1000}
+                endAt={2000}
+            />,
+        );
 
         fireEvent.press(await screen.findByTestId('focus_summary.channel.channel1'));
 

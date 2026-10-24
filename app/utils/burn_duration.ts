@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {IntlShape} from 'react-intl';
-
 import {BURN_DEFAULT_MAXIMUM_DURATION_SECONDS, BURN_DURATION_STEPS_SECONDS, BURN_MIN_DURATION_SECONDS} from '@constants/post';
+
+import type {IntlShape} from 'react-intl';
 
 const DAY = 24 * 60 * 60;
 const HOUR = 60 * 60;

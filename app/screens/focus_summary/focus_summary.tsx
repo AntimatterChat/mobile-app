@@ -97,7 +97,10 @@ function ChannelRow({item, onOpen}: {item: FocusSummaryChannel; onOpen: (item: F
                     {formatMessage({id: 'focus_summary.count', defaultMessage: '{count, plural, one {# new message} other {{shown} new messages}}'}, {count: item.count, shown: count})}
                 </Text>
             </View>
-            {item.mention_count > 0 && <Badge value={item.mention_count} visible={true}/>}
+            <Badge
+                value={item.mention_count}
+                visible={item.mention_count > 0}
+            />
         </TouchableOpacity>
     );
 }
@@ -122,7 +125,10 @@ function ThreadRow({item, onOpen}: {item: FocusSummaryThread; onOpen: (item: Foc
                     {formatMessage({id: 'focus_summary.replies', defaultMessage: '{count, plural, one {# new reply} other {{shown} new replies}}'}, {count: item.count, shown: count})}
                 </Text>
             </View>
-            {item.mention_count > 0 && <Badge value={item.mention_count} visible={true}/>}
+            <Badge
+                value={item.mention_count}
+                visible={item.mention_count > 0}
+            />
         </TouchableOpacity>
     );
 }
