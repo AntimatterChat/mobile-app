@@ -11,6 +11,7 @@ import {isValidUrl} from '@utils/url';
 
 import AttachmentActions from './attachment_actions';
 import AttachmentAuthor from './attachment_author';
+import AttachmentChart from './attachment_chart';
 import AttachmentFields from './attachment_fields';
 import AttachmentFooter from './attachment_footer';
 import AttachmentImage from './attachment_image';
@@ -58,14 +59,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 export default function MessageAttachment({attachment, channelId, layoutWidth, location, metadata, postId, theme}: Props) {
     const style = getStyleSheet(theme);
     const STATUS_COLORS = getStatusColors(theme);
-    let borderStyle;
+    let resolvedColor: string | undefined;
     if (attachment.color) {
         if (attachment.color[0] === '#') {
-            borderStyle = {borderLeftColor: attachment.color};
+            resolvedColor = attachment.color;
         } else if (secureGetFromRecord(STATUS_COLORS, attachment.color)) {
-            borderStyle = {borderLeftColor: STATUS_COLORS[attachment.color]};
+            resolvedColor = STATUS_COLORS[attachment.color];
         }
     }
+    const borderStyle = resolvedColor ? {borderLeftColor: resolvedColor} : undefined;
 
     return (
         <>
@@ -116,6 +118,14 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                     location={location}
                     fields={attachment.fields!}
                     metadata={metadata}
+                    theme={theme}
+                />
+                }
+                {attachment.chart && typeof attachment.chart === 'object' &&
+                <AttachmentChart
+                    chart={attachment.chart}
+                    color={resolvedColor || theme.linkColor}
+                    layoutWidth={layoutWidth}
                     theme={theme}
                 />
                 }

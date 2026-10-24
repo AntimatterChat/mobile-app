@@ -9,7 +9,7 @@ import {
     testExports,
 } from './message_attachment';
 
-const {isMessageAttachment, isMessageAttachmentField, isPostAction, isPostActionOption} = testExports;
+const {isMessageAttachment, isMessageAttachmentChart, isMessageAttachmentField, isPostAction, isPostActionOption} = testExports;
 
 describe('getStatusColors', () => {
     const mockTheme = Preferences.THEMES.denim;
@@ -280,6 +280,46 @@ describe('isMessageAttachment', () => {
     test('returns false for invalid actions', () => {
         const invalidAttachment = {fallback: 'fallback', color: 'color', pretext: 'pretext', author_name: 'author_name', actions: 'invalid'};
         expect(isMessageAttachment(invalidAttachment)).toBe(false);
+    });
+
+    test('returns true for a valid chart', () => {
+        const validAttachment = {fallback: 'fallback', chart: {values: [1, 2, 3], threshold: 10, label: 'CPU %'}};
+        expect(isMessageAttachment(validAttachment)).toBe(true);
+    });
+
+    test('returns false for an invalid chart', () => {
+        const invalidAttachment = {fallback: 'fallback', chart: {values: 'not an array'}};
+        expect(isMessageAttachment(invalidAttachment)).toBe(false);
+    });
+});
+
+describe('isMessageAttachmentChart', () => {
+    test('returns true for values alone', () => {
+        expect(isMessageAttachmentChart({values: [1, 2, 3]})).toBe(true);
+    });
+
+    test('returns true with a threshold and a label', () => {
+        expect(isMessageAttachmentChart({values: [1, 2, 3], threshold: 80, label: 'CPU %'})).toBe(true);
+    });
+
+    test('returns false for non-object input', () => {
+        expect(isMessageAttachmentChart('invalid')).toBe(false);
+    });
+
+    test('returns false without values', () => {
+        expect(isMessageAttachmentChart({threshold: 80})).toBe(false);
+    });
+
+    test('returns false for non-numeric values', () => {
+        expect(isMessageAttachmentChart({values: [1, 'two', 3]})).toBe(false);
+    });
+
+    test('returns false for a non-numeric threshold', () => {
+        expect(isMessageAttachmentChart({values: [1, 2, 3], threshold: '80'})).toBe(false);
+    });
+
+    test('returns false for a non-string label', () => {
+        expect(isMessageAttachmentChart({values: [1, 2, 3], label: 123})).toBe(false);
     });
 });
 

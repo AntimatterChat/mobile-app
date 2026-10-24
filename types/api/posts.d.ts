@@ -211,12 +211,22 @@ type MessageAttachment = {
     footer_icon?: string;
     timestamp?: number | string;
     actions?: PostAction[];
+    chart?: MessageAttachmentChart;
 };
 
 type MessageAttachmentField = {
     title?: string;
     value?: any;
     short?: boolean;
+}
+
+// MessageAttachmentChart is the chart an attachment carries for a sparkline, values oldest
+// first, with an optional threshold drawn as a dashed line and an optional label used as its
+// accessible name (ASSISTANT_DISPLAY.md, Fusion's webapp/fusion/src/fusion/messages/content/cards.tsx).
+type MessageAttachmentChart = {
+    values: number[];
+    threshold?: number;
+    label?: string;
 }
 
 type PostSearchParams = {

@@ -40,6 +40,14 @@ jest.mock('./attachment_actions', () => {
     };
 });
 
+const mockAttachmentChart = jest.fn().mockReturnValue(null);
+jest.mock('./attachment_chart', () => {
+    return function MockAttachmentChart(props: {chart: MessageAttachmentChart; color: string; theme: Theme}) {
+        mockAttachmentChart(props);
+        return null;
+    };
+});
+
 jest.mock('./attachment_author', () => {
     return function MockAttachmentAuthor() {
         return null;
@@ -300,6 +308,49 @@ describe('MessageAttachment', () => {
         expect(mockAttachmentFields).not.toHaveBeenCalled();
         expect(mockAttachmentFooter).not.toHaveBeenCalled();
         expect(mockAttachmentActions).not.toHaveBeenCalled();
+    });
+
+    test('it handles undefined chart without crashing', () => {
+        const wrapper = render(<MessageAttachment {...baseProps}/>);
+        expect(wrapper.toJSON()).toBeTruthy();
+        expect(mockAttachmentChart).not.toHaveBeenCalled();
+    });
+
+    test('it passes the chart and a hex colour through to AttachmentChart', () => {
+        const props = {
+            ...baseProps,
+            attachment: {
+                ...baseProps.attachment,
+                color: '#FF0000',
+                chart: {values: [1, 2, 3], threshold: 10, label: 'CPU %'},
+            },
+        };
+
+        render(<MessageAttachment {...props}/>);
+        expect(mockAttachmentChart).toHaveBeenCalledWith(
+            expect.objectContaining({
+                chart: props.attachment.chart,
+                color: '#FF0000',
+            }),
+        );
+    });
+
+    test('it falls back to the link colour for AttachmentChart when the attachment has none', () => {
+        const props = {
+            ...baseProps,
+            attachment: {
+                ...baseProps.attachment,
+                color: undefined,
+                chart: {values: [1, 2, 3]},
+            },
+        };
+
+        render(<MessageAttachment {...props}/>);
+        expect(mockAttachmentChart).toHaveBeenCalledWith(
+            expect.objectContaining({
+                color: Preferences.THEMES.denim.linkColor,
+            }),
+        );
     });
 
     test('it handles mixed falsy properties without crashing', () => {

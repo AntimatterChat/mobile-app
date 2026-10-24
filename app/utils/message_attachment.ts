@@ -175,6 +175,30 @@ function isMessageAttachment(v: unknown): v is MessageAttachment {
         return false;
     }
 
+    if ('chart' in v && v.chart !== undefined && !isMessageAttachmentChart(v.chart)) {
+        return false;
+    }
+
+    return true;
+}
+
+function isMessageAttachmentChart(v: unknown): v is MessageAttachmentChart {
+    if (typeof v !== 'object' || !v) {
+        return false;
+    }
+
+    if (!('values' in v) || !isArrayOf(v.values, (value): value is number => typeof value === 'number')) {
+        return false;
+    }
+
+    if ('threshold' in v && typeof v.threshold !== 'number') {
+        return false;
+    }
+
+    if ('label' in v && typeof v.label !== 'string') {
+        return false;
+    }
+
     return true;
 }
 
@@ -198,6 +222,7 @@ export function filterOptions(options: PostActionOption[] | undefined) {
 
 export const testExports = {
     isMessageAttachment,
+    isMessageAttachmentChart,
     isMessageAttachmentField,
     isPostAction,
     isPostActionOption,
