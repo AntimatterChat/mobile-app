@@ -36,6 +36,10 @@ type TeamInviteWithError = {
 
 type TeamType = 'O' | 'I';
 
+// Antimatter: a community is either a guild (everyone belongs to every eligible channel, like Discord) or a
+// workspace (members pick their own channels, like Slack). See server/public/model/team.go.
+type TeamKind = 'guild' | 'workspace';
+
 type Team = {
     id: string;
     create_at: number;
@@ -53,6 +57,12 @@ type Team = {
     scheme_id: string;
     group_constrained: boolean|null;
     last_team_icon_update: number;
+
+    // Antimatter: the community's kind, its automatic channel membership, and its default and Welcome channels.
+    kind?: TeamKind;
+    all_channels_membership?: boolean;
+    default_channel_id?: string;
+    welcome_channel_id?: string;
 };
 
 type TeamsState = {

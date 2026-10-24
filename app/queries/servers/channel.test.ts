@@ -10,6 +10,7 @@ import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
+import {setCommunitySettings} from '@store/community_groups_store';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 import {hasPermission} from '@utils/role';
@@ -1013,6 +1014,39 @@ describe('Channel Functions', () => {
                 Q.sortBy('display_name', Q.asc),
             );
             expect(result).toEqual(defaultChannel);
+        });
+
+        it("should prefer the community's own configured default channel when a serverUrl is given", async () => {
+            const serverUrl = 'server-default-channel';
+            const teamId = 'team_id';
+            const configuredChannel = TestHelper.fakeChannelModel({id: 'configured_channel', name: 'announcements'});
+            const namedDefaultChannel = TestHelper.fakeChannelModel({id: 'default_channel', name: General.DEFAULT_CHANNEL});
+            jest.mocked(queryRoles).mockReturnValue(TestHelper.fakeQuery([]));
+            jest.mocked(hasPermission).mockReturnValue(false);
+            jest.mocked(mockQuery).mockReturnValue({
+                fetch: jest.fn().mockResolvedValue([configuredChannel, namedDefaultChannel]),
+            });
+            setCommunitySettings(serverUrl, [{id: teamId, default_channel_id: 'configured_channel'} as Team]);
+
+            const result = await getDefaultChannelForTeam(database, teamId, undefined, serverUrl);
+
+            expect(result).toEqual(configuredChannel);
+        });
+
+        it('should fall back to the named default channel when the configured one is not among my channels', async () => {
+            const serverUrl = 'server-default-channel-fallback';
+            const teamId = 'team_id';
+            const namedDefaultChannel = TestHelper.fakeChannelModel({id: 'default_channel', name: General.DEFAULT_CHANNEL});
+            jest.mocked(queryRoles).mockReturnValue(TestHelper.fakeQuery([]));
+            jest.mocked(hasPermission).mockReturnValue(false);
+            jest.mocked(mockQuery).mockReturnValue({
+                fetch: jest.fn().mockResolvedValue([namedDefaultChannel]),
+            });
+            setCommunitySettings(serverUrl, [{id: teamId, default_channel_id: 'missing_channel'} as Team]);
+
+            const result = await getDefaultChannelForTeam(database, teamId, undefined, serverUrl);
+
+            expect(result).toEqual(namedDefaultChannel);
         });
 
         it('should return the first team channel if no default channel is found', async () => {

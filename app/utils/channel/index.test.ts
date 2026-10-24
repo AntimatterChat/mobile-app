@@ -12,6 +12,7 @@ import {
     generateChannelNameFromDisplayName,
     getDirectChannelName,
     isArchived,
+    isCommunityWideChannel,
     isDefaultChannel,
     isDMorGM,
     isTypeDMorGM,
@@ -279,6 +280,27 @@ describe('isDefaultChannel', () => {
         expect(isDefaultChannel({name: 'town-square'} as Channel)).toBe(true);
         expect(isDefaultChannel({name: 'general-chat'} as Channel)).toBe(false);
         expect(isDefaultChannel({name: ''} as Channel)).toBe(false);
+    });
+});
+
+describe('isCommunityWideChannel', () => {
+    it('should return false for no channel', () => {
+        expect(isCommunityWideChannel(undefined)).toBe(false);
+    });
+
+    it('should return true for every open channel', () => {
+        expect(isCommunityWideChannel({type: General.OPEN_CHANNEL} as Channel)).toBe(true);
+    });
+
+    it('should return true only for a group-constrained private channel', () => {
+        expect(isCommunityWideChannel({type: General.PRIVATE_CHANNEL, group_constrained: true} as Channel)).toBe(true);
+        expect(isCommunityWideChannel({type: General.PRIVATE_CHANNEL, group_constrained: false} as Channel)).toBe(false);
+        expect(isCommunityWideChannel({type: General.PRIVATE_CHANNEL} as Channel)).toBe(false);
+    });
+
+    it('should return false for direct and group messages', () => {
+        expect(isCommunityWideChannel({type: General.DM_CHANNEL} as Channel)).toBe(false);
+        expect(isCommunityWideChannel({type: General.GM_CHANNEL} as Channel)).toBe(false);
     });
 });
 

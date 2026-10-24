@@ -33,10 +33,24 @@ export type CommunityGroup = {
     member_ids?: string[];
 };
 
-// What a community (a Mattermost team) says about its roles and badges.
+// What a community (a Mattermost team) says about its roles and badges, its kind, and its channels.
 export type CommunitySettings = {
     hideRoleColors: boolean;
     requireTeamBadges: boolean;
+
+    // isWorkspace tells a workspace community (members pick their own channels) from a guild one (members are in
+    // every eligible channel, like Discord). Missing or false means guild, as the server defaults an empty kind to.
+    isWorkspace?: boolean;
+
+    // allChannelsMembership mirrors the server's AllChannelsMembership: everyone in the community belongs to every
+    // eligible channel there, so joining and leaving a single channel aren't a personal choice.
+    allChannelsMembership?: boolean;
+
+    // defaultChannelId is the channel a joining or returning member lands in, when the community set one.
+    defaultChannelId?: string;
+
+    // welcomeChannelId is where the community's join and leave messages go, when it has one.
+    welcomeChannelId?: string;
 };
 
 export type CommunityGroupsState = {
@@ -133,5 +147,26 @@ export function communitySettingsOf(team: Partial<Team> & {hide_role_colors?: bo
     return {
         hideRoleColors: Boolean(team.hide_role_colors),
         requireTeamBadges: Boolean(team.require_team_badges),
+        isWorkspace: team.kind === 'workspace',
+        allChannelsMembership: Boolean(team.all_channels_membership),
+        defaultChannelId: team.default_channel_id || undefined,
+        welcomeChannelId: team.welcome_channel_id || undefined,
     };
+}
+
+// isWorkspaceCommunity tells a workspace community (members pick their own channels) from a guild one, following
+// the web app's channel/community_channels.ts.
+export function isWorkspaceCommunity(state: CommunityGroupsState, communityId: string): boolean {
+    return Boolean(state.communities[communityId]?.isWorkspace);
+}
+
+// isAllChannelsCommunity tells a guild where everyone belongs to every eligible channel: joining and leaving a
+// single channel there aren't a personal choice (the server refuses leaving one, too).
+export function isAllChannelsCommunity(state: CommunityGroupsState, communityId: string): boolean {
+    return Boolean(state.communities[communityId]?.allChannelsMembership);
+}
+
+// communityDefaultChannelId is the channel a joining or returning member lands in, when the community set one.
+export function communityDefaultChannelId(state: CommunityGroupsState, communityId: string): string | undefined {
+    return state.communities[communityId]?.defaultChannelId;
 }

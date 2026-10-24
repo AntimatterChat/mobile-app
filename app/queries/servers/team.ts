@@ -93,7 +93,7 @@ export const observeTeamLastChannelId = (database: Database, teamId: string) => 
     );
 };
 
-export const getNthLastChannelFromTeam = async (database: Database, teamId: string, n = 0, ignoreIdForDefault?: string) => {
+export const getNthLastChannelFromTeam = async (database: Database, teamId: string, n = 0, ignoreIdForDefault?: string, serverUrl?: string) => {
     let channelId = '';
 
     try {
@@ -107,7 +107,7 @@ export const getNthLastChannelFromTeam = async (database: Database, teamId: stri
 
     if (!channelId) {
         // No channel history for the team
-        const channel = await getDefaultChannelForTeam(database, teamId, ignoreIdForDefault);
+        const channel = await getDefaultChannelForTeam(database, teamId, ignoreIdForDefault, serverUrl);
         if (channel) {
             channelId = channel.id;
         }

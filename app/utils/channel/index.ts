@@ -169,3 +169,17 @@ export const DEFAULT_CHANNEL_NAMES = [General.DEFAULT_CHANNEL, General.LEGACY_DE
 export function isDefaultChannel(channel: Channel | ChannelModel | undefined): boolean {
     return Boolean(channel?.name) && DEFAULT_CHANNEL_NAMES.includes(channel!.name);
 }
+
+// isCommunityWideChannel tells a channel a guild-kind community's membership covers automatically: every open
+// channel, and every group-constrained private channel (its membership follows the group, not a personal choice).
+// Mirrors the web app's channel/community_channels.ts.
+export function isCommunityWideChannel(channel: Channel | ChannelModel | undefined): boolean {
+    if (!channel) {
+        return false;
+    }
+    if (channel.type === General.OPEN_CHANNEL) {
+        return true;
+    }
+    const groupConstrained = 'isGroupConstrained' in channel ? channel.isGroupConstrained : channel.group_constrained;
+    return channel.type === General.PRIVATE_CHANNEL && Boolean(groupConstrained);
+}

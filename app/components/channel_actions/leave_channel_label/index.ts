@@ -5,9 +5,12 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
+import {withServerUrl} from '@context/server';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentUser} from '@queries/servers/user';
-import {isDefaultChannel} from '@utils/channel';
+import {observeCommunityGroups} from '@store/community_groups_store';
+import {isCommunityWideChannel, isDefaultChannel} from '@utils/channel';
+import {isAllChannelsCommunity} from '@utils/community_groups';
 
 import LeaveChannelLabel from './leave_channel_label';
 
@@ -15,16 +18,20 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = WithDatabaseArgs & {
     channelId: string;
+    serverUrl: string;
 }
 
-const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps) => {
+const enhanced = withObservables(['channelId'], ({channelId, database, serverUrl}: OwnProps) => {
     const currentUser = observeCurrentUser(database);
     const channel = observeChannel(database, channelId);
     const canLeave = channel.pipe(
-        combineLatestWith(currentUser),
-        switchMap(([ch, u]) => {
+        combineLatestWith(currentUser, observeCommunityGroups(serverUrl)),
+        switchMap(([ch, u, groups]) => {
             const isDC = isDefaultChannel(ch);
-            return of$(!isDC || (isDC && u?.isGuest));
+            // In a guild (all-channels-membership) community, everyone belongs to every eligible channel: leaving
+            // one isn't a personal choice there, so the action is hidden (the server refuses it regardless).
+            const staysForCommunity = Boolean(ch?.teamId) && isAllChannelsCommunity(groups, ch!.teamId) && isCommunityWideChannel(ch);
+            return of$((!isDC || (isDC && u?.isGuest)) && !staysForCommunity);
         }),
     );
 
@@ -42,4 +49,4 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     };
 });
 
-export default withDatabase(enhanced(LeaveChannelLabel));
+export default withDatabase(withServerUrl(enhanced(LeaveChannelLabel)));

@@ -89,7 +89,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
             loadEventSent = false;
 
             if (isTablet()) {
-                const channel = await getDefaultChannelForTeam(database, teamId);
+                const channel = await getDefaultChannelForTeam(database, teamId, undefined, serverUrl);
                 if (channel) {
                     fetchPostsForChannel(serverUrl, channel.id);
                 }
@@ -439,7 +439,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     let channelId = '';
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
     if (isTablet()) {
-        channelId = await getNthLastChannelFromTeam(database, teamId);
+        channelId = await getNthLastChannelFromTeam(database, teamId, 0, undefined, serverUrl);
         if (channelId) {
             await switchToChannelById(serverUrl, channelId, teamId);
             DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);

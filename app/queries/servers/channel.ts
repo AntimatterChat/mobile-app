@@ -10,8 +10,10 @@ import {map as map$, switchMap, distinctUntilChanged, combineLatestWith, map} fr
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {sanitizeLikeString} from '@helpers/database';
+import {getCommunityGroups} from '@store/community_groups_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {DEFAULT_CHANNEL_NAMES, isDefaultChannel, isDMorGM} from '@utils/channel';
+import {communityDefaultChannelId} from '@utils/community_groups';
 import {hasPermission} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
 
@@ -353,7 +355,10 @@ export const getChannelInfo = async (database: Database, channelId: string) => {
     }
 };
 
-export const getDefaultChannelForTeam = async (database: Database, teamId: string, ignoreId?: string) => {
+// getDefaultChannelForTeam is where a joining or returning member lands: the community's own configured default
+// channel when it set one and the member belongs to it (serverUrl is needed to read it), else the channel named
+// General or, on older servers, Town Square.
+export const getDefaultChannelForTeam = async (database: Database, teamId: string, ignoreId?: string, serverUrl?: string) => {
     let channel: ChannelModel|undefined;
     let canIJoinPublicChannelsInTeam = false;
     const roles = await queryRoles(database).fetch();
@@ -378,7 +383,9 @@ export const getDefaultChannelForTeam = async (database: Database, teamId: strin
         Q.sortBy('display_name', Q.asc),
     ).fetch();
 
-    const defaultChannel = myChannels.find((c) => isDefaultChannel(c));
+    const configuredId = serverUrl ? communityDefaultChannelId(getCommunityGroups(serverUrl), teamId) : undefined;
+    const configuredChannel = configuredId && configuredId !== ignoreId ? myChannels.find((c) => c.id === configuredId) : undefined;
+    const defaultChannel = configuredChannel || myChannels.find((c) => isDefaultChannel(c));
     const myFirstTeamChannel = myChannels[0];
 
     if (defaultChannel || canIJoinPublicChannelsInTeam) {

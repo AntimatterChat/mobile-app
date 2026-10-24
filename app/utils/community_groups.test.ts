@@ -5,6 +5,10 @@ import {
     EMPTY_COMMUNITY_GROUPS,
     badgeChoice,
     badgeTeam,
+    communityDefaultChannelId,
+    communitySettingsOf,
+    isAllChannelsCommunity,
+    isWorkspaceCommunity,
     roleColor,
     userRoles,
     withGroup,
@@ -83,6 +87,55 @@ describe('community groups', () => {
         it('should not colour names where the community hides role colours', () => {
             const hidden = {...state, communities: {[community]: {hideRoleColors: true, requireTeamBadges: false}}};
             expect(roleColor(hidden, community, 'u1')).toBeUndefined();
+        });
+    });
+
+    describe('communitySettingsOf', () => {
+        it('should read the kind, all-channels membership and default/Welcome channels off the team', () => {
+            const settings = communitySettingsOf({
+                kind: 'workspace',
+                all_channels_membership: true,
+                default_channel_id: 'default1',
+                welcome_channel_id: 'welcome1',
+            });
+            expect(settings.isWorkspace).toBe(true);
+            expect(settings.allChannelsMembership).toBe(true);
+            expect(settings.defaultChannelId).toBe('default1');
+            expect(settings.welcomeChannelId).toBe('welcome1');
+        });
+
+        it('should default to a guild with no configured channels when the team has none of those fields', () => {
+            const settings = communitySettingsOf({});
+            expect(settings.isWorkspace).toBe(false);
+            expect(settings.allChannelsMembership).toBe(false);
+            expect(settings.defaultChannelId).toBeUndefined();
+            expect(settings.welcomeChannelId).toBeUndefined();
+        });
+    });
+
+    describe('isWorkspaceCommunity and isAllChannelsCommunity', () => {
+        const state = stateOf([], {
+            [community]: {hideRoleColors: false, requireTeamBadges: false, isWorkspace: true, allChannelsMembership: false},
+            [other]: {hideRoleColors: false, requireTeamBadges: false, isWorkspace: false, allChannelsMembership: true},
+        });
+
+        it('should tell a workspace community from a guild one', () => {
+            expect(isWorkspaceCommunity(state, community)).toBe(true);
+            expect(isWorkspaceCommunity(state, other)).toBe(false);
+            expect(isWorkspaceCommunity(state, 'unknown')).toBe(false);
+        });
+
+        it('should tell an all-channels-membership community', () => {
+            expect(isAllChannelsCommunity(state, community)).toBe(false);
+            expect(isAllChannelsCommunity(state, other)).toBe(true);
+        });
+    });
+
+    describe('communityDefaultChannelId', () => {
+        it('should read the configured default channel, when the community set one', () => {
+            const state = stateOf([], {[community]: {hideRoleColors: false, requireTeamBadges: false, defaultChannelId: 'default1'}});
+            expect(communityDefaultChannelId(state, community)).toBe('default1');
+            expect(communityDefaultChannelId(state, other)).toBeUndefined();
         });
     });
 

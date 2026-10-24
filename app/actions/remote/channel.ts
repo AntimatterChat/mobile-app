@@ -1212,7 +1212,7 @@ export async function switchToPenultimateChannel(serverUrl: string, teamId?: str
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamIdToUse = teamId || await getCurrentTeamId(database);
-        const channelId = await getNthLastChannelFromTeam(database, teamIdToUse, 1);
+        const channelId = await getNthLastChannelFromTeam(database, teamIdToUse, 1, undefined, serverUrl);
         return switchToChannelById(serverUrl, channelId);
     } catch (error) {
         return {error};
@@ -1223,7 +1223,7 @@ export async function switchToLastChannel(serverUrl: string, teamId?: string) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamIdToUse = teamId || await getCurrentTeamId(database);
-        const channelId = await getNthLastChannelFromTeam(database, teamIdToUse);
+        const channelId = await getNthLastChannelFromTeam(database, teamIdToUse, 0, undefined, serverUrl);
         return switchToChannelById(serverUrl, channelId);
     } catch (error) {
         return {error};
@@ -1475,7 +1475,7 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         if (tabletDevice) {
             const teamId = await getCurrentTeamId(database);
             await removeChannelFromTeamHistory(operator, teamId, channelId);
-            const newChannelId = await getNthLastChannelFromTeam(database, teamId, 0, channelId);
+            const newChannelId = await getNthLastChannelFromTeam(database, teamId, 0, channelId, serverUrl);
             if (newChannelId) {
                 if (currentServer?.url === serverUrl) {
                     if (newChannelId === Screens.GLOBAL_THREADS) {
