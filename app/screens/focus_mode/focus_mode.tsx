@@ -168,7 +168,7 @@ const FocusMode = ({currentUser}: FocusModeProps) => {
                     label={labelOf(d.key)}
                     selected={choiceKey === d.key}
                     value={d.key}
-                    action={(value) => setChoiceKey(value as string)}
+                    action={(value: string | boolean) => setChoiceKey(value as string)}
                     testID={`focus_mode.duration.${d.key}`}
                 />
             ))}
