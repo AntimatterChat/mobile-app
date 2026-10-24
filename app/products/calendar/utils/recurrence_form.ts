@@ -1,0 +1,74 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+// Builds and reads the edit form's repeat fields (daily, weekly on days, monthly, every N,
+// ending never / on a date / after N), to and from the RRULE recurrence_rule
+// .meetings_api_ref.md describes. The editor only ever writes what the web app does
+// (FREQ, INTERVAL, BYDAY, UNTIL, COUNT): see describeRecurrence for reading any rule.
+
+import {parseRecurrenceRule} from './recurrence';
+
+export type RecurrenceFormFreq = 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+export type RecurrenceEndType = 'never' | 'on_date' | 'after_n';
+
+export type RecurrenceFormFields = {
+    freq: RecurrenceFormFreq;
+    interval: number;
+    byDay: string[];
+    endType: RecurrenceEndType;
+    until?: number;
+    count: number;
+};
+
+export const DEFAULT_RECURRENCE_FORM: RecurrenceFormFields = {
+    freq: 'NONE',
+    interval: 1,
+    byDay: [],
+    endType: 'never',
+    count: 10,
+};
+
+// buildRecurrenceRule turns the form's fields into an RRULE string ('' for "no recurrence").
+export function buildRecurrenceRule(fields: RecurrenceFormFields): string {
+    if (fields.freq === 'NONE') {
+        return '';
+    }
+
+    const parts = [`FREQ=${fields.freq}`];
+    if (fields.interval > 1) {
+        parts.push(`INTERVAL=${fields.interval}`);
+    }
+    if (fields.freq === 'WEEKLY' && fields.byDay.length) {
+        parts.push(`BYDAY=${fields.byDay.join(',')}`);
+    }
+    if (fields.endType === 'on_date' && fields.until) {
+        const d = new Date(fields.until);
+        const pad = (n: number) => String(n).padStart(2, '0');
+        parts.push(`UNTIL=${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`);
+    } else if (fields.endType === 'after_n' && fields.count > 0) {
+        parts.push(`COUNT=${fields.count}`);
+    }
+
+    return parts.join(';');
+}
+
+// recurrenceFormFromRule pre-fills the edit form from an existing call. A rule the editor
+// doesn't model (e.g. YEARLY, read elsewhere via describeRecurrence) falls back to Monthly
+// rather than silently dropping the recurrence.
+export function recurrenceFormFromRule(rule: string | undefined): RecurrenceFormFields {
+    const parsed = parseRecurrenceRule(rule);
+    if (!parsed) {
+        return {...DEFAULT_RECURRENCE_FORM};
+    }
+
+    const freq: RecurrenceFormFreq = parsed.freq === 'YEARLY' ? 'MONTHLY' : parsed.freq;
+
+    return {
+        freq,
+        interval: parsed.interval,
+        byDay: parsed.byDay ?? [],
+        endType: parsed.until ? 'on_date' : parsed.count ? 'after_n' : 'never',
+        until: parsed.until,
+        count: parsed.count ?? DEFAULT_RECURRENCE_FORM.count,
+    };
+}
