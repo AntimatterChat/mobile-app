@@ -3,7 +3,9 @@
 
 import * as bookmark from '@actions/local/channel_bookmark';
 import * as burnOnRead from '@actions/websocket/burn_on_read';
+import * as focus from '@actions/websocket/focus';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
+import * as session from '@actions/websocket/session';
 import * as voice from '@calls/actions/voice';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
@@ -40,6 +42,8 @@ jest.mock('./group');
 jest.mock('@actions/local/channel_bookmark');
 jest.mock('@actions/websocket/scheduled_post');
 jest.mock('@actions/websocket/burn_on_read');
+jest.mock('@actions/websocket/focus');
+jest.mock('@actions/websocket/session');
 jest.mock('@playbooks/actions/websocket/events');
 
 describe('handleWebSocketEvent', () => {
@@ -554,6 +558,30 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.BURN_ON_READ_ALL_REVEALED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(burnOnRead.handleBoRPostAllRevealed).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle FOCUS_ENDED event', async () => {
+        msg.event = WebsocketEvents.FOCUS_ENDED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(focus.handleFocusEndedEvent).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle SESSION_CREATED event', async () => {
+        msg.event = WebsocketEvents.SESSION_CREATED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(session.handleSessionCreatedEvent).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle SESSION_REVOKED event', async () => {
+        msg.event = WebsocketEvents.SESSION_REVOKED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(session.handleSessionRevokedEvent).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle SESSION_ACKNOWLEDGED event', async () => {
+        msg.event = WebsocketEvents.SESSION_ACKNOWLEDGED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(session.handleSessionAcknowledgedEvent).toHaveBeenCalledWith(serverUrl, msg);
     });
 
     it('all messages should go through the playbooks handler', async () => {
