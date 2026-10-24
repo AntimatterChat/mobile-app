@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ASSISTANT_MIN_SPARKLINE_POINTS} from '@assistant/constants';
 import React, {useMemo} from 'react';
 import {View} from 'react-native';
 import Svg, {Polyline} from 'react-native-svg';
 
-import {ASSISTANT_MIN_SPARKLINE_POINTS} from '@assistant/constants';
 import {useTheme} from '@context/theme';
 
 type Props = {

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import AssistantScreens from '@assistant/constants/screens';
+
 import {navigateToScreen} from '@screens/navigation';
 
 // goToAssistant opens the Assistant screen for a channel: the entry point is the channel

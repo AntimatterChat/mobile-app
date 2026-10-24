@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchMutedAssistantTools, unmuteAssistantTool} from '@assistant/actions/remote/feed';
+import {assistantStore} from '@assistant/store';
 import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import {fetchMutedAssistantTools, unmuteAssistantTool} from '@assistant/actions/remote/feed';
-import {assistantStore} from '@assistant/store';
 import Button from '@components/button';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';

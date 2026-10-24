@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {goToAssistant} from '@assistant/screens/navigation';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
-import {goToAssistant} from '@assistant/screens/navigation';
 import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {dismissBottomSheet} from '@screens/navigation';

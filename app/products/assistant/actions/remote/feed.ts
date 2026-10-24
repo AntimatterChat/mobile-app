@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {assistantStore} from '@assistant/store';
+
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';

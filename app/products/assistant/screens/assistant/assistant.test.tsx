@@ -1,10 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, fireEvent} from '@testing-library/react-native';
-import React from 'react';
-
-import {showPermalink} from '@actions/remote/permalink';
 import {
     claimAssistantOffer,
     dismissAssistantCard,
@@ -17,6 +13,10 @@ import {
 import {useAssistantFeed} from '@assistant/hooks/use_assistant_feed';
 import {useAssistantPresence} from '@assistant/hooks/use_assistant_presence';
 import {useOfferHolderNames} from '@assistant/hooks/use_offer_holder_names';
+import {act, fireEvent} from '@testing-library/react-native';
+import React from 'react';
+
+import {showPermalink} from '@actions/remote/permalink';
 import {bottomSheet} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
@@ -40,6 +40,7 @@ jest.mock('@assistant/actions/remote/feed');
 jest.mock('@assistant/hooks/use_assistant_feed', () => ({
     useAssistantFeed: jest.fn(),
 }));
+
 // An explicit factory (no automock): automocking would require the real module to
 // introspect its shape, which pulls in '@react-navigation/native' at module scope and
 // that package's ESM build isn't one Jest's transform is configured to handle.

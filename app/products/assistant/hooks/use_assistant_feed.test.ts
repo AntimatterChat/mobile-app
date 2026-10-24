@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, renderHook} from '@testing-library/react-native';
-
 import {fetchAssistantFeed} from '@assistant/actions/remote/feed';
 import {assistantStore} from '@assistant/store';
+import {act, renderHook} from '@testing-library/react-native';
 
 import {useAssistantFeed} from './use_assistant_feed';
 

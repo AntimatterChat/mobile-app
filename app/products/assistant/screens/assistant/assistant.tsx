@@ -1,12 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
-import {FlatList, Pressable, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-
-import {showPermalink} from '@actions/remote/permalink';
 import {
     claimAssistantOffer,
     dismissAssistantCard,
@@ -22,6 +16,12 @@ import MutedToolsSheet from '@assistant/components/muted_tools_sheet';
 import {useAssistantFeed} from '@assistant/hooks/use_assistant_feed';
 import {useAssistantPresence} from '@assistant/hooks/use_assistant_presence';
 import {useOfferHolderNames} from '@assistant/hooks/use_offer_holder_names';
+import React, {useCallback, useMemo, useState} from 'react';
+import {defineMessages, useIntl} from 'react-intl';
+import {FlatList, Pressable, View} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+
+import {showPermalink} from '@actions/remote/permalink';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';

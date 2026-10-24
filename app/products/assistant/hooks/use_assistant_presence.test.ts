@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {setAssistantPresence} from '@assistant/actions/remote/feed';
 import {useIsFocused} from '@react-navigation/native';
 import {act, renderHook} from '@testing-library/react-native';
-
-import {setAssistantPresence} from '@assistant/actions/remote/feed';
 
 import {useAssistantPresence} from './use_assistant_presence';
 

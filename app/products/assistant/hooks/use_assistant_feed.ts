@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useState} from 'react';
-
 import {fetchAssistantFeed} from '@assistant/actions/remote/feed';
 import {assistantStore, EMPTY_FEED} from '@assistant/store';
+import {useEffect, useState} from 'react';
 
 // useAssistantFeed loads the person's feed for a channel (GET /feed) and then stays current
 // from the store, which the three websocket events (assistant_card_added,

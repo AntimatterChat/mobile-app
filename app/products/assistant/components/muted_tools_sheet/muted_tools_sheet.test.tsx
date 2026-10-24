@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchMutedAssistantTools, unmuteAssistantTool} from '@assistant/actions/remote/feed';
+import {assistantStore} from '@assistant/store';
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
-import {fetchMutedAssistantTools, unmuteAssistantTool} from '@assistant/actions/remote/feed';
-import {assistantStore} from '@assistant/store';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import MutedToolsSheet from './muted_tools_sheet';

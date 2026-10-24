@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useIsFocused} from '@react-navigation/native';
-import {useEffect, useRef, useState} from 'react';
-
 import {setAssistantPresence} from '@assistant/actions/remote/feed';
 import {ASSISTANT_DEFAULT_HEARTBEAT_SECONDS} from '@assistant/constants';
+import {useIsFocused} from '@react-navigation/native';
+import {useEffect, useRef, useState} from 'react';
 
 // useAssistantPresence is the screen's own "I'm looking at this channel" signal
 // (ASSISTANT_API.md): POST /presence with open:true when it's shown, again every
@@ -17,7 +16,7 @@ import {ASSISTANT_DEFAULT_HEARTBEAT_SECONDS} from '@assistant/constants';
 export function useAssistantPresence(serverUrl: string, channelId: string | undefined) {
     const [following, setFollowing] = useState(false);
     const isFocused = useIsFocused();
-    const intervalRef = useRef<ReturnType<typeof setInterval>>();
+    const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
     useEffect(() => {
         if (!channelId || !isFocused) {
