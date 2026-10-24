@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import {useAgentsConfig} from '@agents/store/agents_config';
 import ChannelActions from '@components/channel_actions';
 import AskAgentsOption from '@components/channel_actions/ask_agents_option';
+import AssistantOption from '@components/channel_actions/assistant_option';
 import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link_option';
 import InfoBox from '@components/channel_actions/info_box';
 import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';
@@ -88,6 +89,11 @@ const ChannelQuickActions = ({
                     testID='channel.quick_actions.ask_agents'
                 />
             )}
+            <AssistantOption
+                channelId={channelId}
+                showAsLabel={true}
+                testID='channel.quick_actions.assistant'
+            />
             <View style={styles.line}/>
             <LeaveChannelLabel
                 channelId={channelId}

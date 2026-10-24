@@ -81,4 +81,19 @@ describe('ChannelQuickAction', () => {
 
         expect(getByTestId('channel.quick_actions.ask_agents')).toBeTruthy();
     });
+
+    it('shows the Assistant option in all channel types (there is nothing to gate it on)', () => {
+        const props = getBaseProps();
+        const {getByTestId} = renderWithEverything(<ChannelQuickActions {...props}/>, {database});
+
+        expect(getByTestId('channel.quick_actions.assistant')).toBeTruthy();
+    });
+
+    it('shows the Assistant option in DM/GM channels', () => {
+        const props = getBaseProps();
+        props.isDMorGM = true;
+        const {getByTestId} = renderWithEverything(<ChannelQuickActions {...props}/>, {database});
+
+        expect(getByTestId('channel.quick_actions.assistant')).toBeTruthy();
+    });
 });
