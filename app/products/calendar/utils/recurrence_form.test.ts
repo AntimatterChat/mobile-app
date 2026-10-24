@@ -33,6 +33,11 @@ describe('buildRecurrenceRule', () => {
     it('never ending adds neither UNTIL nor COUNT', () => {
         expect(buildRecurrenceRule({...DEFAULT_RECURRENCE_FORM, freq: 'DAILY', endType: 'never'})).toBe('FREQ=DAILY');
     });
+
+    it('returns a CUSTOM rule exactly as read, ignoring the other fields', () => {
+        const originalRule = 'FREQ=YEARLY;BYMONTH=6;BYMONTHDAY=15';
+        expect(buildRecurrenceRule({...DEFAULT_RECURRENCE_FORM, freq: 'CUSTOM', interval: 3, originalRule})).toBe(originalRule);
+    });
 });
 
 describe('recurrenceFormFromRule', () => {
@@ -46,9 +51,25 @@ describe('recurrenceFormFromRule', () => {
         expect(buildRecurrenceRule(form)).toBe(rule);
     });
 
-    it('falls back YEARLY to MONTHLY, keeping its interval', () => {
-        const form = recurrenceFormFromRule('FREQ=YEARLY;INTERVAL=2');
-        expect(form.freq).toBe('MONTHLY');
-        expect(form.interval).toBe(2);
+    it('treats a YEARLY rule as CUSTOM, keeping it verbatim rather than guessing', () => {
+        const rule = 'FREQ=YEARLY;INTERVAL=2';
+        const form = recurrenceFormFromRule(rule);
+        expect(form.freq).toBe('CUSTOM');
+        expect(form.originalRule).toBe(rule);
+        expect(buildRecurrenceRule(form)).toBe(rule);
+    });
+
+    it('treats an unmodelled RRULE part (BYSETPOS) as CUSTOM', () => {
+        const rule = 'FREQ=MONTHLY;BYSETPOS=-1;BYDAY=FR';
+        const form = recurrenceFormFromRule(rule);
+        expect(form.freq).toBe('CUSTOM');
+        expect(buildRecurrenceRule(form)).toBe(rule);
+    });
+
+    it('a CUSTOM rule is kept unchanged even if other fields are edited in the UI', () => {
+        const rule = 'FREQ=YEARLY';
+        const form = recurrenceFormFromRule(rule);
+        const edited = {...form, interval: 5, byDay: ['MO'], count: 99};
+        expect(buildRecurrenceRule(edited)).toBe(rule);
     });
 });

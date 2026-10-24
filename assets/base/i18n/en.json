@@ -279,6 +279,7 @@
   "calendar.edit.loading": "Loading…",
   "calendar.edit.reminder": "Reminder",
   "calendar.edit.repeat": "Repeat",
+  "calendar.edit.repeat_custom": "Custom (kept as is)",
   "calendar.edit.repeat_daily": "Daily",
   "calendar.edit.repeat_monthly": "Monthly",
   "calendar.edit.repeat_none": "Never",

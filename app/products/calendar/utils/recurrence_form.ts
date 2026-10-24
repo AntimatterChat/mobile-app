@@ -6,9 +6,12 @@
 // .meetings_api_ref.md describes. The editor only ever writes what the web app does
 // (FREQ, INTERVAL, BYDAY, UNTIL, COUNT): see describeRecurrence for reading any rule.
 
-import {parseRecurrenceRule} from './recurrence';
+import {isCustomRecurrenceRule, parseRecurrenceRule} from './recurrence';
 
-export type RecurrenceFormFreq = 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+// 'CUSTOM' is a rule the builder can't represent (YEARLY, BYSETPOS, ...): the form shows it
+// as "Custom (kept as is)" and, like the web dialog, saves it back byte-for-byte unless the
+// organiser explicitly picks one of the other options.
+export type RecurrenceFormFreq = 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'CUSTOM';
 export type RecurrenceEndType = 'never' | 'on_date' | 'after_n';
 
 export type RecurrenceFormFields = {
@@ -18,6 +21,10 @@ export type RecurrenceFormFields = {
     endType: RecurrenceEndType;
     until?: number;
     count: number;
+
+    // The original RRULE, kept only so a 'CUSTOM' rule can be saved back unchanged; absent
+    // otherwise.
+    originalRule?: string;
 };
 
 export const DEFAULT_RECURRENCE_FORM: RecurrenceFormFields = {
@@ -29,7 +36,12 @@ export const DEFAULT_RECURRENCE_FORM: RecurrenceFormFields = {
 };
 
 // buildRecurrenceRule turns the form's fields into an RRULE string ('' for "no recurrence").
+// A 'CUSTOM' rule is returned exactly as read, never rebuilt from the (irrelevant, default)
+// interval/byDay/endType fields.
 export function buildRecurrenceRule(fields: RecurrenceFormFields): string {
+    if (fields.freq === 'CUSTOM') {
+        return fields.originalRule ?? '';
+    }
     if (fields.freq === 'NONE') {
         return '';
     }
@@ -52,16 +64,24 @@ export function buildRecurrenceRule(fields: RecurrenceFormFields): string {
     return parts.join(';');
 }
 
-// recurrenceFormFromRule pre-fills the edit form from an existing call. A rule the editor
-// doesn't model (e.g. YEARLY, read elsewhere via describeRecurrence) falls back to Monthly
-// rather than silently dropping the recurrence.
+// recurrenceFormFromRule pre-fills the edit form from an existing call. A rule the builder
+// can't represent (isCustomRecurrenceRule) becomes 'CUSTOM', carrying the original RRULE
+// forward untouched, rather than guessing at a lossy equivalent that buildRecurrenceRule
+// would then save back as a *different* rule.
 export function recurrenceFormFromRule(rule: string | undefined): RecurrenceFormFields {
-    const parsed = parseRecurrenceRule(rule);
-    if (!parsed) {
+    if (!rule) {
         return {...DEFAULT_RECURRENCE_FORM};
     }
 
-    const freq: RecurrenceFormFreq = parsed.freq === 'YEARLY' ? 'MONTHLY' : parsed.freq;
+    if (isCustomRecurrenceRule(rule)) {
+        return {...DEFAULT_RECURRENCE_FORM, freq: 'CUSTOM', originalRule: rule};
+    }
+
+    // Not custom, so by isCustomRecurrenceRule's own contract this parses and its freq is
+    // one of DAILY/WEEKLY/MONTHLY — the same set RecurrenceFormFreq models (minus NONE and
+    // CUSTOM, neither of which parseRecurrenceRule ever returns).
+    const parsed = parseRecurrenceRule(rule)!;
+    const freq = parsed.freq as 'DAILY' | 'WEEKLY' | 'MONTHLY';
 
     let endType: RecurrenceEndType = 'never';
     if (parsed.until) {

@@ -97,4 +97,25 @@ describe('MeetingEdit', () => {
             recurrence_rule: 'FREQ=WEEKLY;BYDAY=MO',
         }));
     });
+
+    it('keeps a YEARLY series\' rule unchanged when only the title is edited', async () => {
+        const yearlyRule = 'FREQ=YEARLY;BYMONTH=6;BYMONTHDAY=15';
+        jest.mocked(fetchMeeting).mockResolvedValue({data: {...meeting, recurrence_rule: yearlyRule}});
+        const {getByTestId} = renderWithIntlAndTheme(<MeetingEdit meetingId='m1'/>);
+        await waitFor(() => getByTestId('calendar.meeting_edit'));
+
+        // The repeat field shows "Custom (kept as is)", selected, rather than guessing at
+        // (and silently changing) an equivalent the builder can represent.
+        expect(getByTestId('calendar.meeting_edit.repeat.CUSTOM')).toBeTruthy();
+
+        fireEvent.changeText(getByTestId('calendar.meeting_edit.summary'), 'Renamed yearly call');
+        await act(async () => {
+            fireEvent.press(getByTestId('calendar.meeting_edit.save'));
+        });
+
+        expect(editMeeting).toHaveBeenCalledWith(SERVER_URL, 'm1', expect.objectContaining({
+            summary: 'Renamed yearly call',
+            recurrence_rule: yearlyRule,
+        }));
+    });
 });

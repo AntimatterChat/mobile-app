@@ -3,7 +3,7 @@
 
 import {createIntl} from 'react-intl';
 
-import {describeRecurrence, parseRecurrenceRule} from './recurrence';
+import {describeRecurrence, isCustomRecurrenceRule, parseRecurrenceRule} from './recurrence';
 
 const intl = createIntl({locale: 'en'});
 
@@ -62,5 +62,31 @@ describe('describeRecurrence', () => {
         const result = describeRecurrence('FREQ=WEEKLY;UNTIL=20261231T225959Z', intl);
         expect(result).toContain('Weekly, ending');
         expect(result).toContain('2026');
+    });
+});
+
+describe('isCustomRecurrenceRule', () => {
+    it('is false for no recurrence', () => {
+        expect(isCustomRecurrenceRule(undefined)).toBe(false);
+        expect(isCustomRecurrenceRule('')).toBe(false);
+    });
+
+    it('is false for a plain daily/weekly/monthly rule the edit form can represent', () => {
+        expect(isCustomRecurrenceRule('FREQ=DAILY')).toBe(false);
+        expect(isCustomRecurrenceRule('FREQ=WEEKLY;BYDAY=MO,TH;COUNT=10')).toBe(false);
+        expect(isCustomRecurrenceRule('FREQ=MONTHLY;INTERVAL=2;UNTIL=20261231T225959Z')).toBe(false);
+    });
+
+    it('is true for YEARLY', () => {
+        expect(isCustomRecurrenceRule('FREQ=YEARLY')).toBe(true);
+    });
+
+    it('is true for a part the edit form does not model (BYSETPOS)', () => {
+        expect(isCustomRecurrenceRule('FREQ=MONTHLY;BYSETPOS=-1;BYDAY=FR')).toBe(true);
+    });
+
+    it('is true for an unparsable rule', () => {
+        expect(isCustomRecurrenceRule('FREQ=HOURLY')).toBe(true);
+        expect(isCustomRecurrenceRule('garbage')).toBe(true);
     });
 });

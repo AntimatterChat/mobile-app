@@ -69,6 +69,32 @@ export function parseRecurrenceRule(rule: string | undefined): ParsedRecurrence 
     return parsed;
 }
 
+// The RRULE parts the edit form's repeat builder can read and write (FREQ ∈
+// {DAILY,WEEKLY,MONTHLY}, INTERVAL, BYDAY, UNTIL, COUNT), exactly what the web app itself
+// writes per .meetings_api_ref.md.
+const EDITABLE_FREQS: RecurrenceFreq[] = ['DAILY', 'WEEKLY', 'MONTHLY'];
+const EDITABLE_RRULE_PARTS = new Set(['FREQ', 'INTERVAL', 'BYDAY', 'UNTIL', 'COUNT']);
+
+// isCustomRecurrenceRule tells whether a call's recurrence_rule is one the edit form's
+// repeat builder can represent and rebuild losslessly. A YEARLY rule, one with a part the
+// builder doesn't model (BYSETPOS, BYMONTHDAY, WKST, ...), or one the builder can't even
+// parse, is "custom": the edit form must show it as "Custom (kept as is)" and save it back
+// unchanged, rather than silently rebuilding (and so changing) it from a lossy guess, the
+// way the web dialog already behaves.
+export function isCustomRecurrenceRule(rule: string | undefined): boolean {
+    if (!rule) {
+        return false;
+    }
+
+    const keys = rule.split(';').map((part) => part.split('=')[0]?.trim().toUpperCase()).filter(Boolean);
+    if (keys.some((key) => !EDITABLE_RRULE_PARTS.has(key))) {
+        return true;
+    }
+
+    const parsed = parseRecurrenceRule(rule);
+    return !parsed || !EDITABLE_FREQS.includes(parsed.freq);
+}
+
 const recurrenceMessages = defineMessages({
     daily: {id: 'calendar.recurrence.daily', defaultMessage: 'Daily'},
     dailyInterval: {id: 'calendar.recurrence.daily_interval', defaultMessage: 'Every {n} days'},

@@ -38,6 +38,7 @@ export const messages = defineMessages({
     repeatDaily: {id: 'calendar.edit.repeat_daily', defaultMessage: 'Daily'},
     repeatWeekly: {id: 'calendar.edit.repeat_weekly', defaultMessage: 'Weekly'},
     repeatMonthly: {id: 'calendar.edit.repeat_monthly', defaultMessage: 'Monthly'},
+    repeatCustom: {id: 'calendar.edit.repeat_custom', defaultMessage: 'Custom (kept as is)'},
     everyDays: {id: 'calendar.edit.every_days', defaultMessage: 'Every (days)'},
     everyWeeks: {id: 'calendar.edit.every_weeks', defaultMessage: 'Every (weeks)'},
     everyMonths: {id: 'calendar.edit.every_months', defaultMessage: 'Every (months)'},
@@ -238,12 +239,22 @@ const MeetingEdit = ({meetingId}: MeetingEditProps) => {
         }
     }, [summary, description, start, end, recurrence, reminderMinutes, serverUrl, meetingId, intl]);
 
-    const freqOptions: Array<{value: RecurrenceFormFreq; label: string}> = useMemo(() => [
-        {value: 'NONE', label: intl.formatMessage(messages.repeatNone)},
-        {value: 'DAILY', label: intl.formatMessage(messages.repeatDaily)},
-        {value: 'WEEKLY', label: intl.formatMessage(messages.repeatWeekly)},
-        {value: 'MONTHLY', label: intl.formatMessage(messages.repeatMonthly)},
-    ], [intl]);
+    // "Custom (kept as is)" only ever appears for a call whose existing rule the builder
+    // can't represent (recurrenceFormFromRule set originalRule on load); it stays offered
+    // even after the organiser looks at another option, so they can switch back without
+    // losing the original rule, which is kept in recurrence.originalRule throughout.
+    const freqOptions: Array<{value: RecurrenceFormFreq; label: string}> = useMemo(() => {
+        const options: Array<{value: RecurrenceFormFreq; label: string}> = [
+            {value: 'NONE', label: intl.formatMessage(messages.repeatNone)},
+            {value: 'DAILY', label: intl.formatMessage(messages.repeatDaily)},
+            {value: 'WEEKLY', label: intl.formatMessage(messages.repeatWeekly)},
+            {value: 'MONTHLY', label: intl.formatMessage(messages.repeatMonthly)},
+        ];
+        if (recurrence.originalRule) {
+            options.push({value: 'CUSTOM', label: intl.formatMessage(messages.repeatCustom)});
+        }
+        return options;
+    }, [intl, recurrence.originalRule]);
 
     const endOptions: Array<{value: RecurrenceEndType; label: string}> = useMemo(() => [
         {value: 'never', label: intl.formatMessage(messages.endsNever)},
@@ -346,7 +357,7 @@ const MeetingEdit = ({meetingId}: MeetingEditProps) => {
                 </View>
             )}
 
-            {recurrence.freq !== 'NONE' && (
+            {recurrence.freq !== 'NONE' && recurrence.freq !== 'CUSTOM' && (
                 <FloatingTextInputLabel
                     label={intl.formatMessage(everyMessage(recurrence.freq))}
                     keyboardType='number-pad'
@@ -357,7 +368,7 @@ const MeetingEdit = ({meetingId}: MeetingEditProps) => {
                 />
             )}
 
-            {recurrence.freq !== 'NONE' && (
+            {recurrence.freq !== 'NONE' && recurrence.freq !== 'CUSTOM' && (
                 <View>
                     <Text style={styles.label}>{intl.formatMessage(messages.ends)}</Text>
                     <View style={styles.row}>
