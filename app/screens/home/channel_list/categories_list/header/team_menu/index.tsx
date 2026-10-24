@@ -55,7 +55,7 @@ const TeamMenu = ({canJoinOtherTeams, hasMoreThanOneTeam, currentTeamId, current
                 text={intl.formatMessage({id: 'mobile.team_menu.your_profile', defaultMessage: 'Your profile in this community…'})}
             />
             <SlideUpPanelItem
-                leftIcon='shield-account-outline'
+                leftIcon='shield-outline'
                 onPress={onPrivacySettings}
                 testID='team_menu.privacy_settings'
                 text={intl.formatMessage({id: 'mobile.team_menu.privacy_settings', defaultMessage: 'Privacy settings…'})}

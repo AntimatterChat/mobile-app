@@ -357,7 +357,7 @@ const MeetingPost = ({post, currentUserId}: Props) => {
                     theme={theme}
                     size='s'
                     emphasis='tertiary'
-                    iconName='calendar-plus'
+                    iconName='calendar-outline'
                     text={intl.formatMessage(messages.addToCalendar)}
                     onPress={onAddToCalendar}
                     showLoader={busy === 'ics'}
