@@ -29,11 +29,11 @@ function getBaseProps() {
 }
 
 describe('ManageUserOptions community profile resets', () => {
-    it('should show neither reset row without canManageAndRemoveMembers', () => {
+    it('should show neither reset row without canResetCommunityProfile', () => {
         const {queryByTestId} = renderWithIntlAndTheme(
             <ManageUserOptions
                 {...getBaseProps()}
-                canManageAndRemoveMembers={false}
+                canResetCommunityProfile={false}
                 teamId='team1'
                 hasCommunityNickname={true}
                 hasCommunityAvatar={true}
@@ -48,7 +48,7 @@ describe('ManageUserOptions community profile resets', () => {
         const {queryByTestId} = renderWithIntlAndTheme(
             <ManageUserOptions
                 {...getBaseProps()}
-                canManageAndRemoveMembers={true}
+                canResetCommunityProfile={true}
                 teamId='team1'
                 hasCommunityNickname={true}
                 hasCommunityAvatar={false}
@@ -63,7 +63,7 @@ describe('ManageUserOptions community profile resets', () => {
         const {queryByTestId} = renderWithIntlAndTheme(
             <ManageUserOptions
                 {...getBaseProps()}
-                canManageAndRemoveMembers={true}
+                canResetCommunityProfile={true}
                 hasCommunityNickname={true}
                 hasCommunityAvatar={true}
             />,

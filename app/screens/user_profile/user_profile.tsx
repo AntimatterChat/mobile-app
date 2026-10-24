@@ -39,6 +39,7 @@ type Props = {
     enablePostUsernameOverride: boolean;
     isChannelAdmin: boolean;
     canManageAndRemoveMembers?: boolean;
+    canResetCommunityProfile?: boolean;
     isCustomStatusEnabled: boolean;
     isDirectMessageWithUser: boolean;
     isDefaultChannel: boolean;
@@ -94,6 +95,7 @@ export function shouldShowUserProfileOptions({
 const UserProfile = ({
     canChangeMemberRoles,
     canManageAndRemoveMembers,
+    canResetCommunityProfile,
     channelId,
     communityLook,
     communityRoles,
@@ -256,10 +258,10 @@ const UserProfile = ({
                         customAttributesSet={customAttributesSet}
                     />
                 )}
-                {manageMode && channelId && (canManageAndRemoveMembers || canChangeMemberRoles) &&
+                {manageMode && channelId && (canManageAndRemoveMembers || canChangeMemberRoles || canResetCommunityProfile) &&
                     <ManageUserOptions
                         canChangeMemberRoles={canChangeMemberRoles}
-                        canManageAndRemoveMembers={canManageAndRemoveMembers}
+                        canResetCommunityProfile={canResetCommunityProfile}
                         channelId={channelId}
                         isDefaultChannel={isDefaultChannel}
                         isChannelAdmin={isChannelAdmin}

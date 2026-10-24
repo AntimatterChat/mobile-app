@@ -29,19 +29,22 @@ type Props = {
     isDefaultChannel: boolean;
     isChannelAdmin: boolean;
     canChangeMemberRoles: boolean;
-    canManageAndRemoveMembers?: boolean;
     userId: string;
 
     // teamId, hasCommunityNickname and hasCommunityAvatar are only for the Reset nickname/picture rows: the
-    // member's own community profile, shown only when they have actually set one there.
+    // member's own community profile, shown only when they have actually set one there. canResetCommunityProfile
+    // is its own, community-wide permission (the server's CheckCanModerateMember: manage_team or
+    // remove_user_from_team) - distinct from the parent's channel-scoped canManageAndRemoveMembers, which this
+    // component doesn't otherwise need.
     teamId?: string;
     hasCommunityNickname?: boolean;
     hasCommunityAvatar?: boolean;
+    canResetCommunityProfile?: boolean;
 }
 
 const ManageUserOptions = ({
-    channelId, isChannelAdmin, isDefaultChannel, userId, canChangeMemberRoles, canManageAndRemoveMembers,
-    teamId, hasCommunityNickname, hasCommunityAvatar,
+    channelId, isChannelAdmin, isDefaultChannel, userId, canChangeMemberRoles,
+    teamId, hasCommunityNickname, hasCommunityAvatar, canResetCommunityProfile,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -65,7 +68,7 @@ const ManageUserOptions = ({
                 testID='channel.remove_member'
                 userId={userId}
             />
-            {canManageAndRemoveMembers && teamId && hasCommunityNickname &&
+            {canResetCommunityProfile && teamId && hasCommunityNickname &&
                 <ManageMembersLabel
                     channelId={channelId}
                     manageOption={RESET_NICKNAME}
@@ -74,7 +77,7 @@ const ManageUserOptions = ({
                     userId={userId}
                 />
             }
-            {canManageAndRemoveMembers && teamId && hasCommunityAvatar &&
+            {canResetCommunityProfile && teamId && hasCommunityAvatar &&
                 <ManageMembersLabel
                     channelId={channelId}
                     manageOption={RESET_AVATAR}

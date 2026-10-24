@@ -14,8 +14,9 @@ import {observeCommunityAvatarSource, observeCommunityNickname} from '@queries/s
 import {observeCustomProfileAttributesByUserId, observeCustomProfileFields} from '@queries/servers/custom_profile';
 import {observeCustomProfileAttributesEnabled} from '@queries/servers/features';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
+import {observeCanManageChannelMembers, observePermissionForChannel, observePermissionForTeam} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeTeam} from '@queries/servers/team';
 import {observeTeammateNameDisplay, observeCurrentUser, observeUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
 import {isDefaultChannel} from '@utils/channel';
 import {isSystemAdmin, sortCustomProfileAttributes, convertToAttributesMap, convertProfileAttributesToCustomAttributes, getUserIdFromChannelName} from '@utils/user';
@@ -47,6 +48,10 @@ export function isDirectMessageWithViewedUser(channel: DMChannelInfo|undefined, 
 
     const dmUserId = getUserIdFromChannelName(currentUserId, channel.name);
     return Boolean(dmUserId) && dmUserId === viewedUserId;
+}
+
+function eitherPermissionGranted([a, b]: [boolean, boolean]): boolean {
+    return a || b;
 }
 
 const enhanced = withObservables([], ({channelId, database, serverUrl, userId}: EnhancedProps) => {
@@ -104,8 +109,26 @@ const enhanced = withObservables([], ({channelId, database, serverUrl, userId}: 
     const canChangeMemberRoles = combineLatest([channel, currentUser, canManageAndRemoveMembers]).pipe(
         switchMap(([c, u, m]) => (of$(c?.id) && of$(u) && of$(m) && observePermissionForChannel(database, c, u, Permissions.MANAGE_CHANNEL_ROLES, true))));
 
+    // canResetCommunityProfile: whether this session may reset someone else's community nickname/picture, matching
+    // the server's own check (CheckCanModerateMember: manage_team or remove_user_from_team, never on yourself or a
+    // team admin). This is a community-wide (team) permission, unlike canManageAndRemoveMembers above, which is
+    // scoped to the current channel, so the two can disagree.
+    const team = teamId.pipe(switchMap((id) => observeTeam(database, id)));
+    const canResetCommunityProfile = combineLatest([team, currentUser, currentUserId, isTeamAdmin]).pipe(
+        switchMap(([t, cu, cuId, targetIsTeamAdmin]) => {
+            if (!t || !cu || cuId === userId || targetIsTeamAdmin) {
+                return of$(false);
+            }
+            return combineLatest([
+                observePermissionForTeam(database, t, cu, Permissions.MANAGE_TEAM, false),
+                observePermissionForTeam(database, t, cu, Permissions.REMOVE_USER_FROM_TEAM, false),
+            ]).pipe(map(eitherPermissionGranted));
+        }),
+    );
+
     return {
         canManageAndRemoveMembers,
+        canResetCommunityProfile,
         communityLook,
         communityRoles,
         communityNickname,
