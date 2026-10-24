@@ -256,6 +256,7 @@
   "assistant.muted_tools.unmute": "Unmute",
   "assistant.screen.empty": "Nothing yet. Cards appear here as the conversation gives the assistant something to show.",
   "assistant.screen.following": "Following this conversation",
+  "assistant.screen.new_card": "New card ↓",
   "assistant.screen.off": "The assistant is off for this channel.",
   "assistant.screen.settings": "Assistant settings",
   "assistant.screen.title": "Assistant",
